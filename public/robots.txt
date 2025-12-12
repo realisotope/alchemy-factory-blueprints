@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /auth
+
+Sitemap: https://alchemy-factory-blueprints.vercel.app/sitemap.xml
