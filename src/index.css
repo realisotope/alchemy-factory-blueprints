@@ -3,7 +3,10 @@
 @tailwind utilities;
 
 body {
-  background-color: #0a0e27;
+  background-image: url('/background.svg');
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
   color: #e8e8e8;
 }
 

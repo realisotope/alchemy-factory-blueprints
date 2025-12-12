@@ -53,9 +53,9 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-950 via-purple-950 to-gray-950">
+    <div className="min-h-screen">
       {/* Header */}
-      <header className="bg-gradient-to-r from-purple-900 via-indigo-900 to-purple-900 text-white shadow-2xl sticky top-0 z-50 border-b border-purple-700">
+      <header className="bg-gradient-to-r from-blue-900 via-cyan-900 to-blue-900 text-white shadow-2xl sticky top-0 z-50 border-b border-cyan-700/50">
         <div className="max-w-6xl mx-auto px-4 py-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-4xl">⚗️</span>
@@ -71,7 +71,7 @@ export default function App() {
       <main className="max-w-6xl mx-auto px-4 py-12 space-y-12">
         {/* Upload Section */}
         {user ? (
-          <div className="bg-gradient-to-br from-indigo-900/30 to-purple-900/30 rounded-lg shadow-xl p-8 border border-purple-700/50 backdrop-blur-sm">
+          <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/30 rounded-lg shadow-xl p-8 border border-cyan-700/50 backdrop-blur-sm">
             <h2 className="text-2xl font-bold text-amber-300 mb-4">
               ✨ Ready to share your blueprint?
             </h2>
@@ -87,8 +87,8 @@ export default function App() {
             </button>
           </div>
         ) : (
-          <div className="bg-gradient-to-br from-blue-900/30 to-indigo-900/30 rounded-lg shadow-xl p-8 border border-blue-700/50 backdrop-blur-sm text-center">
-            <h2 className="text-2xl font-bold text-blue-300 mb-2">
+          <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/30 rounded-lg shadow-xl p-8 border border-cyan-700/50 backdrop-blur-sm text-center">
+            <h2 className="text-2xl font-bold text-cyan-300 mb-2">
               🔐 Login to Upload Blueprints
             </h2>
             <p className="text-gray-300 mb-4">
@@ -101,7 +101,7 @@ export default function App() {
         {/* Gallery Section */}
         <section>
           <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-300 to-yellow-300 bg-clip-text text-transparent mb-8">
-            📚 Blueprint Gallery
+            Blueprint Gallery
           </h2>
           <BlueprintGallery user={user} refreshTrigger={refreshGallery} />
         </section>
@@ -116,7 +116,7 @@ export default function App() {
       />
 
       {/* Footer */}
-      <footer className="bg-gradient-to-r from-purple-950 via-indigo-950 to-purple-950 text-gray-300 text-center py-6 mt-12 border-t border-purple-700">
+      <footer className="bg-gradient-to-r from-blue-950 via-cyan-950 to-blue-950 text-gray-300 text-center py-6 mt-12 border-t border-cyan-700/50">
         <p>
           Upload and share your Alchemy Factory Blueprints - Not affiliated with Alchemy Factory.
         </p>

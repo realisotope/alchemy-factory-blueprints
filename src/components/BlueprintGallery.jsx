@@ -202,13 +202,13 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
             placeholder="Search blueprints or tags..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-purple-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-gray-800/50 text-gray-100 placeholder-gray-500"
+            className="w-full pl-10 pr-4 py-2 border border-cyan-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-gray-800/50 text-gray-100 placeholder-gray-500"
           />
         </div>
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
-          className="px-4 py-2 border border-purple-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-gray-800/50 text-gray-300"
+          className="px-4 py-2 border border-cyan-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-gray-800/50 text-gray-300"
         >
           <option value="newest">Newest First</option>
           <option value="oldest">Oldest First</option>
@@ -220,13 +220,13 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
       {/* Loading State */}
       {loading && (
         <div className="flex items-center justify-center py-12">
-          <Loader className="w-8 h-8 animate-spin text-purple-500" />
+          <Loader className="w-8 h-8 animate-spin text-cyan-500" />
         </div>
       )}
 
       {/* Empty State */}
       {!loading && filteredBlueprints.length === 0 && (
-        <div className="text-center py-12 bg-gradient-to-b from-indigo-900/30 to-purple-900/30 rounded-lg border border-purple-700/50">
+        <div className="text-center py-12 bg-gradient-to-b from-cyan-900/30 to-blue-900/30 rounded-lg border border-cyan-700/50">
           <p className="text-gray-300 text-lg">
             {blueprints.length === 0
               ? "✨ No blueprints yet. Be the first to upload one!"
@@ -242,7 +242,7 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
           return (
             <div
               key={blueprint.id}
-              className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg shadow-lg overflow-hidden border border-purple-700/50 hover:shadow-2xl hover:border-purple-600/80 transition cursor-pointer flex flex-col h-full"
+              className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg shadow-lg overflow-hidden border border-cyan-700/50 hover:shadow-2xl hover:border-cyan-600/80 transition cursor-pointer flex flex-col h-full"
               onClick={() => setSelectedBlueprint(blueprint)}
             >
               {/* Image */}
@@ -253,7 +253,7 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
                   className="w-full h-48 object-cover bg-gray-700 flex-shrink-0"
                 />
               ) : (
-                <div className="w-full h-48 bg-gradient-to-br from-purple-900 to-indigo-900 flex items-center justify-center flex-shrink-0">
+                <div className="w-full h-48 bg-gradient-to-br from-blue-900 to-cyan-900 flex items-center justify-center flex-shrink-0">
                   <span className="text-4xl">⚗️</span>
                 </div>
               )}
@@ -275,7 +275,7 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
                       {blueprint.tags.slice(0, 3).map((tag) => (
                         <span
                           key={tag}
-                          className="text-xs bg-purple-700/40 text-purple-300 px-2 py-1 rounded border border-purple-600/30"
+                          className="text-xs bg-cyan-700/40 text-cyan-300 px-2 py-1 rounded border border-cyan-600/30"
                         >
                           #{tag}
                         </span>

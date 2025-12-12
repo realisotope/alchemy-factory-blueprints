@@ -24,9 +24,9 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
 
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-      <div className="bg-gradient-to-b from-gray-900 to-gray-950 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-purple-700/50">
+      <div className="bg-gradient-to-b from-gray-900 to-gray-950 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-cyan-700/50">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-purple-900 via-indigo-900 to-purple-900 text-white p-6 flex items-center justify-between border-b border-purple-700">
+        <div className="sticky top-0 bg-gradient-to-r from-blue-900 via-cyan-900 to-blue-900 text-white p-6 flex items-center justify-between border-b border-cyan-700">
           <h2 className="text-2xl font-bold text-amber-300 flex-1 truncate">{blueprint.title}</h2>
           <button
             onClick={onClose}
@@ -43,27 +43,27 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
             <img
               src={blueprint.image_url}
               alt={blueprint.title}
-              className="w-full h-64 object-cover rounded-lg border border-purple-700/50"
+              className="w-full h-64 object-cover rounded-lg border border-cyan-700/50"
             />
           )}
 
           {/* Stats Row */}
           <div className="grid grid-cols-3 gap-4">
-            <div className="bg-purple-900/30 p-4 rounded-lg border border-purple-700/50 text-center">
+            <div className="bg-blue-900/30 p-4 rounded-lg border border-cyan-700/50 text-center">
               <div className="text-2xl font-bold text-amber-300">{blueprint.downloads || 0}</div>
               <div className="text-sm text-gray-400 flex items-center justify-center mt-1">
                 <Download className="w-4 h-4 mr-1" />
                 Downloads
               </div>
             </div>
-            <div className="bg-purple-900/30 p-4 rounded-lg border border-purple-700/50 text-center">
+            <div className="bg-blue-900/30 p-4 rounded-lg border border-cyan-700/50 text-center">
               <div className="text-2xl font-bold text-rose-400">{likeCount}</div>
               <div className="text-sm text-gray-400 flex items-center justify-center mt-1">
                 <Heart className="w-4 h-4 mr-1" />
                 Likes
               </div>
             </div>
-            <div className="bg-purple-900/30 p-4 rounded-lg border border-purple-700/50 text-center">
+            <div className="bg-blue-900/30 p-4 rounded-lg border border-cyan-700/50 text-center">
               <div className="text-lg font-bold text-blue-300">
                 {new Date(blueprint.created_at).toLocaleDateString("en-US", {
                   month: "short",
@@ -78,7 +78,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           </div>
 
           {/* Creator Info */}
-          <div className="bg-gradient-to-r from-indigo-900/30 to-purple-900/30 p-4 rounded-lg border border-purple-700/50">
+          <div className="bg-gradient-to-r from-cyan-900/30 to-blue-900/30 p-4 rounded-lg border border-cyan-700/50">
             <div className="flex items-center gap-3">
               <User className="w-5 h-5 text-amber-400" />
               <div>
@@ -106,7 +106,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                 {blueprint.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="bg-purple-700/50 text-purple-200 px-3 py-1 rounded-full text-sm font-medium border border-purple-600/50"
+                    className="bg-cyan-700/50 text-cyan-200 px-3 py-1 rounded-full text-sm font-medium border border-cyan-600/50"
                   >
                     #{tag}
                   </span>
@@ -129,7 +129,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
         </div>
 
         {/* Footer Actions */}
-        <div className="sticky bottom-0 bg-gradient-to-t from-gray-950 to-gray-900 border-t border-purple-700 p-6 flex gap-3">
+        <div className="sticky bottom-0 bg-gradient-to-t from-gray-950 to-gray-900 border-t border-cyan-700 p-6 flex gap-3">
           <a
             href={blueprint.file_url}
             download

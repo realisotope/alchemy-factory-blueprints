@@ -6,9 +6,9 @@ export default function UploadModal({ isOpen, onClose, user, onUploadSuccess }) 
 
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-      <div className="bg-gradient-to-b from-gray-900 to-gray-950 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-purple-700/50">
+      <div className="bg-gradient-to-b from-gray-900 to-gray-950 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-cyan-700/50">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-purple-900 via-indigo-900 to-purple-900 text-white p-6 flex items-center justify-between border-b border-purple-700">
+        <div className="sticky top-0 bg-gradient-to-r from-blue-900 via-cyan-900 to-blue-900 text-white p-6 flex items-center justify-between border-b border-cyan-700">
           <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-300 to-yellow-300 bg-clip-text text-transparent">
             ✨ Upload Blueprint
           </h2>

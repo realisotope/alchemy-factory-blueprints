@@ -5,7 +5,7 @@ export default function DiscordLogin({ user, onLogout }) {
     await supabase.auth.signInWithOAuth({
       provider: "discord",
       options: {
-        redirectTo: "http://localhost:5173",
+        redirectTo: "https://edcfmaofcobqzmsylcfv.supabase.co/auth/v1/callback",
       },
     });
   }
@@ -19,7 +19,7 @@ export default function DiscordLogin({ user, onLogout }) {
     return (
       <div className="flex items-center gap-3">
         <span className="text-sm text-gray-700">
-          Welcome, <strong>{user.user_metadata?.name || user.email}</strong>
+          Welcome, <strong>{user.user_metadata?.name}</strong>
         </span>
         <button
           onClick={logout}
@@ -34,7 +34,7 @@ export default function DiscordLogin({ user, onLogout }) {
   return (
     <button
       onClick={login}
-      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition"
+      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition"
     >
       Login with Discord
     </button>
