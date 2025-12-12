@@ -3,7 +3,6 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "framework": "vite",
-  "nodeVersion": "18.x",
   "env": [
     "VITE_SUPABASE_URL",
     "VITE_SUPABASE_ANON_KEY"
