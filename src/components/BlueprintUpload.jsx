@@ -242,7 +242,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
   };
 
   return (
-    <div className="bg-gradient-to-br from-indigo-900/30 to-purple-900/30 rounded-lg shadow-lg p-8 border border-purple-700/50 backdrop-blur-sm">
+    <div className="backdrop-blur-sm">
       <h2 className="text-2xl font-bold text-amber-300 mb-6">Upload Your Blueprint</h2>
 
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -256,7 +256,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g., Efficient Iron Production Setup"
-            className="w-full px-4 py-2 border border-purple-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-gray-800/50 text-gray-100 placeholder-gray-500"
+            className="w-full px-4 py-2 border border-cyan-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-gray-800/50 text-gray-100 placeholder-gray-500"
           />
         </div>
 
@@ -270,7 +270,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe your blueprint, its purpose, and any special features..."
             rows="4"
-            className="w-full px-4 py-2 border border-purple-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-gray-800/50 text-gray-100 placeholder-gray-500"
+            className="w-full px-4 py-2 border border-cyan-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-gray-800/50 text-gray-100 placeholder-gray-500"
           />
         </div>
 
@@ -287,7 +287,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddTag())}
                 placeholder="e.g., iron, production, efficient"
-                className="flex-1 px-4 py-2 border border-purple-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-gray-800/50 text-gray-100 placeholder-gray-500"
+                className="flex-1 px-4 py-2 border border-cyan-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-gray-800/50 text-gray-100 placeholder-gray-500"
               />
               <button
                 type="button"
@@ -302,7 +302,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
                 {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="bg-purple-700/50 text-amber-300 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 border border-purple-600/50"
+                    className="bg-cyan-700/50 text-amber-300 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 border border-purple-600/50"
                   >
                     #{tag}
                     <button
@@ -354,7 +354,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
               <img
                 src={imagePreview}
                 alt="Preview"
-                className="w-full h-48 object-cover rounded-lg border border-purple-700/50"
+                className="w-full h-48 object-cover rounded-lg border border-cyan-700/50"
               />
             )}
             <div className="relative">
