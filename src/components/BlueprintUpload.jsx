@@ -177,6 +177,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         try {
           const blobResult = await put(`blueprint-images/${user.id}/${Date.now()}_${imageFile.name}`, imageFile, {
             access: "public",
+            token: import.meta.env.VITE_BLOB_READ_WRITE_TOKEN,
           });
           imageUrl = blobResult.url;
         } catch (imageError) {
