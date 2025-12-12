@@ -130,6 +130,14 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
 
         {/* Footer Actions */}
         <div className="sticky bottom-0 bg-gradient-to-t from-gray-950 to-gray-900 border-t border-purple-700 p-6 flex gap-3">
+          <a
+            href={blueprint.file_url}
+            download
+            className="flex-1 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
+          >
+            <Download className="w-5 h-5" />
+            Download
+          </a>
           <button
             onClick={handleLike}
             className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-semibold transition ${
@@ -141,14 +149,6 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
             <Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
             {isLiked ? "Liked" : "Like"}
           </button>
-          <a
-            href={blueprint.file_url}
-            download
-            className="flex-1 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
-          >
-            <Download className="w-5 h-5" />
-            Download
-          </a>
         </div>
       </div>
     </div>
