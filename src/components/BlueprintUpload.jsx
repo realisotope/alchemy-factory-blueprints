@@ -5,7 +5,7 @@ import { put } from "@vercel/blob";
 import imageCompression from "browser-image-compression";
 
 // Constants for validation
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB
 const MAX_IMAGE_WIDTH = 4000;
 const MAX_IMAGE_HEIGHT = 4000;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -176,12 +176,12 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       // Upload image if provided (using Vercel Blob for automatic optimization)
       if (imageFile) {
         try {
-          // Compress image to ensure it's under 1MB
+          // Compress image to ensure it's under 300KB
           const options = {
-            maxSizeMB: 1,
+            maxSizeMB: 0.3,
             maxWidthOrHeight: 2000,
             useWebWorker: true,
-            quality: 0.8,
+            quality: 0.75,
           };
           const compressedFile = await imageCompression(imageFile, options);
           
