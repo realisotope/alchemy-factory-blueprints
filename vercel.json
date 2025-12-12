@@ -1,6 +1,4 @@
 {
-  "buildCommand": "npm install && npm run build",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
+  "buildCommand": "vite build",
   "framework": "vite"
 }
