@@ -201,7 +201,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
           title,
           description: description || null,
           user_id: user.id,
-          creator_name: user.user_metadata?.name || user.email || "Anonymous",
+          creator_name: user.user_metadata?.name || "Anonymous",
           file_url: fileUrl,
           image_url: imageUrl,
           tags: tags.length > 0 ? tags : null,
