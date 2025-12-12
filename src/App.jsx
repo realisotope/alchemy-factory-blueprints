@@ -118,7 +118,10 @@ export default function App() {
       {/* Footer */}
       <footer className="bg-gradient-to-r from-purple-950 via-indigo-950 to-purple-950 text-gray-300 text-center py-6 mt-12 border-t border-purple-700">
         <p>
-          Built with React, Vite, and Supabase • Upload and share your Alchemy Factory blueprints
+          Built with React, Vite, and Supabase • Upload and share your Alchemy Factory Blueprints
+        </p>
+        <p>
+          <a href="https://github.com/realisotope/alchemy-factory-blueprints">GitHub Source Code</a>
         </p>
       </footer>
     </div>
