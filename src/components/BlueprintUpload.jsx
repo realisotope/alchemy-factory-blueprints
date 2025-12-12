@@ -2,6 +2,7 @@ import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import { Upload, Loader, X } from "lucide-react";
 import { put } from "@vercel/blob";
+import imageCompression from "browser-image-compression";
 
 // Constants for validation
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -175,7 +176,16 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       // Upload image if provided (using Vercel Blob for automatic optimization)
       if (imageFile) {
         try {
-          const blobResult = await put(`blueprint-images/${user.id}/${Date.now()}_${imageFile.name}`, imageFile, {
+          // Compress image to ensure it's under 1MB
+          const options = {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 2000,
+            useWebWorker: true,
+            quality: 0.8,
+          };
+          const compressedFile = await imageCompression(imageFile, options);
+          
+          const blobResult = await put(`blueprint-images/${user.id}/${Date.now()}_${imageFile.name}`, compressedFile, {
             access: "public",
             token: import.meta.env.VITE_BLOB_READ_WRITE_TOKEN,
           });
