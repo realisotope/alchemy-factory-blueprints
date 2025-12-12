@@ -158,10 +158,14 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
     setError(null);
 
     try {
-      // Create zip file containing the blueprint file
+      // Create zip file containing the blueprint file with compression
       const zip = new JSZip();
       zip.file(blueprintFile.name, blueprintFile);
-      const zipBlob = await zip.generateAsync({ type: "blob" });
+      const zipBlob = await zip.generateAsync({ 
+        type: "blob",
+        compression: "DEFLATE",
+        compressionOptions: { level: 9 }
+      });
 
       // Upload compressed zip file
       const zipFileName = blueprintFile.name.replace(".af", "") + ".zip";
