@@ -102,6 +102,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
   const [tagInput, setTagInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [blueprintDragActive, setBlueprintDragActive] = useState(false);
+  const [imageDragActive, setImageDragActive] = useState(false);
 
   const handleImageSelect = (e) => {
     const file = e.target.files?.[0];
@@ -131,6 +133,66 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         setBlueprintFile(null);
       } else {
         setBlueprintFile(file);
+        setError(null);
+      }
+    }
+  };
+
+  const handleBlueprintDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setBlueprintDragActive(true);
+    } else if (e.type === "dragleave") {
+      setBlueprintDragActive(false);
+    }
+  };
+
+  const handleBlueprintDrop = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setBlueprintDragActive(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      // Validate .af file
+      const validation = await validateAfFile(file);
+      if (!validation.valid) {
+        setError(validation.error);
+        setBlueprintFile(null);
+      } else {
+        setBlueprintFile(file);
+        setError(null);
+      }
+    }
+  };
+
+  const handleImageDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setImageDragActive(true);
+    } else if (e.type === "dragleave") {
+      setImageDragActive(false);
+    }
+  };
+
+  const handleImageDrop = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setImageDragActive(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      // Validate image before processing
+      const validation = await validateImageFile(file);
+      if (!validation.valid) {
+        setError(validation.error);
+        setImageFile(null);
+        setImagePreview(null);
+      } else {
+        setImageFile(file);
+        setImagePreview(URL.createObjectURL(file));
         setError(null);
       }
     }
@@ -324,7 +386,13 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
           <label className="block text-sm font-medium text-amber-300 mb-2">
             Blueprint File (.af) *
           </label>
-          <div className="relative">
+          <div
+            className="relative"
+            onDragEnter={handleBlueprintDrag}
+            onDragLeave={handleBlueprintDrag}
+            onDragOver={handleBlueprintDrag}
+            onDrop={handleBlueprintDrop}
+          >
             <input
               type="file"
               accept=".af"
@@ -334,11 +402,19 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
             />
             <label
               htmlFor="blueprint-input"
-              className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-purple-700/50 rounded-lg cursor-pointer hover:bg-purple-900/20 transition"
+              className={`flex items-center justify-center w-full px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition ${
+                blueprintDragActive
+                  ? "border-cyan-500 bg-cyan-900/30 text-cyan-300"
+                  : "border-cyan-700/50 hover:border-cyan-600/70 hover:bg-cyan-900/10 text-gray-300"
+              }`}
             >
               <Upload className="w-5 h-5 mr-2 text-amber-400" />
-              <span className="text-gray-300">
-                {blueprintFile ? blueprintFile.name : "Click to select .af file"}
+              <span>
+                {blueprintFile
+                  ? blueprintFile.name
+                  : blueprintDragActive
+                  ? "Drop your .af file here"
+                  : "Click to select or drag & drop .af file"}
               </span>
             </label>
           </div>
@@ -357,7 +433,13 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
                 className="w-full h-48 object-cover rounded-lg border border-cyan-700/50"
               />
             )}
-            <div className="relative">
+            <div
+              className="relative"
+              onDragEnter={handleImageDrag}
+              onDragLeave={handleImageDrag}
+              onDragOver={handleImageDrag}
+              onDrop={handleImageDrop}
+            >
               <input
                 type="file"
                 accept="image/*"
@@ -367,11 +449,19 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
               />
               <label
                 htmlFor="image-input"
-                className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-purple-700/50 rounded-lg cursor-pointer hover:bg-purple-900/20 transition"
+                className={`flex items-center justify-center w-full px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition ${
+                  imageDragActive
+                    ? "border-cyan-500 bg-cyan-900/30 text-cyan-300"
+                    : "border-cyan-700/50 hover:border-cyan-600/70 hover:bg-cyan-900/10 text-gray-300"
+                }`}
               >
                 <Upload className="w-5 h-5 mr-2 text-amber-400" />
-                <span className="text-gray-300">
-                  {imageFile ? imageFile.name : "Click to select image"}
+                <span>
+                  {imageFile
+                    ? imageFile.name
+                    : imageDragActive
+                    ? "Drop your image here"
+                    : "Click to select or drag & drop image"}
                 </span>
               </label>
             </div>
