@@ -1,6 +1,94 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import { Upload, Loader, X } from "lucide-react";
+import { put } from "@vercel/blob";
+
+// Constants for validation
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_IMAGE_WIDTH = 4000;
+const MAX_IMAGE_HEIGHT = 4000;
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const AF_FILE_MAX_SIZE = 50 * 1024 * 1024; // 50MB
+
+// Validate .af file by checking extension and file structure
+const validateAfFile = async (file) => {
+  // Check extension
+  if (!file.name.toLowerCase().endsWith(".af")) {
+    return { valid: false, error: "File must have .af extension" };
+  }
+
+  // Check file size
+  if (file.size > AF_FILE_MAX_SIZE) {
+    return { valid: false, error: "Blueprint file must be smaller than 50MB" };
+  }
+
+  // Check file content (basic magic number check for common archives/executables)
+  try {
+    const buffer = await file.slice(0, 4).arrayBuffer();
+    const view = new Uint8Array(buffer);
+    
+    // Reject common executable signatures
+    if (view.length >= 2) {
+      // MZ header (PE executable)
+      if (view[0] === 0x4d && view[1] === 0x5a) {
+        return { valid: false, error: "Executable files are not allowed" };
+      }
+      // Shebang (Unix scripts)
+      if (view[0] === 0x23 && view[1] === 0x21) {
+        return { valid: false, error: "Script files are not allowed" };
+      }
+    }
+    if (view.length >= 4) {
+      // ZIP header (0x504b0304)
+      if (view[0] === 0x50 && view[1] === 0x4b && view[2] === 0x03 && view[3] === 0x04) {
+        return { valid: false, error: "Archive files must be saved as .af files" };
+      }
+    }
+  } catch (e) {
+    // If we can't read the file, still allow it (might be a valid .af)
+    console.warn("Could not validate file content:", e);
+  }
+
+  return { valid: true };
+};
+
+// Validate image file
+const validateImageFile = async (file) => {
+  // Check MIME type
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    return { 
+      valid: false, 
+      error: `Invalid image type. Allowed: JPEG, PNG, WebP. Got: ${file.type}` 
+    };
+  }
+
+  // Check file size
+  if (file.size > MAX_IMAGE_SIZE) {
+    return { 
+      valid: false, 
+      error: `Image must be smaller than 5MB. Current: ${(file.size / 1024 / 1024).toFixed(2)}MB` 
+    };
+  }
+
+  // Check image dimensions
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      if (img.width > MAX_IMAGE_WIDTH || img.height > MAX_IMAGE_HEIGHT) {
+        resolve({
+          valid: false,
+          error: `Image dimensions must be under ${MAX_IMAGE_WIDTH}x${MAX_IMAGE_HEIGHT}px. Current: ${img.width}x${img.height}px`
+        });
+      } else {
+        resolve({ valid: true });
+      }
+    };
+    img.onerror = () => {
+      resolve({ valid: false, error: "Failed to load image. File may be corrupted." });
+    };
+    img.src = URL.createObjectURL(file);
+  });
+};
 
 export default function BlueprintUpload({ user, onUploadSuccess }) {
   const [title, setTitle] = useState("");
@@ -16,19 +104,33 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
   const handleImageSelect = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
+      // Validate image before processing
+      validateImageFile(file).then((validation) => {
+        if (!validation.valid) {
+          setError(validation.error);
+          setImageFile(null);
+          setImagePreview(null);
+        } else {
+          setImageFile(file);
+          setImagePreview(URL.createObjectURL(file));
+          setError(null);
+        }
+      });
     }
   };
 
-  const handleBlueprintSelect = (e) => {
+  const handleBlueprintSelect = async (e) => {
     const file = e.target.files?.[0];
-    if (file && file.name.endsWith(".af")) {
-      setBlueprintFile(file);
-      setError(null);
-    } else {
-      setError("Please select a valid .af blueprint file");
-      setBlueprintFile(null);
+    if (file) {
+      // Validate .af file
+      const validation = await validateAfFile(file);
+      if (!validation.valid) {
+        setError(validation.error);
+        setBlueprintFile(null);
+      } else {
+        setBlueprintFile(file);
+        setError(null);
+      }
     }
   };
 
@@ -70,19 +172,16 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
 
       let imageUrl = null;
 
-      // Upload image if provided
+      // Upload image if provided (using Vercel Blob for automatic optimization)
       if (imageFile) {
-        const imagePath = `${user.id}/${Date.now()}_${imageFile.name}`;
-        const { error: imageError } = await supabase.storage
-          .from("blueprint-images")
-          .upload(imagePath, imageFile);
-
-        if (imageError) throw imageError;
-
-        const { data: imageData } = supabase.storage
-          .from("blueprint-images")
-          .getPublicUrl(imagePath);
-        imageUrl = imageData?.publicUrl;
+        try {
+          const blobResult = await put(`blueprint-images/${user.id}/${Date.now()}_${imageFile.name}`, imageFile, {
+            access: "public",
+          });
+          imageUrl = blobResult.url;
+        } catch (imageError) {
+          throw new Error(`Image upload failed: ${imageError.message}`);
+        }
       }
 
       // Insert blueprint record into database
