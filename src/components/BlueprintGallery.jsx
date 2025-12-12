@@ -242,7 +242,7 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
           return (
             <div
               key={blueprint.id}
-              className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg shadow-lg overflow-hidden border border-cyan-700/50 hover:shadow-2xl hover:border-cyan-600/80 transition cursor-pointer flex flex-col h-full"
+              className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg shadow-lg overflow-hidden border-2 border-cyan-700/50 hover:shadow-2xl hover:border-cyan-600/80 transition cursor-pointer flex flex-col h-full"
               onClick={() => setSelectedBlueprint(blueprint)}
             >
               {/* Image */}
