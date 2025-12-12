@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase";
 import { Upload, Loader, X } from "lucide-react";
 import { put } from "@vercel/blob";
 import imageCompression from "browser-image-compression";
+import JSZip from "jszip";
 
 // Constants for validation
 const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB
@@ -157,11 +158,17 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
     setError(null);
 
     try {
-      // Upload blueprint file
-      const blueprintPath = `${user.id}/${Date.now()}_${blueprintFile.name}`;
+      // Create zip file containing the blueprint file
+      const zip = new JSZip();
+      zip.file(blueprintFile.name, blueprintFile);
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+
+      // Upload compressed zip file
+      const zipFileName = blueprintFile.name.replace(".af", "") + ".zip";
+      const blueprintPath = `${user.id}/${Date.now()}_${zipFileName}`;
       const { error: blueprintError } = await supabase.storage
         .from("blueprints")
-        .upload(blueprintPath, blueprintFile);
+        .upload(blueprintPath, zipBlob);
 
       if (blueprintError) throw blueprintError;
 

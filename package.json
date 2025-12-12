@@ -12,6 +12,7 @@
     "@vercel/blob": "^2.0.0",
     "browser-image-compression": "^2.0.2",
     "framer-motion": "^11.0.0",
+    "jszip": "^3.10.1",
     "lucide-react": "^0.460.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
