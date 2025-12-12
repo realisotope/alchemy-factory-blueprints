@@ -7,13 +7,12 @@ body {
   background-attachment: fixed;
   background-size: cover;
   background-position: center;
-  background-color: #292b67; /* Fallback color */
+  background-color: #292b67;
   color: #e8e8e8;
 }
 
-/* Scrollbar styling for dark theme */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -21,11 +20,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #6d28d9;
-  border-radius: 5px;
+  background: #1e3a8a;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #7c3aed;
+  background: #174e65;
 }
 

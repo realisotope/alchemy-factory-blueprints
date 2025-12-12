@@ -26,7 +26,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
       <div className="bg-gradient-to-b from-gray-900 to-gray-950 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-cyan-700/50">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-blue-900 via-cyan-900 to-blue-900 text-white p-6 flex items-center justify-between border-b border-cyan-700">
+        <div className="sticky top-0 bg-gradient-to-r from-blue-900 via-cyan-900 to-blue-900 text-white p-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-amber-300 flex-1 truncate">{blueprint.title}</h2>
           <button
             onClick={onClose}
@@ -129,7 +129,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
         </div>
 
         {/* Footer Actions */}
-        <div className="sticky bottom-0 bg-gradient-to-t from-gray-950 to-gray-900 border-t border-cyan-700 p-6 flex gap-3">
+        <div className="sticky bottom-0 bg-gradient-to-t from-gray-950 to-gray-900 p-6 flex gap-3">
           <a
             href={blueprint.file_url}
             download

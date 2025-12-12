@@ -12,6 +12,8 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
   const [selectedBlueprint, setSelectedBlueprint] = useState(null);
   const [userLikes, setUserLikes] = useState(new Set());
   const [downloadingId, setDownloadingId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 8;
 
   useEffect(() => {
     fetchBlueprints();
@@ -191,6 +193,25 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
       return new Date(b.created_at) - new Date(a.created_at);
     });
 
+  // Pagination
+  const totalPages = Math.ceil(filteredBlueprints.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedBlueprints = filteredBlueprints.slice(
+    startIndex,
+    startIndex + ITEMS_PER_PAGE
+  );
+
+  // Reset to page 1 when search changes
+  const handleSearch = (value) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handleSort = (value) => {
+    setSortBy(value);
+    setCurrentPage(1);
+  };
+
   return (
     <>
       {/* Search and Sort */}
@@ -201,14 +222,14 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
             type="text"
             placeholder="Search blueprints or tags..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-cyan-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-gray-800/50 text-gray-100 placeholder-gray-500"
+            onChange={(e) => handleSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 border border-cyan-700/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-gray-800/70 text-gray-100 placeholder-gray-500 transition-all shadow-sm"
           />
         </div>
         <select
           value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-          className="px-4 py-2 border border-cyan-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-gray-800/50 text-gray-300"
+          onChange={(e) => handleSort(e.target.value)}
+          className="px-4 py-2.5 border border-cyan-700/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-gray-800/70 text-gray-200 font-medium transition-all shadow-sm"
         >
           <option value="newest">Newest First</option>
           <option value="oldest">Oldest First</option>
@@ -236,13 +257,13 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
       )}
 
       {/* Blueprint Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredBlueprints.map((blueprint) => {
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {paginatedBlueprints.map((blueprint) => {
           const isLiked = userLikes.has(blueprint.id);
           return (
             <div
               key={blueprint.id}
-              className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg shadow-lg overflow-hidden border-2 border-cyan-700/50 hover:shadow-2xl hover:border-cyan-600/80 transition cursor-pointer flex flex-col h-full"
+              className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-lg overflow-hidden border-2 border-cyan-600/50 hover:border-cyan-500/70 hover:shadow-2xl hover:shadow-cyan-900/30 transition-all duration-300 cursor-pointer flex flex-col h-full group"
               onClick={() => setSelectedBlueprint(blueprint)}
             >
               {/* Image */}
@@ -259,9 +280,9 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
               )}
 
               {/* Content - Grows to fill space */}
-              <div className="p-4 space-y-3 flex-grow flex flex-col">
+              <div className="p-5 space-y-3 flex-grow flex flex-col bg-gradient-to-b from-gray-800/80 to-gray-900/90">
                 <div className="flex-grow">
-                  <h3 className="text-lg font-bold text-amber-300 truncate">
+                  <h3 className="text-lg font-bold text-amber-300 truncate group-hover:text-amber-200 transition">
                     {blueprint.title}
                   </h3>
 
@@ -271,11 +292,11 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
 
                   {/* Tags */}
                   {blueprint.tags && blueprint.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
+                    <div className="flex flex-wrap gap-1 mt-3">
                       {blueprint.tags.slice(0, 3).map((tag) => (
                         <span
                           key={tag}
-                          className="text-xs bg-cyan-700/40 text-cyan-300 px-2 py-1 rounded border border-cyan-600/30"
+                          className="text-xs bg-cyan-700/50 text-cyan-200 px-2.5 py-1 rounded-full border border-cyan-500/30 font-medium hover:bg-cyan-700/70 transition"
                         >
                           #{tag}
                         </span>
@@ -287,23 +308,22 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
                       )}
                     </div>
                   )}
-
-                  <div className="text-xs text-gray-500 mt-2">
-                    <p className="font-semibold text-gray-400">
-                      by {blueprint.creator_name}
-                    </p>
-                  </div>
                 </div>
 
                 {/* Stats */}
-                <div className="flex gap-4 text-sm text-gray-400 border-t border-gray-700 pt-3">
-                  <div className="flex items-center gap-1">
+                <div className="flex gap-4 text-sm text-gray-400 border-t border-gray-700/60 pt-3 flex-wrap items-center">
+                  <div className="flex items-center gap-1 hover:text-cyan-300 transition">
                     <Download className="w-4 h-4" />
                     <span>{blueprint.downloads || 0}</span>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 hover:text-rose-400 transition">
                     <Heart className="w-4 h-4" />
                     <span>{blueprint.likes || 0}</span>
+                  </div>
+                  <div className="text-xs text-gray-500 ml-auto">
+                    <p className="font-semibold text-gray-400 hover:text-gray-300 transition">
+                      by {blueprint.creator_name}
+                    </p>
                   </div>
                 </div>
 
@@ -315,7 +335,7 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
                       handleDownload(blueprint);
                     }}
                     disabled={downloadingId === blueprint.id}
-                    className="flex-1 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 disabled:from-gray-700 disabled:to-gray-800 text-black font-semibold py-2 rounded-lg transition flex items-center justify-center text-sm"
+                    className="flex-1 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 disabled:from-gray-700 disabled:to-gray-800 text-black font-semibold py-2 rounded-lg transition shadow-md hover:shadow-lg hover:shadow-amber-500/30 flex items-center justify-center text-sm"
                   >
                     {downloadingId === blueprint.id ? (
                       <Loader className="w-4 h-4 animate-spin" />
@@ -363,6 +383,43 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
           );
         })}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-12">
+          <button
+            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 rounded-lg border border-cyan-700/60 bg-gray-800/70 text-gray-200 font-medium hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          >
+            ← Previous
+          </button>
+
+          <div className="flex gap-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`px-3 py-2 rounded-lg font-medium transition ${
+                  currentPage === page
+                    ? "bg-cyan-700 text-white border border-cyan-600"
+                    : "border border-cyan-700/60 bg-gray-800/70 text-gray-200 hover:bg-gray-700"
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 rounded-lg border border-cyan-700/60 bg-gray-800/70 text-gray-200 font-medium hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          >
+            Next →
+          </button>
+        </div>
+      )}
 
       {/* Blueprint Detail Modal */}
       <BlueprintDetail

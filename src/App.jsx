@@ -56,7 +56,7 @@ export default function App() {
     <div className="min-h-screen">
       {/* Header */}
       <header className="bg-gradient-to-r from-blue-900 via-cyan-900 to-blue-900 text-white shadow-2xl sticky top-0 z-50 border-b border-cyan-700/50">
-        <div className="max-w-6xl mx-auto px-4 py-6 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 py-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-4xl">⚗️</span>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-300 to-yellow-300 bg-clip-text text-transparent">
@@ -68,19 +68,19 @@ export default function App() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 py-12 space-y-12">
+      <main className="max-w-7xl mx-auto px-4 py-12 space-y-12">
         {/* Upload Section */}
         {user ? (
-          <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/30 rounded-lg shadow-xl p-8 border border-cyan-700/50 backdrop-blur-sm">
+          <div className="bg-gradient-to-br from-blue-900/60 via-cyan-900/50 to-blue-900/60 rounded-xl shadow-2xl p-10 border border-cyan-600/50 backdrop-blur-md hover:border-cyan-500/70 transition-all">
             <h2 className="text-2xl font-bold text-amber-300 mb-4">
               ✨ Ready to share your blueprint?
             </h2>
-            <p className="text-gray-300 mb-6">
+            <p className="text-gray-300 mb-6 text-lg">
               Upload your factory blueprint along with an image and description.
             </p>
             <button
               onClick={() => setIsUploadModalOpen(true)}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-semibold py-3 px-8 rounded-lg transition shadow-lg"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-semibold py-3 px-8 rounded-lg transition shadow-lg hover:shadow-xl hover:shadow-amber-500/30"
             >
               <Upload className="w-5 h-5" />
               Upload Blueprint
@@ -91,7 +91,7 @@ export default function App() {
             <h2 className="text-2xl font-bold text-cyan-300 mb-2">
               🔐 Login to Upload Blueprints
             </h2>
-            <p className="text-gray-300 mb-4">
+            <p className="text-gray-300 mb-6 text-lg">
               Sign in with Discord to share your factory blueprints with the community.
             </p>
             <DiscordLogin user={user} onLogout={handleLogout} />
