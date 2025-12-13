@@ -1,5 +1,6 @@
 import { X, Download, Heart, Calendar, User } from "lucide-react";
 import { useState, useEffect } from "react";
+import { stripDiscordDiscriminator } from "../lib/discordUtils";
 
 export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange }) {
   const [isLiked, setIsLiked] = useState(false);
@@ -83,7 +84,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
               <User className="w-5 h-5 text-amber-400" />
               <div>
                 <p className="text-sm text-gray-400">Creator</p>
-                <p className="font-semibold text-amber-300">{blueprint.creator_name}</p>
+                <p className="font-semibold text-amber-300">{stripDiscordDiscriminator(blueprint.creator_name)}</p>
               </div>
             </div>
           </div>

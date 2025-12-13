@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { Search, Download, Trash2, Loader, Heart } from "lucide-react";
+import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import BlueprintDetail from "./BlueprintDetail";
 
 export default function BlueprintGallery({ user, refreshTrigger }) {
@@ -325,7 +326,7 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
                   </div>
                   <div className="text-xs text-gray-500 ml-auto">
                     <p className="font-semibold text-gray-400 hover:text-gray-300 transition">
-                      by {blueprint.creator_name}
+                      by {stripDiscordDiscriminator(blueprint.creator_name)}
                     </p>
                   </div>
                 </div>

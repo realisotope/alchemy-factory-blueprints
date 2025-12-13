@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
+import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { Upload, Loader, X } from "lucide-react";
 import { put } from "@vercel/blob";
 import imageCompression from "browser-image-compression";
@@ -279,7 +280,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
           title,
           description: description || null,
           user_id: user.id,
-          creator_name: user.user_metadata?.name || "Anonymous",
+          creator_name: stripDiscordDiscriminator(user.user_metadata?.name) || "Anonymous",
           file_url: fileUrl,
           image_url: imageUrl,
           tags: tags.length > 0 ? tags : null,

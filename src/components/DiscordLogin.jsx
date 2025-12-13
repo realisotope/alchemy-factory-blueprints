@@ -1,4 +1,5 @@
 import { supabase } from "../lib/supabase";
+import { stripDiscordDiscriminator } from "../lib/discordUtils";
 
 export default function DiscordLogin({ user, onLogout }) {
   async function login() {
@@ -19,7 +20,7 @@ export default function DiscordLogin({ user, onLogout }) {
     return (
       <div className="flex items-center gap-3">
         <span className="text-sm text-gray-300">
-          Welcome, <strong>{user.user_metadata?.name}</strong>
+          Welcome, <strong>{stripDiscordDiscriminator(user.user_metadata?.name)}</strong>
         </span>
         <button
           onClick={logout}
