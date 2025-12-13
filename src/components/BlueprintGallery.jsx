@@ -223,13 +223,13 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
             placeholder="Search blueprints or tags..."
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-cyan-700/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-gray-800/70 text-gray-100 placeholder-gray-500 transition-all shadow-sm"
+            className="w-full pl-10 pr-4 py-2.5 border-2 border-cyan-700/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-gray-800/70 text-gray-100 placeholder-gray-500 transition-all shadow-sm"
           />
         </div>
         <select
           value={sortBy}
           onChange={(e) => handleSort(e.target.value)}
-          className="px-4 py-2.5 border border-cyan-700/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-gray-800/70 text-gray-200 font-medium transition-all shadow-sm"
+          className="px-4 py-2.5 border-2 border-cyan-700/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-gray-800/70 text-gray-200 font-medium transition-all shadow-sm"
         >
           <option value="newest">Newest First</option>
           <option value="oldest">Oldest First</option>
@@ -302,7 +302,7 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
                         key={tag}
                         className="text-xs bg-cyan-700/50 text-cyan-200 px-2.5 py-1 rounded-full border border-cyan-500/30 font-medium hover:bg-cyan-700/70 transition"
                       >
-                        #{tag}
+                        {tag}
                       </span>
                     ))}
                     {blueprint.tags.length > 3 && (
