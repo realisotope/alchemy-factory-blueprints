@@ -135,7 +135,7 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
       return;
     }
 
-    // Security: Verify user owns this blueprint
+    // Verify user owns this blueprint
     if (blueprint.user_id !== user.id) {
       alert("You can only delete your own blueprints");
       console.warn(`Unauthorized delete attempt: ${user.id} tried to delete blueprint by ${blueprint.user_id}`);
@@ -279,36 +279,39 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
                 </div>
               )}
 
-              {/* Content - Grows to fill space */}
+              {/* Gallery Content*/}
               <div className="p-5 space-y-3 flex-grow flex flex-col bg-gradient-to-b from-gray-800/80 to-gray-900/90">
-                <div className="flex-grow">
+                {/* Title and Description */}
+                <div>
                   <h3 className="text-lg font-bold text-amber-300 truncate group-hover:text-amber-200 transition">
                     {blueprint.title}
                   </h3>
 
-                  <p className="text-sm text-gray-400 line-clamp-2 mt-2">
-                    {blueprint.description || "No description provided"}
+                  <p className="text-sm text-gray-400 line-clamp-3 mt-1">
+                    {blueprint.description || "No description provided."}
                   </p>
-
-                  {/* Tags */}
-                  {blueprint.tags && blueprint.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-3">
-                      {blueprint.tags.slice(0, 3).map((tag) => (
-                        <span
-                          key={tag}
-                          className="text-xs bg-cyan-700/50 text-cyan-200 px-2.5 py-1 rounded-full border border-cyan-500/30 font-medium hover:bg-cyan-700/70 transition"
-                        >
-                          #{tag}
-                        </span>
-                      ))}
-                      {blueprint.tags.length > 3 && (
-                        <span className="text-xs text-gray-500">
-                          +{blueprint.tags.length - 3} more
-                        </span>
-                      )}
-                    </div>
-                  )}
                 </div>
+
+                <div className="flex-grow"></div>
+
+                {/* Tags */}
+                {blueprint.tags && blueprint.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {blueprint.tags.slice(0, 3).map((tag) => (
+                      <span
+                        key={tag}
+                        className="text-xs bg-cyan-700/50 text-cyan-200 px-2.5 py-1 rounded-full border border-cyan-500/30 font-medium hover:bg-cyan-700/70 transition"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                    {blueprint.tags.length > 3 && (
+                      <span className="text-xs text-gray-500">
+                        +{blueprint.tags.length - 3} more
+                      </span>
+                    )}
+                  </div>
+                )}
 
                 {/* Stats */}
                 <div className="flex gap-4 text-sm text-gray-400 border-t border-gray-700/60 pt-3 flex-wrap items-center">
@@ -327,7 +330,7 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
                   </div>
                 </div>
 
-                {/* Actions - Always at bottom */}
+                {/* Actions */}
                 <div className="flex gap-2 pt-2 mt-auto">
                   <button
                     onClick={(e) => {
