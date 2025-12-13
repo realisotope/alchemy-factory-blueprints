@@ -3,11 +3,7 @@
 @tailwind utilities;
 
 body {
-  background-image: url('/background.svg');
-  background-attachment: fixed;
-  background-size: cover;
-  background-position: center;
-  background-color: #292b67;
+  background-color: #020617;
   color: #e8e8e8;
 }
 
