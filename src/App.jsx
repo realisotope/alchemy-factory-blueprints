@@ -56,13 +56,13 @@ export default function App() {
     <div 
       className="min-h-screen w-full bg-[#020617] relative"
       style={{
-        background: "#020617",
+      background: "#0f172a",
       backgroundImage: `
-        linear-gradient(to right, rgba(71,85,105,0.3) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(71,85,105,0.3) 1px, transparent 1px),
-        radial-gradient(circle at 50% 50%, rgba(139,92,246,0.15) 0%, transparent 70%)
+        radial-gradient(circle, rgba(92, 202, 246, 0.6) 1px, transparent 1px),
+        radial-gradient(circle, rgba(59,130,246,0.4) 1px, transparent 1px),
+        radial-gradient(circle, rgba(72, 83, 236, 0.5) 1px, transparent 1px)
       `,
-      backgroundSize: "62px 62px, 62px 62px, 100% 100%",
+      backgroundSize: "72px 72px, 72px 72px, 100% 100%",
       }}
     >
       <div className="relative z-10">
@@ -83,7 +83,7 @@ export default function App() {
       <main className="max-w-7xl mx-auto px-4 py-12 space-y-12">
         {/* Upload Section */}
         {user ? (
-          <div className="bg-gradient-to-br from-blue-900/60 via-cyan-900/50 to-blue-900/60 rounded-xl shadow-2xl p-10 border border-cyan-600/50 backdrop-blur-md hover:border-cyan-500/70 transition-all">
+          <div className="bg-gradient-to-br from-blue-900/60 via-cyan-900/50 to-blue-900/60 rounded-xl shadow-2xl p-6 border border-cyan-600/50 backdrop-blur-md hover:border-cyan-500/70 transition-all">
             <h2 className="text-2xl font-bold text-amber-300 mb-4">
               ✨ Ready to share your blueprint?
             </h2>

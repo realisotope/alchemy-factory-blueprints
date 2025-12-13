@@ -257,13 +257,13 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
       )}
 
       {/* Blueprint Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {paginatedBlueprints.map((blueprint) => {
           const isLiked = userLikes.has(blueprint.id);
           return (
             <div
               key={blueprint.id}
-              className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-lg overflow-hidden border-2 border-cyan-600/50 hover:border-cyan-500/70 hover:shadow-2xl hover:shadow-cyan-900/30 transition-all duration-300 cursor-pointer flex flex-col h-full group"
+              className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-lg overflow-hidden border-2 border-cyan-700/50 hover:border-cyan-500/70 hover:shadow-2xl hover:shadow-cyan-900/30 transition-all duration-300 cursor-pointer flex flex-col h-full group"
               onClick={() => setSelectedBlueprint(blueprint)}
             >
               {/* Image */}

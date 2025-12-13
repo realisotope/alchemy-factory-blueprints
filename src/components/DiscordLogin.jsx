@@ -18,7 +18,7 @@ export default function DiscordLogin({ user, onLogout }) {
   if (user) {
     return (
       <div className="flex items-center gap-3">
-        <span className="text-sm text-gray-700">
+        <span className="text-sm text-gray-300">
           Welcome, <strong>{user.user_metadata?.name}</strong>
         </span>
         <button
