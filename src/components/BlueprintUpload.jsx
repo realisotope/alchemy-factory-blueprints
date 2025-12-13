@@ -199,9 +199,14 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
   };
 
   const handleAddTag = () => {
+    if (tags.length >= 3) {
+      setError("Maximum 3 tags allowed");
+      return;
+    }
     if (tagInput.trim() && !tags.includes(tagInput.trim())) {
       setTags([...tags, tagInput.trim()]);
       setTagInput("");
+      setError(null);
     }
   };
 
@@ -354,7 +359,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
               <button
                 type="button"
                 onClick={handleAddTag}
-                className="px-4 py-2 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black rounded-lg font-semibold transition"
+                disabled={tags.length >= 3}
+                className="px-4 py-2 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-black rounded-lg font-semibold transition"
               >
                 Add
               </button>
