@@ -53,7 +53,19 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div 
+      className="min-h-screen w-full bg-[#020617] relative"
+      style={{
+        background: "#020617",
+      backgroundImage: `
+        linear-gradient(to right, rgba(71,85,105,0.3) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(71,85,105,0.3) 1px, transparent 1px),
+        radial-gradient(circle at 50% 50%, rgba(139,92,246,0.15) 0%, transparent 70%)
+      `,
+      backgroundSize: "62px 62px, 62px 62px, 100% 100%",
+      }}
+    >
+      <div className="relative z-10">
       {/* Header */}
       <header className="bg-gradient-to-r from-blue-900 via-cyan-900 to-blue-900 text-white shadow-2xl sticky top-0 z-50 border-b border-cyan-700/50">
         <div className="max-w-7xl mx-auto px-4 py-6 flex items-center justify-between">
@@ -124,6 +136,7 @@ export default function App() {
           <a href="https://github.com/realisotope/alchemy-factory-blueprints">GitHub Source Code</a>
         </p>
       </footer>
+      </div>
     </div>
   );
 }
