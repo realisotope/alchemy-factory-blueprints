@@ -10,6 +10,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("newest");
+  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [deleting, setDeleting] = useState(null);
   const [selectedBlueprint, setSelectedBlueprint] = useState(null);
   const [userLikes, setUserLikes] = useState(new Set());
@@ -269,16 +270,51 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
             </button>
           )}
         </div>
-        <select
-          value={sortBy}
-          onChange={(e) => handleSort(e.target.value)}
-          className="px-4 py-2.5 border-2 border-cyan-700/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-gray-800/70 text-gray-200 font-medium transition-all shadow-sm"
-        >
-          <option value="newest">Newest First</option>
-          <option value="oldest">Oldest First</option>
-          <option value="alphabetical">Alphabetical</option>
-          <option value="popular">Most Liked</option>
-        </select>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
+            className="w-full sm:w-auto px-4 py-2.5 border-2 border-cyan-700/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-gray-800/70 text-gray-200 font-medium transition-all shadow-sm hover:border-cyan-600/80 flex items-center justify-between gap-2"
+          >
+            <span>
+              {sortBy === "newest" ? "Newest First" : sortBy === "oldest" ? "Oldest First" : sortBy === "alphabetical" ? "Alphabetical" : "Most Liked"}
+            </span>
+            <span className={`transition transform ${sortDropdownOpen ? "rotate-180" : ""}`}>▼</span>
+          </button>
+          
+          {sortDropdownOpen && (
+            <div className="absolute top-full right-0 mt-1 bg-gray-800 border border-cyan-700/50 rounded-lg shadow-lg z-50 w-48">
+              <button
+                type="button"
+                onClick={() => { handleSort("newest"); setSortDropdownOpen(false); }}
+                className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 text-gray-100 transition first:rounded-t-lg border-b border-cyan-700/20 hover:border-l-2 hover:border-cyan-500"
+              >
+                Newest First
+              </button>
+              <button
+                type="button"
+                onClick={() => { handleSort("oldest"); setSortDropdownOpen(false); }}
+                className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 text-gray-100 transition border-b border-cyan-700/20 hover:border-l-2 hover:border-cyan-500"
+              >
+                Oldest First
+              </button>
+              <button
+                type="button"
+                onClick={() => { handleSort("alphabetical"); setSortDropdownOpen(false); }}
+                className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 text-gray-100 transition border-b border-cyan-700/20 hover:border-l-2 hover:border-cyan-500"
+              >
+                Alphabetical
+              </button>
+              <button
+                type="button"
+                onClick={() => { handleSort("popular"); setSortDropdownOpen(false); }}
+                className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 text-gray-100 transition last:rounded-b-lg last:border-b-0 hover:border-l-2 hover:border-cyan-500"
+              >
+                Most Liked
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Loading State */}

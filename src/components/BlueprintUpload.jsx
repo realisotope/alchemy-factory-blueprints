@@ -121,6 +121,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
   const [imagePreview, setImagePreview] = useState(null);
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [blueprintDragActive, setBlueprintDragActive] = useState(false);
@@ -233,6 +234,16 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
     if (!tags.includes(tagInput)) {
       setTags([...tags, tagInput]);
       setTagInput("");
+      setDropdownOpen(false);
+      setError(null);
+    }
+  };
+
+  const handleSelectTag = (tag) => {
+    if (!tags.includes(tag)) {
+      setTags([...tags, tag]);
+      setTagInput("");
+      setDropdownOpen(false);
       setError(null);
     }
   };
@@ -390,18 +401,38 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
           </label>
           <div className="space-y-2">
             <div className="flex gap-2">
-              <select
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                className="flex-1 px-4 py-2 border border-cyan-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-gray-800/50 text-gray-100"
-              >
-                <option value="">-- Select a tag --</option>
-                {AVAILABLE_TAGS.filter(tag => !tags.includes(tag)).map((tag) => (
-                  <option key={tag} value={tag}>
-                    {tag}
-                  </option>
-                ))}
-              </select>
+              <div className="relative flex-1">
+                <button
+                  type="button"
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="w-full px-4 py-2 border border-cyan-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-gray-800/50 text-gray-100 text-left flex items-center justify-between hover:border-cyan-600/70 transition"
+                >
+                  <span className={tagInput ? "text-gray-100" : "text-gray-500"}>
+                    {tagInput || "-- Select a tag --"}
+                  </span>
+                  <span className={`transition transform ${dropdownOpen ? "rotate-180" : ""}`}>▼</span>
+                </button>
+                
+                {dropdownOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-cyan-700/50 rounded-lg shadow-lg z-50">
+                    {AVAILABLE_TAGS.filter(tag => !tags.includes(tag)).map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => handleSelectTag(tag)}
+                        className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 hover:border-l-2 hover:border-cyan-500 text-gray-100 transition first:rounded-t-lg last:rounded-b-lg border-b border-cyan-700/20 last:border-b-0"
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                    {AVAILABLE_TAGS.filter(tag => !tags.includes(tag)).length === 0 && (
+                      <div className="px-4 py-2.5 text-gray-500 text-center">
+                        All tags selected
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
               <button
                 type="button"
                 onClick={handleAddTag}
