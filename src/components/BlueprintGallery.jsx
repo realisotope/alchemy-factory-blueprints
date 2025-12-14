@@ -4,7 +4,7 @@ import { Search, Download, Trash2, Loader, Heart } from "lucide-react";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import BlueprintDetail from "./BlueprintDetail";
 
-export default function BlueprintGallery({ user, refreshTrigger }) {
+export default function BlueprintGallery({ user, refreshTrigger, initialBlueprintId }) {
   const [blueprints, setBlueprints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -22,6 +22,16 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
       fetchUserLikes();
     }
   }, [refreshTrigger, user]);
+
+  // Handle initial blueprint ID from URL
+  useEffect(() => {
+    if (initialBlueprintId && blueprints.length > 0) {
+      const blueprint = blueprints.find((bp) => bp.id === initialBlueprintId);
+      if (blueprint) {
+        setSelectedBlueprint(blueprint);
+      }
+    }
+  }, [initialBlueprintId, blueprints]);
 
   const fetchUserLikes = async () => {
     try {
@@ -181,7 +191,8 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
     .filter((bp) =>
       bp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (bp.description && bp.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (bp.tags && bp.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase())))
+      (bp.tags && bp.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase()))) ||
+      (bp.creator_name && bp.creator_name.toLowerCase().includes(searchTerm.toLowerCase()))
     )
     .sort((a, b) => {
       if (sortBy === "oldest") {
@@ -211,6 +222,10 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
   const handleSort = (value) => {
     setSortBy(value);
     setCurrentPage(1);
+  };
+
+  const handleSearchByCreator = (creatorName) => {
+    handleSearch(creatorName);
   };
 
   return (
@@ -326,7 +341,16 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
                   </div>
                   <div className="text-xs text-gray-500 ml-auto">
                     <p className="font-semibold text-gray-400 hover:text-gray-300 transition">
-                      by {stripDiscordDiscriminator(blueprint.creator_name)}
+                      by{" "}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSearchByCreator(blueprint.creator_name);
+                        }}
+                        className="text-cyan-400 hover:text-cyan-300 hover:underline transition cursor-pointer"
+                      >
+                        {stripDiscordDiscriminator(blueprint.creator_name)}
+                      </button>
                     </p>
                   </div>
                 </div>
@@ -436,6 +460,7 @@ export default function BlueprintGallery({ user, refreshTrigger }) {
             handleLike(selectedBlueprint.id, liked);
           }
         }}
+        onSearchByCreator={handleSearchByCreator}
       />
     </>
   );

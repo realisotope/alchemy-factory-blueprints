@@ -1,11 +1,12 @@
-import { X, Download, Heart, Calendar, User, Maximize2 } from "lucide-react";
+import { X, Download, Heart, Calendar, User, Maximize2, Share2, Check } from "lucide-react";
 import { useState, useEffect } from "react";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 
-export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange }) {
+export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange, onSearchByCreator }) {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(blueprint?.likes || 0);
   const [isImageExpanded, setIsImageExpanded] = useState(false);
+  const [copyFeedback, setCopyFeedback] = useState(false);
 
   useEffect(() => {
     setLikeCount(blueprint?.likes || 0);
@@ -34,6 +35,21 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
     onLikeChange?.(!isLiked);
     setIsLiked(!isLiked);
     setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+  };
+
+  const handleShareBlueprint = () => {
+    const blueprintUrl = `${window.location.origin}?blueprintId=${blueprint.id}`;
+    navigator.clipboard.writeText(blueprintUrl).then(() => {
+      setCopyFeedback(true);
+      setTimeout(() => setCopyFeedback(false), 2000);
+    });
+  };
+
+  const handleCreatorClick = () => {
+    if (onSearchByCreator) {
+      onSearchByCreator(blueprint.creator_name);
+      onClose();
+    }
   };
 
   return (
@@ -107,7 +123,12 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
               <User className="w-5 h-5 text-amber-400" />
               <div>
                 <p className="text-sm text-gray-400">Creator</p>
-                <p className="font-semibold text-amber-300">{stripDiscordDiscriminator(blueprint.creator_name)}</p>
+                <button
+                  onClick={handleCreatorClick}
+                  className="font-semibold text-amber-300 hover:text-amber-200 hover:underline transition cursor-pointer"
+                >
+                  {stripDiscordDiscriminator(blueprint.creator_name)}
+                </button>
               </div>
             </div>
           </div>
@@ -172,6 +193,27 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           >
             <Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
             {isLiked ? "Liked" : "Like"}
+          </button>
+          <button
+            onClick={handleShareBlueprint}
+            className={`px-4 py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2 ${
+              copyFeedback
+                ? "bg-green-700 text-white"
+                : "bg-cyan-700 hover:bg-cyan-600 text-white"
+            }`}
+            title="Copy blueprint link to clipboard"
+          >
+            {copyFeedback ? (
+              <>
+                <Check className="w-5 h-5" />
+                Copied!
+              </>
+            ) : (
+              <>
+                <Share2 className="w-5 h-5" />
+                Share
+              </>
+            )}
           </button>
         </div>
       </div>

@@ -10,6 +10,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [refreshGallery, setRefreshGallery] = useState(0);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [initialBlueprintId, setInitialBlueprintId] = useState(null);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -31,6 +32,17 @@ export default function App() {
     });
 
     return () => subscription?.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    // Check for blueprint ID in URL params
+    const params = new URLSearchParams(window.location.search);
+    const blueprintId = params.get("blueprintId");
+    if (blueprintId) {
+      setInitialBlueprintId(blueprintId);
+      // Remove the query param from URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
   }, []);
 
   const handleUploadSuccess = () => {
@@ -115,7 +127,7 @@ export default function App() {
           <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-300 to-yellow-300 bg-clip-text text-transparent mb-8">
             Blueprint Gallery
           </h2>
-          <BlueprintGallery user={user} refreshTrigger={refreshGallery} />
+          <BlueprintGallery user={user} refreshTrigger={refreshGallery} initialBlueprintId={initialBlueprintId} />
         </section>
       </main>
 
