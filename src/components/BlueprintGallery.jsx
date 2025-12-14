@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
-import { Search, Download, Trash2, Loader, Heart } from "lucide-react";
+import { Search, Download, Trash2, Loader, Heart, X } from "lucide-react";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { sanitizeCreatorName } from "../lib/sanitization";
 import BlueprintDetail from "./BlueprintDetail";
@@ -240,8 +240,17 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
             placeholder="Search blueprints or tags..."
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border-2 border-cyan-700/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-gray-800/70 text-gray-100 placeholder-gray-500 transition-all shadow-sm"
+            className="w-full pl-10 pr-10 py-2.5 border-2 border-cyan-700/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-gray-800/70 text-gray-100 placeholder-gray-500 transition-all shadow-sm"
           />
+          {searchTerm && (
+            <button
+              onClick={() => handleSearch("")}
+              className="absolute right-3 top-3 text-gray-500 hover:text-gray-300 transition"
+              title="Clear search"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
         <select
           value={sortBy}
