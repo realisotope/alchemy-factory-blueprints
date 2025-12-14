@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
-import { validateAndSanitizeTitle, validateAndSanitizeDescription, validateAndSanitizeTag } from "../lib/sanitization";
+import { validateAndSanitizeTitle, validateAndSanitizeDescription, validateAndSanitizeTag, sanitizeTitleForFilename } from "../lib/sanitization";
 import { Upload, Loader, X } from "lucide-react";
 import { put } from "@vercel/blob";
 import imageCompression from "browser-image-compression";
@@ -299,7 +299,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       });
 
       // Upload compressed zip file
-      const zipFileName = `${titleValidation.sanitized}_${Date.now()}.zip`;
+      const zipFileName = `${sanitizeTitleForFilename(title)}_${Date.now()}.zip`;
       const blueprintPath = `${user.id}/${zipFileName}`;
       const { error: blueprintError } = await supabase.storage
         .from("blueprints")

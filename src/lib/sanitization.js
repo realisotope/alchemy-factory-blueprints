@@ -117,3 +117,25 @@ export function sanitizeCreatorName(creatorName) {
   if (!creatorName || typeof creatorName !== 'string') return '';
   return sanitizeInput(creatorName.trim());
 }
+/**
+ * Sanitize title for use as a filename
+ * Removes/replaces characters that are invalid in filenames
+ * @param {string} title - The title to sanitize for filename use
+ * @returns {string} - Safe filename string
+ */
+export function sanitizeTitleForFilename(title) {
+  if (!title || typeof title !== 'string') return 'blueprint';
+  
+  return title
+    .trim()
+    // Replace forward slashes, backslashes with hyphens
+    .replace(/[\/\\]/g, '-')
+    // Replace other invalid filename characters with hyphens
+    .replace(/[:<>"|?*\x00-\x1f]/g, '-')
+    // Replace multiple consecutive hyphens with single hyphen
+    .replace(/-+/g, '-')
+    // Remove leading/trailing hyphens
+    .replace(/^-+|-+$/g, '')
+    // If empty after sanitization, use default
+    || 'blueprint';
+}
