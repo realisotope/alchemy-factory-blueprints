@@ -12,6 +12,16 @@ export function sanitizeInput(input) {
 }
 
 /**
+ * Validate UUID format
+ * @param {string} uuid - The UUID to validate
+ * @returns {boolean} - True if valid UUID format
+ */
+export function isValidUUID(uuid) {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+}
+
+/**
  * Validate and sanitize title input
  * @param {string} title - The title to validate
  * @param {number} maxLength - Maximum length (default 100)
@@ -96,4 +106,14 @@ export function validateAndSanitizeTag(tag, maxLength = 20) {
   }
   
   return { valid: true, sanitized: sanitizeInput(trimmed.toLowerCase()) };
+}
+
+/**
+ * Sanitize creator name to prevent injection attacks
+ * @param {string} creatorName - The creator name to sanitize
+ * @returns {string} - Sanitized creator name
+ */
+export function sanitizeCreatorName(creatorName) {
+  if (!creatorName || typeof creatorName !== 'string') return '';
+  return sanitizeInput(creatorName.trim());
 }

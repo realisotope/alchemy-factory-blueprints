@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { Search, Download, Trash2, Loader, Heart } from "lucide-react";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
+import { sanitizeCreatorName } from "../lib/sanitization";
 import BlueprintDetail from "./BlueprintDetail";
 
 export default function BlueprintGallery({ user, refreshTrigger, initialBlueprintId }) {
@@ -349,7 +350,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
                         }}
                         className="text-cyan-400 hover:text-cyan-300 hover:underline transition cursor-pointer"
                       >
-                        {stripDiscordDiscriminator(blueprint.creator_name)}
+                        {sanitizeCreatorName(stripDiscordDiscriminator(blueprint.creator_name))}
                       </button>
                     </p>
                   </div>

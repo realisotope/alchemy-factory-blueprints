@@ -1,6 +1,7 @@
 import { X, Download, Heart, Calendar, User, Maximize2, Share2, Check } from "lucide-react";
 import { useState, useEffect } from "react";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
+import { sanitizeCreatorName } from "../lib/sanitization";
 
 export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange, onSearchByCreator }) {
   const [isLiked, setIsLiked] = useState(false);
@@ -127,7 +128,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                   onClick={handleCreatorClick}
                   className="font-semibold text-amber-300 hover:text-amber-200 hover:underline transition cursor-pointer"
                 >
-                  {stripDiscordDiscriminator(blueprint.creator_name)}
+                  {sanitizeCreatorName(stripDiscordDiscriminator(blueprint.creator_name))}
                 </button>
               </div>
             </div>

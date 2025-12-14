@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "./lib/supabase";
+import { isValidUUID } from "./lib/sanitization";
 import { Upload } from "lucide-react";
 import DiscordLogin from "./components/DiscordLogin";
 import UploadModal from "./components/UploadModal";
@@ -38,7 +39,9 @@ export default function App() {
     // Check for blueprint ID in URL params
     const params = new URLSearchParams(window.location.search);
     const blueprintId = params.get("blueprintId");
-    if (blueprintId) {
+    
+    // Validate UUID format to prevent injection attacks
+    if (blueprintId && isValidUUID(blueprintId)) {
       setInitialBlueprintId(blueprintId);
       // Remove the query param from URL
       window.history.replaceState({}, document.title, window.location.pathname);
