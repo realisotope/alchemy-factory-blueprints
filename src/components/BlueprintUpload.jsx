@@ -414,7 +414,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
                 </button>
                 
                 {dropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-cyan-700/50 rounded-lg shadow-lg z-50">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-cyan-700/50 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
                     {AVAILABLE_TAGS.filter(tag => !tags.includes(tag)).map((tag) => (
                       <button
                         key={tag}
