@@ -260,8 +260,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       });
 
       // Upload compressed zip file
-      const zipFileName = blueprintFile.name.replace(".af", "") + ".zip";
-      const blueprintPath = `${user.id}/${Date.now()}_${zipFileName}`;
+      const zipFileName = `${titleValidation.sanitized}_${Date.now()}.zip`;
+      const blueprintPath = `${user.id}/${zipFileName}`;
       const { error: blueprintError } = await supabase.storage
         .from("blueprints")
         .upload(blueprintPath, zipBlob);
