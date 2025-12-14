@@ -77,6 +77,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                 alt={blueprint.title}
                 className="w-full h-64 object-cover rounded-lg border-2 border-cyan-700/50 cursor-pointer transition hover:border-cyan-500/70 hover:shadow-lg hover:shadow-cyan-900/50"
                 onClick={() => setIsImageExpanded(true)}
+                loading="lazy"
               />
               <button
                 onClick={() => setIsImageExpanded(true)}
