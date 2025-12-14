@@ -420,7 +420,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
                         key={tag}
                         type="button"
                         onClick={() => handleSelectTag(tag)}
-                        className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 hover:border-l-2 hover:border-cyan-500 text-gray-100 transition first:rounded-t-lg last:rounded-b-lg border-b border-cyan-700/20 last:border-b-0"
+                        className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 text-gray-100 transition first:rounded-t-lg last:rounded-b-lg border-b border-cyan-700/20 last:border-b-0"
                       >
                         {tag}
                       </button>

@@ -287,28 +287,28 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
               <button
                 type="button"
                 onClick={() => { handleSort("newest"); setSortDropdownOpen(false); }}
-                className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 text-gray-100 transition first:rounded-t-lg border-b border-cyan-700/20 hover:border-l-2 hover:border-cyan-500"
+                className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 text-gray-100 transition first:rounded-t-lg border-b border-cyan-700/20"
               >
                 Newest First
               </button>
               <button
                 type="button"
                 onClick={() => { handleSort("oldest"); setSortDropdownOpen(false); }}
-                className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 text-gray-100 transition border-b border-cyan-700/20 hover:border-l-2 hover:border-cyan-500"
+                className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 text-gray-100 transition border-b border-cyan-700/20"
               >
                 Oldest First
               </button>
               <button
                 type="button"
                 onClick={() => { handleSort("alphabetical"); setSortDropdownOpen(false); }}
-                className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 text-gray-100 transition border-b border-cyan-700/20 hover:border-l-2 hover:border-cyan-500"
+                className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 text-gray-100 transition border-b border-cyan-700/20"
               >
                 Alphabetical
               </button>
               <button
                 type="button"
                 onClick={() => { handleSort("popular"); setSortDropdownOpen(false); }}
-                className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 text-gray-100 transition last:rounded-b-lg last:border-b-0 hover:border-l-2 hover:border-cyan-500"
+                className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 text-gray-100 transition last:rounded-b-lg last:border-b-0"
               >
                 Most Liked
               </button>
