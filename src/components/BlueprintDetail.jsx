@@ -2,6 +2,7 @@ import { X, Download, Heart, Calendar, User, Maximize2, Share2, Check } from "lu
 import { useState, useEffect } from "react";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { sanitizeCreatorName } from "../lib/sanitization";
+import { updateBlueprintMetaTags, resetMetaTags } from "../lib/metaTags";
 
 export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange, onSearchByCreator }) {
   const [isLiked, setIsLiked] = useState(false);
@@ -12,6 +13,19 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
   useEffect(() => {
     setLikeCount(blueprint?.likes || 0);
   }, [blueprint?.likes]);
+
+  // Update meta tags when blueprint is opened/closed
+  useEffect(() => {
+    if (isOpen && blueprint) {
+      updateBlueprintMetaTags(blueprint);
+    } else {
+      resetMetaTags();
+    }
+
+    return () => {
+      resetMetaTags();
+    };
+  }, [isOpen, blueprint]);
 
   // Handle Escape key to close expanded image
   useEffect(() => {
