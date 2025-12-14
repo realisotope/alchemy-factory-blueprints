@@ -222,7 +222,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
 
   const handleAddTag = () => {
     if (tags.length >= 3) {
-      setError("Maximum 3 tags allowed");
+      setError("Maximum of 3 tags allowed");
       return;
     }
     
@@ -240,6 +240,11 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
   };
 
   const handleSelectTag = (tag) => {
+    if (tags.length >= 3) {
+      setError("Maximum of 3 tags allowed");
+      return;
+    }
+    
     if (!tags.includes(tag)) {
       setTags([...tags, tag]);
       setTagInput("");
@@ -271,6 +276,12 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
     
     if (!blueprintFile) {
       setError("Blueprint file is required");
+      return;
+    }
+
+    // Validate tag count
+    if (tags.length > 3) {
+      setError("Maximum 3 tags allowed");
       return;
     }
 
