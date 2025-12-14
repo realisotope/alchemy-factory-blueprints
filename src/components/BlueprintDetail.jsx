@@ -1,14 +1,27 @@
-import { X, Download, Heart, Calendar, User } from "lucide-react";
+import { X, Download, Heart, Calendar, User, Maximize2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 
 export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange }) {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(blueprint?.likes || 0);
+  const [isImageExpanded, setIsImageExpanded] = useState(false);
 
   useEffect(() => {
     setLikeCount(blueprint?.likes || 0);
   }, [blueprint?.likes]);
+
+  // Handle Escape key to close expanded image
+  useEffect(() => {
+    const handleEscapeKey = (e) => {
+      if (e.key === "Escape" && isImageExpanded) {
+        setIsImageExpanded(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleEscapeKey);
+    return () => window.removeEventListener("keydown", handleEscapeKey);
+  }, [isImageExpanded]);
 
   if (!isOpen || !blueprint) return null;
 
@@ -24,8 +37,8 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-      <div className="bg-gradient-to-b from-gray-900 to-gray-950 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-cyan-700/50">
+    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-gradient-to-b from-gray-900 to-gray-950 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-cyan-700/50" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="sticky top-0 bg-gradient-to-r from-blue-900 via-cyan-900 to-blue-900 text-white p-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-amber-300 flex-1 truncate">{blueprint.title}</h2>
@@ -41,11 +54,21 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
         <div className="p-6 space-y-6">
           {/* Image */}
           {blueprint.image_url && (
-            <img
-              src={blueprint.image_url}
-              alt={blueprint.title}
-              className="w-full h-64 object-cover rounded-lg border-2 border-cyan-700/50"
-            />
+            <div className="relative group">
+              <img
+                src={blueprint.image_url}
+                alt={blueprint.title}
+                className="w-full h-64 object-cover rounded-lg border-2 border-cyan-700/50 cursor-pointer transition hover:border-cyan-500/70 hover:shadow-lg hover:shadow-cyan-900/50"
+                onClick={() => setIsImageExpanded(true)}
+              />
+              <button
+                onClick={() => setIsImageExpanded(true)}
+                className="absolute top-3 right-3 bg-black/60 hover:bg-black/80 text-amber-300 p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                title="Expand image"
+              >
+                <Maximize2 className="w-5 h-5" />
+              </button>
+            </div>
           )}
 
           {/* Stats Row */}
@@ -152,6 +175,37 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           </button>
         </div>
       </div>
+
+      {/* Image Lightbox */}
+      {isImageExpanded && blueprint.image_url && (
+        <div 
+          className="fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-4 backdrop-blur-sm"
+          onClick={() => setIsImageExpanded(false)}
+        >
+          <div 
+            className="relative max-w-4xl max-h-[90vh] w-full h-full flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative">
+              <img
+                src={blueprint.image_url}
+                alt={blueprint.title}
+                className="max-w-full max-h-full object-contain rounded-lg"
+              />
+              <button
+                onClick={() => setIsImageExpanded(false)}
+                className="absolute -top-12 right-0 p-2 hover:bg-white/10 rounded-lg transition text-white"
+                title="Close"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <p className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-gray-300 text-sm">
+              Click to close or press Escape
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
