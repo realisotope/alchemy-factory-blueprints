@@ -18,8 +18,8 @@ ALTER TABLE blueprint_likes ENABLE ROW LEVEL SECURITY;
 
 -- Create policies for likes table
 CREATE POLICY "Anyone can view likes" ON blueprint_likes FOR SELECT USING (true);
-CREATE POLICY "Users can insert their own likes" ON blueprint_likes FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can delete their own likes" ON blueprint_likes FOR DELETE USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert their own likes" ON blueprint_likes FOR INSERT WITH CHECK ((SELECT auth.uid()) = user_id);
+CREATE POLICY "Users can delete their own likes" ON blueprint_likes FOR DELETE USING ((SELECT auth.uid()) = user_id);
 
 -- Create a function to update blueprint likes count when a like is added/removed
 CREATE OR REPLACE FUNCTION update_blueprint_likes_count()

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
+import { validateAndSanitizeTitle, validateAndSanitizeDescription, validateAndSanitizeTag } from "../lib/sanitization";
 import { Upload, Loader, X } from "lucide-react";
 import { put } from "@vercel/blob";
 import imageCompression from "browser-image-compression";
@@ -204,8 +205,16 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       setError("Maximum 3 tags allowed");
       return;
     }
-    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
-      setTags([...tags, tagInput.trim()]);
+    
+    // Validate and sanitize tag
+    const validation = validateAndSanitizeTag(tagInput);
+    if (!validation.valid) {
+      setError(validation.error);
+      return;
+    }
+    
+    if (!tags.includes(validation.sanitized)) {
+      setTags([...tags, validation.sanitized]);
       setTagInput("");
       setError(null);
     }
@@ -217,8 +226,23 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!title || !blueprintFile) {
-      setError("Title and blueprint file are required");
+    
+    // Validate and sanitize title
+    const titleValidation = validateAndSanitizeTitle(title);
+    if (!titleValidation.valid) {
+      setError(titleValidation.error);
+      return;
+    }
+    
+    // Validate and sanitize description
+    const descriptionValidation = validateAndSanitizeDescription(description);
+    if (!descriptionValidation.valid) {
+      setError(descriptionValidation.error);
+      return;
+    }
+    
+    if (!blueprintFile) {
+      setError("Blueprint file is required");
       return;
     }
 
@@ -274,11 +298,11 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         }
       }
 
-      // Insert blueprint record into database
+      // Insert blueprint record into database using sanitized data
       const { error: dbError } = await supabase.from("blueprints").insert([
         {
-          title,
-          description: description || null,
+          title: titleValidation.sanitized,
+          description: descriptionValidation.sanitized || null,
           user_id: user.id,
           creator_name: stripDiscordDiscriminator(user.user_metadata?.name) || "Anonymous",
           file_url: fileUrl,

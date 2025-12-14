@@ -35,10 +35,10 @@ ALTER TABLE blueprints ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Anyone can read blueprints" ON blueprints FOR SELECT USING (true);
 
 -- Allow users to insert their own blueprints
-CREATE POLICY "Users can insert blueprints" ON blueprints FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can insert blueprints" ON blueprints FOR INSERT WITH CHECK ((SELECT auth.uid()) = user_id);
 
 -- Allow users to update their own blueprints
-CREATE POLICY "Users can update their blueprints" ON blueprints FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update their blueprints" ON blueprints FOR UPDATE USING ((SELECT auth.uid()) = user_id) WITH CHECK ((SELECT auth.uid()) = user_id);
 
 -- Allow users to delete their own blueprints
-CREATE POLICY "Users can delete their blueprints" ON blueprints FOR DELETE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete their blueprints" ON blueprints FOR DELETE USING ((SELECT auth.uid()) = user_id);
