@@ -6,6 +6,7 @@ import { Upload, Loader, X } from "lucide-react";
 import { put } from "@vercel/blob";
 import imageCompression from "browser-image-compression";
 import JSZip from "jszip";
+import { m } from "framer-motion";
 
 // Constants for validation
 const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB
@@ -13,6 +14,24 @@ const MAX_IMAGE_WIDTH = 4000;
 const MAX_IMAGE_HEIGHT = 4000;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const AF_FILE_MAX_SIZE = 50 * 1024 * 1024; // 50MB
+
+// Predefined tags list
+const AVAILABLE_TAGS = [
+  "logistics",
+  "smelting",
+  "crafting",
+  "extraction",
+  "enchanting",
+  "brewing",
+  "compact",
+  "modular",
+  "scalable",
+  "stackable",
+  "fuel",
+  "currency",
+  "misc",
+  "experimental",
+];
 
 // Validate .af file by checking extension and file structure
 const validateAfFile = async (file) => {
@@ -206,15 +225,13 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       return;
     }
     
-    // Validate and sanitize tag
-    const validation = validateAndSanitizeTag(tagInput);
-    if (!validation.valid) {
-      setError(validation.error);
+    if (!tagInput || !AVAILABLE_TAGS.includes(tagInput)) {
+      setError("Please select a valid tag from the list");
       return;
     }
     
-    if (!tags.includes(validation.sanitized)) {
-      setTags([...tags, validation.sanitized]);
+    if (!tags.includes(tagInput)) {
+      setTags([...tags, tagInput]);
       setTagInput("");
       setError(null);
     }
@@ -369,22 +386,26 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         {/* Tags */}
         <div>
           <label className="block text-sm font-medium text-amber-300 mb-2">
-            Tags
+            Tags (Select up to 3)
           </label>
           <div className="space-y-2">
             <div className="flex gap-2">
-              <input
-                type="text"
+              <select
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddTag())}
-                placeholder="e.g., iron, production, efficient"
-                className="flex-1 px-4 py-2 border border-cyan-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-gray-800/50 text-gray-100 placeholder-gray-500"
-              />
+                className="flex-1 px-4 py-2 border border-cyan-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-gray-800/50 text-gray-100"
+              >
+                <option value="">-- Select a tag --</option>
+                {AVAILABLE_TAGS.filter(tag => !tags.includes(tag)).map((tag) => (
+                  <option key={tag} value={tag}>
+                    {tag}
+                  </option>
+                ))}
+              </select>
               <button
                 type="button"
                 onClick={handleAddTag}
-                disabled={tags.length >= 3}
+                disabled={tags.length >= 3 || !tagInput}
                 className="px-4 py-2 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-black rounded-lg font-semibold transition"
               >
                 Add
