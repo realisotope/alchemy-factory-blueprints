@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { Search, Download, Trash2, Loader, Heart, X } from "lucide-react";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
@@ -15,6 +15,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
   const [userLikes, setUserLikes] = useState(new Set());
   const [downloadingId, setDownloadingId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const initialBlueprintAppliedRef = useRef(false);
   const ITEMS_PER_PAGE = 8;
 
   useEffect(() => {
@@ -24,12 +25,13 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
     }
   }, [refreshTrigger, user]);
 
-  // Handle initial blueprint ID from URL
+  // Handle initial blueprint ID from URL - only apply once
   useEffect(() => {
-    if (initialBlueprintId && blueprints.length > 0) {
+    if (initialBlueprintId && blueprints.length > 0 && !initialBlueprintAppliedRef.current) {
       const blueprint = blueprints.find((bp) => bp.id === initialBlueprintId);
       if (blueprint) {
         setSelectedBlueprint(blueprint);
+        initialBlueprintAppliedRef.current = true;
       }
     }
   }, [initialBlueprintId, blueprints]);
@@ -86,6 +88,15 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
           newSet.delete(blueprintId);
           return newSet;
         });
+        
+        // Update local blueprint state for like count
+        setBlueprints((prev) =>
+          prev.map((bp) =>
+            bp.id === blueprintId
+              ? { ...bp, likes: Math.max(0, (bp.likes || 1) - 1) }
+              : bp
+          )
+        );
       } else {
         // Add like
         const { error } = await supabase.from("blueprint_likes").insert([
@@ -97,10 +108,16 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
 
         if (error) throw error;
         setUserLikes((prev) => new Set(prev).add(blueprintId));
+        
+        // Update local blueprint state for like count
+        setBlueprints((prev) =>
+          prev.map((bp) =>
+            bp.id === blueprintId
+              ? { ...bp, likes: (bp.likes || 0) + 1 }
+              : bp
+          )
+        );
       }
-
-      // Refresh blueprints to get updated like count
-      fetchBlueprints();
     } catch (err) {
       console.error("Error updating like:", err);
       alert("Failed to update like");
@@ -298,6 +315,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
                   src={blueprint.image_url}
                   alt={blueprint.title}
                   className="w-full h-48 object-cover bg-gray-700 flex-shrink-0"
+                  loading="lazy"
                 />
               ) : (
                 <div className="w-full h-48 bg-gradient-to-br from-blue-900 to-cyan-900 flex items-center justify-center flex-shrink-0">
