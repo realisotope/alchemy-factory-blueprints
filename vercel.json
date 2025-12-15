@@ -1,3 +1,9 @@
 {
-  "framework": "vite"
+  "framework": "vite",
+  "functions": {
+    "api/og-meta.js": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  }
 }
