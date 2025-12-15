@@ -525,6 +525,10 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
           }
         }}
         onSearchByCreator={handleSearchByCreator}
+        onBlueprintUpdate={() => {
+          // Refresh the gallery to get updated blueprint data
+          fetchBlueprints();
+        }}
       />
     </>
   );

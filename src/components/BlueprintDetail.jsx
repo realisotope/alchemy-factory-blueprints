@@ -1,14 +1,16 @@
-import { X, Download, Heart, Calendar, User, Maximize2, Share2, Check } from "lucide-react";
+import { X, Download, Heart, Calendar, User, Maximize2, Share2, Check, Edit2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { sanitizeCreatorName } from "../lib/sanitization";
 import { updateBlueprintMetaTags, resetMetaTags } from "../lib/metaTags";
+import EditBlueprint from "./EditBlueprint";
 
-export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange, onSearchByCreator }) {
+export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange, onSearchByCreator, onBlueprintUpdate }) {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(blueprint?.likes || 0);
   const [isImageExpanded, setIsImageExpanded] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   useEffect(() => {
     setLikeCount(blueprint?.likes || 0);
@@ -190,20 +192,20 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
         </div>
 
         {/* Footer Actions */}
-        <div className="sticky bottom-0 bg-gradient-to-t from-gray-950 to-gray-900 p-6 flex gap-3">
+        <div className="sticky bottom-0 bg-gradient-to-t from-gray-950 to-gray-900 p-6 flex gap-3 border-t-2 border-cyan-600/50 flex-wrap">
           <a
             href={blueprint.file_url}
             download
-            className="flex-1 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
+            className="flex-1 min-w-[120px] bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
           >
             <Download className="w-5 h-5" />
             Download
           </a>
           <button
             onClick={handleLike}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-semibold transition ${
+            className={`flex-1 min-w-[120px] flex items-center justify-center gap-2 py-3 rounded-lg font-semibold transition ${
               isLiked
-                ? "bg-rose-700 hover:bg-rose-600 text-white"
+                ? "bg-cyan-600 hover:bg-cyan-500 text-white"
                 : "bg-gray-700 hover:bg-gray-600 text-gray-200"
             }`}
           >
@@ -215,7 +217,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
             className={`px-4 py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2 ${
               copyFeedback
                 ? "bg-green-700 text-white"
-                : "bg-cyan-700 hover:bg-cyan-600 text-white"
+                : "bg-cyan-600 hover:bg-cyan-500 text-white"
             }`}
             title="Copy blueprint link to clipboard"
           >
@@ -231,8 +233,30 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
               </>
             )}
           </button>
+          {user && user.id === blueprint.user_id && (
+            <button
+              onClick={() => setIsEditOpen(true)}
+              className="px-4 py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white"
+              title="Edit this blueprint"
+            >
+              <Edit2 className="w-5 h-5" />
+              Edit
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Edit Blueprint Modal */}
+      <EditBlueprint
+        blueprint={blueprint}
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        user={user}
+        onUpdate={() => {
+          setIsEditOpen(false);
+          onBlueprintUpdate?.();
+        }}
+      />
 
       {/* Image Lightbox */}
       {isImageExpanded && blueprint.image_url && (
