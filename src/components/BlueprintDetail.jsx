@@ -178,16 +178,40 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
             </div>
           )}
 
-          {/* Upload Date */}
-          <div className="text-sm text-gray-500 pt-4 border-t border-gray-800">
-            Uploaded on{" "}
-            {new Date(blueprint.created_at).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+          {/* Changelog */}
+          {blueprint.changelog && (
+            <div>
+              <h3 className="text-lg font-bold text-cyan-300 mb-2">What's Changed</h3>
+              <p className="text-gray-300 leading-relaxed whitespace-pre-wrap break-words">
+                {blueprint.changelog}
+              </p>
+            </div>
+          )}
+
+          {/* Date Info */}
+          <div className="text-sm text-gray-400 pt-4 border-t border-gray-800 space-y-1">
+            {blueprint.updated_at && blueprint.updated_at !== blueprint.created_at && (
+              <div>
+                Updated on{" "}
+                {new Date(blueprint.updated_at).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </div>
+            )}
+            <div>
+              Uploaded on{" "}
+              {new Date(blueprint.created_at).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </div>
           </div>
         </div>
 

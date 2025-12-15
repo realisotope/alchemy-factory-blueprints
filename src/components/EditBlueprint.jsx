@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
-import { validateAndSanitizeTitle, validateAndSanitizeDescription, validateAndSanitizeTag, sanitizeTitleForFilename } from "../lib/sanitization";
+import { validateAndSanitizeTitle, validateAndSanitizeDescription, validateAndSanitizeChangelog, sanitizeTitleForFilename } from "../lib/sanitization";
 import { Upload, Loader, X } from "lucide-react";
 import { put, del as blobDelete } from "@vercel/blob";
 import imageCompression from "browser-image-compression";
@@ -104,6 +104,7 @@ const validateImageFile = async (file) => {
 export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpdate }) {
   const [title, setTitle] = useState(blueprint?.title || "");
   const [description, setDescription] = useState(blueprint?.description || "");
+  const [changelog, setChangelog] = useState("");
   const [tags, setTags] = useState(blueprint?.tags || []);
   const [tagInput, setTagInput] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -211,11 +212,6 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
       return;
     }
 
-    if (tags.length === 0) {
-      setError("Please add at least one tag");
-      return;
-    }
-
     setIsLoading(true);
     setError("");
 
@@ -230,17 +226,36 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
         throw new Error(descriptionValidation.error);
       }
 
+      const changelogValidation = validateAndSanitizeChangelog(changelog);
+      if (!changelogValidation.valid) {
+        throw new Error(changelogValidation.error);
+      }
+
       let fileUrl = blueprint.file_url;
 
       // Upload new blueprint file if provided
       if (blueprintFile) {
-        // Delete old file from storage
+        // Delete old file from storage BEFORE uploading new one
         if (blueprint.file_url) {
           try {
-            const oldFilePath = blueprint.file_url.split("/").slice(-2).join("/");
-            await supabase.storage.from("blueprints").remove([oldFilePath]);
+            // Extract the full path from the URL
+            // URL format: https://...supabase.../storage/v1/object/public/blueprints/USER_ID/filename.zip
+            const urlParts = blueprint.file_url.split('/');
+            const fileIndex = urlParts.findIndex(part => part === 'blueprints');
+            if (fileIndex !== -1) {
+              // Get user_id/filename.zip portion
+              const oldFilePath = urlParts.slice(fileIndex + 1).join('/');
+              if (oldFilePath) {
+                const { error: deleteError } = await supabase.storage
+                  .from("blueprints")
+                  .remove([oldFilePath]);
+                if (deleteError) {
+                  console.warn("Could not delete old blueprint file:", deleteError);
+                }
+              }
+            }
           } catch (delError) {
-            console.warn("Could not delete old blueprint file:", delError);
+            console.warn("Could not parse or delete old blueprint file:", delError);
           }
         }
 
@@ -271,15 +286,15 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
 
       // Upload new image if provided
       if (imageFile) {
-        // Delete old image if it exists
+        // Delete old image if it exists BEFORE uploading new one
         if (blueprint.image_url) {
           try {
-            const imagePath = blueprint.image_url.split("/").pop();
+            // For Vercel Blob, use the full URL to delete
             await blobDelete(blueprint.image_url, {
               token: import.meta.env.VITE_BLOB_READ_WRITE_TOKEN,
             });
           } catch (delError) {
-            console.warn("Could not delete old image:", delError);
+            console.warn("Could not delete old image from blob storage:", delError);
           }
         }
 
@@ -312,6 +327,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
           file_url: fileUrl,
           image_url: imageUrl,
           tags: tags.length > 0 ? tags : null,
+          changelog: changelogValidation.sanitized,
           updated_at: new Date().toISOString(),
         })
         .eq("id", blueprint.id);
@@ -376,6 +392,21 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe your blueprint..."
               rows={4}
+              className="w-full px-4 py-2 border border-cyan-600/50 rounded-lg focus:ring-2 focus:ring-cyan-500 bg-gray-800 text-white placeholder-gray-400"
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* Changelog */}
+          <div>
+            <label className="block text-sm font-medium text-cyan-200 mb-2">
+              What's Changed? (optional)
+            </label>
+            <textarea
+              value={changelog}
+              onChange={(e) => setChangelog(e.target.value)}
+              placeholder="e.g., Fixed throughput bottleneck, improved efficiency by 20%, added new modules..."
+              rows={3}
               className="w-full px-4 py-2 border border-cyan-600/50 rounded-lg focus:ring-2 focus:ring-cyan-500 bg-gray-800 text-white placeholder-gray-400"
               disabled={isLoading}
             />
@@ -456,7 +487,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
           {/* Tags */}
           <div>
             <label className="block text-sm font-medium text-cyan-200 mb-2">
-              Tags (up to 3) *
+              Tags (up to 3)
             </label>
             <div className="flex gap-2 mb-2 flex-wrap">
               {tags.map((tag) => (
@@ -464,7 +495,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
                   key={tag}
                   className="bg-cyan-600/50 text-cyan-100 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 border border-cyan-600/50"
                 >
-                  #{tag}
+                  {tag}
                   <button
                     type="button"
                     onClick={() => handleRemoveTag(tag)}
@@ -494,7 +525,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
                       onClick={() => handleSelectTag(tag)}
                       className="w-full text-left px-4 py-2 hover:bg-cyan-900/40 transition text-cyan-200 border-b border-cyan-600/30 last:border-b-0"
                     >
-                      #{tag}
+                      {tag}
                     </button>
                   ))}
                 </div>

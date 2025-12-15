@@ -52,8 +52,8 @@ export function validateAndSanitizeTitle(title, maxLength = 100) {
 
 /**
  * Validate and sanitize description input
- * @param {string} description - The description to validate
- * @param {number} maxLength - Maximum length (default 1000)
+ * @param {string} description
+ * @param {number} maxLength
  * @returns {object} - { valid: boolean, error?: string, sanitized?: string }
  */
 export function validateAndSanitizeDescription(description, maxLength = 1000) {
@@ -80,47 +80,51 @@ export function validateAndSanitizeDescription(description, maxLength = 1000) {
 }
 
 /**
- * Validate and sanitize tag input
- * @param {string} tag - The tag to validate
- * @param {number} maxLength - Maximum length (default 20)
- * @returns {object} - { valid: boolean, error?: string, sanitized?: string }
- */
-export function validateAndSanitizeTag(tag, maxLength = 20) {
-  if (!tag || typeof tag !== 'string') {
-    return { valid: false, error: 'Tag is required' };
-  }
-  
-  const trimmed = tag.trim();
-  
-  if (trimmed.length === 0) {
-    return { valid: false, error: 'Tag cannot be empty' };
-  }
-  
-  if (trimmed.length > maxLength) {
-    return { valid: false, error: `Tag must be under ${maxLength} characters` };
-  }
-  
-  // Only allow alphanumeric, hyphens, and underscores
-  if (!/^[a-zA-Z0-9_-]+$/.test(trimmed)) {
-    return { valid: false, error: 'Tags can only contain letters, numbers, hyphens, and underscores' };
-  }
-  
-  return { valid: true, sanitized: sanitizeInput(trimmed.toLowerCase()) };
-}
-
-/**
  * Sanitize creator name to prevent injection attacks
- * @param {string} creatorName - The creator name to sanitize
+ * @param {string} creatorName
  * @returns {string} - Sanitized creator name
  */
 export function sanitizeCreatorName(creatorName) {
   if (!creatorName || typeof creatorName !== 'string') return '';
   return sanitizeInput(creatorName.trim());
 }
+
+/**
+ * Validate and sanitize changelog input
+ * @param {string} changelog
+ * @param {number} maxLength
+ * @returns {object} - { valid: boolean, error?: string, sanitized?: string }
+ */
+export function validateAndSanitizeChangelog(changelog, maxLength = 200) {
+  if (!changelog) {
+    return { valid: true, sanitized: null };
+  }
+  
+  if (typeof changelog !== 'string') {
+    return { valid: false, error: 'Changelog must be text' };
+  }
+  
+  const trimmed = changelog.trim();
+  
+  if (trimmed.length === 0) {
+    return { valid: true, sanitized: null };
+  }
+  
+  if (trimmed.length > maxLength) {
+    return { valid: false, error: `Changelog must be under ${maxLength} characters` };
+  }
+  
+  // Check for suspicious patterns
+  if (/<script|javascript:|on\w+\s*=|<iframe|<object/i.test(trimmed)) {
+    return { valid: false, error: 'Changelog contains invalid characters' };
+  }
+  
+  return { valid: true, sanitized: sanitizeInput(trimmed) };
+}
+
 /**
  * Sanitize title for use as a filename
- * Removes/replaces characters that are invalid in filenames
- * @param {string} title - The title to sanitize for filename use
+ * @param {string} title
  * @returns {string} - Safe filename string
  */
 export function sanitizeTitleForFilename(title) {
@@ -128,14 +132,9 @@ export function sanitizeTitleForFilename(title) {
   
   return title
     .trim()
-    // Replace forward slashes, backslashes with hyphens
     .replace(/[\/\\]/g, '-')
-    // Replace other invalid filename characters with hyphens
     .replace(/[:<>"|?*\x00-\x1f]/g, '-')
-    // Replace multiple consecutive hyphens with single hyphen
     .replace(/-+/g, '-')
-    // Remove leading/trailing hyphens
     .replace(/^-+|-+$/g, '')
-    // If empty after sanitization, use default
     || 'blueprint';
 }

@@ -220,6 +220,10 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         return a.title.localeCompare(b.title);
       } else if (sortBy === "popular") {
         return (b.likes || 0) - (a.likes || 0);
+      } else if (sortBy === "updated") {
+        return new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at);
+      } else if (sortBy === "downloaded") {
+        return (b.downloads || 0) - (a.downloads || 0);
       }
       return new Date(b.created_at) - new Date(a.created_at);
     });
@@ -277,7 +281,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
             className="w-full sm:w-auto px-4 py-2.5 border-2 border-cyan-700/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-gray-800/70 text-gray-200 font-medium transition-all shadow-sm hover:border-cyan-600/80 flex items-center justify-between gap-2"
           >
             <span>
-              {sortBy === "newest" ? "Newest First" : sortBy === "oldest" ? "Oldest First" : sortBy === "alphabetical" ? "Alphabetical" : "Most Liked"}
+              {sortBy === "newest" ? "Newest First" : sortBy === "oldest" ? "Oldest First" : sortBy === "alphabetical" ? "Alphabetical" : sortBy === "updated" ? "Recently Updated" : sortBy === "downloaded" ? "Most Downloaded" : "Most Liked"}
             </span>
             <span className={`transition transform ${sortDropdownOpen ? "rotate-180" : ""}`}>▼</span>
           </button>
@@ -304,6 +308,20 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
                 className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 text-gray-100 transition border-b border-cyan-700/20"
               >
                 Alphabetical
+              </button>
+              <button
+                type="button"
+                onClick={() => { handleSort("updated"); setSortDropdownOpen(false); }}
+                className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 text-gray-100 transition border-b border-cyan-700/20"
+              >
+                Recently Updated
+              </button>
+              <button
+                type="button"
+                onClick={() => { handleSort("downloaded"); setSortDropdownOpen(false); }}
+                className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 text-gray-100 transition border-b border-cyan-700/20"
+              >
+                Most Downloaded
               </button>
               <button
                 type="button"

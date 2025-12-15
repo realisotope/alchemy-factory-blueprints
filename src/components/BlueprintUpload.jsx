@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
-import { validateAndSanitizeTitle, validateAndSanitizeDescription, validateAndSanitizeTag, sanitizeTitleForFilename } from "../lib/sanitization";
+import { validateAndSanitizeTitle, validateAndSanitizeDescription, sanitizeTitleForFilename } from "../lib/sanitization";
 import { Upload, Loader, X } from "lucide-react";
 import { put } from "@vercel/blob";
 import imageCompression from "browser-image-compression";
