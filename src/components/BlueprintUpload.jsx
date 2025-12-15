@@ -290,8 +290,11 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
 
     try {
       // Create zip file containing the blueprint file with compression
+      // Rename the .af file to the blueprint title before zipping
+      const afFileName = `${titleValidation.sanitized}.af`;
+      
       const zip = new JSZip();
-      zip.file(blueprintFile.name, blueprintFile);
+      zip.file(afFileName, blueprintFile);
       const zipBlob = await zip.generateAsync({ 
         type: "blob",
         compression: "DEFLATE",
