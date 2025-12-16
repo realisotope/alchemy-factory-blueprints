@@ -124,17 +124,14 @@ export function validateAndSanitizeChangelog(changelog, maxLength = 200) {
 
 /**
  * Sanitize title for use as a filename
+ * Only allows alphanumeric characters, removing all special characters
  * @param {string} title
  * @returns {string} - Safe filename string
  */
 export function sanitizeTitleForFilename(title) {
   if (!title || typeof title !== 'string') return 'blueprint';
   
-  return title
-    .trim()
-    .replace(/[\/\\]/g, '-')
-    .replace(/[:<>"|?*\x00-\x1f]/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    || 'blueprint';
+  const sanitized = title.replace(/[^a-zA-Z0-9]/g, '');
+  
+  return sanitized || 'blueprint';
 }
