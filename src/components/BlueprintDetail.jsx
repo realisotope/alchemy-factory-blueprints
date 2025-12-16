@@ -218,12 +218,13 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
         {/* Footer Actions */}
         <div className="sticky bottom-0 bg-gradient-to-t from-gray-950 to-gray-900 p-6 flex gap-3 border-t-2 border-cyan-600/50 flex-wrap">
           <a
-            href={blueprint.file_url}
-            download
+            href={blueprint.discord_thread_url}
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex-1 min-w-[120px] bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
           >
             <Download className="w-5 h-5" />
-            Download
+            Download in Discord
           </a>
           <button
             onClick={handleLike}
