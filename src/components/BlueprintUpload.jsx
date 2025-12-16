@@ -294,7 +294,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       const afFileName = `${sanitizeTitleForFilename(title)}.af`;
       
       const zip = new JSZip();
-      zip.file(afFileName, blueprintFile);
+      zip.file(afFileName, blueprintFile, { compression: "DEFLATE" });
       const zipBlob = await zip.generateAsync({ 
         type: "blob",
         compression: "DEFLATE",
