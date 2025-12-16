@@ -241,10 +241,10 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
             // Extract the full path from the URL
             // URL format: https://...supabase.../storage/v1/object/public/blueprints/USER_ID/filename.zip
             const urlParts = blueprint.file_url.split('/');
-            const fileIndex = urlParts.findIndex(part => part === 'blueprints');
-            if (fileIndex !== -1) {
-              // Get user_id/filename.zip portion
-              const oldFilePath = urlParts.slice(fileIndex + 1).join('/');
+            const publicIndex = urlParts.findIndex(part => part === 'public');
+            if (publicIndex !== -1) {
+              // Get user_id/filename.zip portion (everything after 'public')
+              const oldFilePath = urlParts.slice(publicIndex + 2).join('/');
               if (oldFilePath) {
                 const { error: deleteError } = await supabase.storage
                   .from("blueprints")
@@ -264,7 +264,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
         const afFileName = `${sanitizeTitleForFilename(title)}.af`;
         
         const zip = new JSZip();
-        zip.file(afFileName, blueprintFile);
+        zip.file(afFileName, blueprintFile, { compression: "DEFLATE" });
         const zipBlob = await zip.generateAsync({
           type: "blob",
           compression: "DEFLATE",
