@@ -56,7 +56,7 @@ export function validateAndSanitizeTitle(title, maxLength = 100) {
  * @param {number} maxLength
  * @returns {object} - { valid: boolean, error?: string, sanitized?: string }
  */
-export function validateAndSanitizeDescription(description, maxLength = 1000) {
+export function validateAndSanitizeDescription(description, maxLength = 1400) {
   if (!description) {
     return { valid: true, sanitized: '' };
   }
