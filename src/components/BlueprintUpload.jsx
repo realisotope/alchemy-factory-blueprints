@@ -289,32 +289,51 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
     setError(null);
 
     try {
-      // Create zip file containing the blueprint file with compression
-      // Rename the .af file to the blueprint title before zipping
+      // Determine if file should be zipped (only for files over 100KB)
+      const shouldZip = blueprintFile.size > 100 * 1024;
       const afFileName = `${sanitizeTitleForFilename(title)}.af`;
-      
-      const zip = new JSZip();
-      zip.file(afFileName, blueprintFile, { compression: "DEFLATE" });
-      const zipBlob = await zip.generateAsync({ 
-        type: "blob",
-        compression: "DEFLATE",
-        compressionOptions: { level: 9 }
-      });
+      let fileUrl;
 
-      // Upload compressed zip file
-      const zipFileName = `${sanitizeTitleForFilename(title)}_${Date.now()}.zip`;
-      const blueprintPath = `${user.id}/${zipFileName}`;
-      const { error: blueprintError } = await supabase.storage
-        .from("blueprints")
-        .upload(blueprintPath, zipBlob);
+      if (shouldZip) {
+        // Create zip file containing the blueprint file with compression
+        const zip = new JSZip();
+        zip.file(afFileName, blueprintFile, { compression: "DEFLATE" });
+        const zipBlob = await zip.generateAsync({ 
+          type: "blob",
+          compression: "DEFLATE",
+          compressionOptions: { level: 9 }
+        });
 
-      if (blueprintError) throw blueprintError;
+        // Upload compressed zip file
+        const zipFileName = `${sanitizeTitleForFilename(title)}_${Date.now()}.zip`;
+        const blueprintPath = `${user.id}/${zipFileName}`;
+        const { error: blueprintError } = await supabase.storage
+          .from("blueprints")
+          .upload(blueprintPath, zipBlob);
 
-      // Get blueprint file URL
-      const { data: blueprintData } = supabase.storage
-        .from("blueprints")
-        .getPublicUrl(blueprintPath);
-      const fileUrl = blueprintData?.publicUrl;
+        if (blueprintError) throw blueprintError;
+
+        // Get blueprint file URL
+        const { data: blueprintData } = supabase.storage
+          .from("blueprints")
+          .getPublicUrl(blueprintPath);
+        fileUrl = blueprintData?.publicUrl;
+      } else {
+        // For smaller files, just upload renamed .af file directly
+        const afFileNameWithTimestamp = `${sanitizeTitleForFilename(title)}_${Date.now()}.af`;
+        const blueprintPath = `${user.id}/${afFileNameWithTimestamp}`;
+        const { error: blueprintError } = await supabase.storage
+          .from("blueprints")
+          .upload(blueprintPath, blueprintFile);
+
+        if (blueprintError) throw blueprintError;
+
+        // Get blueprint file URL
+        const { data: blueprintData } = supabase.storage
+          .from("blueprints")
+          .getPublicUrl(blueprintPath);
+        fileUrl = blueprintData?.publicUrl;
+      }
 
       let imageUrl = null;
 
