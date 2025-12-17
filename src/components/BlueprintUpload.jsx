@@ -35,9 +35,28 @@ const AVAILABLE_TAGS = [
 
 // Validate .af file by checking extension and file structure
 const validateAfFile = async (file) => {
-  // Check extension
-  if (!file.name.toLowerCase().endsWith(".af")) {
+  const fileName = file.name.toLowerCase();
+  
+  // Check extension - must end with .af
+  if (!fileName.endsWith(".af")) {
     return { valid: false, error: "File must have .af extension" };
+  }
+
+  // Check for double extensions or suspicious patterns (e.g., file.exe.af, file.pdf.af)
+  const nameWithoutExt = fileName.slice(0, -3); // Remove .af
+  const dangerousExtensions = [
+    ".exe", ".bat", ".cmd", ".com", ".scr", ".vbs", ".js", ".jse",
+    ".vbe", ".wsf", ".wsh", ".ps1", ".psc1", ".msh", ".msh1", ".msh1xml",
+    ".mshxml", ".scf", ".pif", ".msi", ".app", ".deb", ".rpm", ".dmg",
+    ".sh", ".bash", ".zsh", ".ksh", ".csh", ".run", ".bin",
+    ".pdf", ".docx", ".doc", ".xls", ".xlsx", ".ppt", ".pptx", ".zip", ".rar",
+    ".7z", ".tar", ".gz", ".jar", ".class", ".pyc", ".pyo"
+  ];
+  
+  for (const ext of dangerousExtensions) {
+    if (nameWithoutExt.endsWith(ext)) {
+      return { valid: false, error: `Files with ${ext} extensions disguised as .af are not allowed` };
+    }
   }
 
   // Check file size
@@ -45,31 +64,90 @@ const validateAfFile = async (file) => {
     return { valid: false, error: "Blueprint file must be smaller than 50MB" };
   }
 
-  // Check file content (basic magic number check for common archives/executables)
+  // Check file content (magic number check for known dangerous file types)
   try {
-    const buffer = await file.slice(0, 4).arrayBuffer();
+    // Read first 512 bytes to check for various file signatures
+    const buffer = await file.slice(0, 512).arrayBuffer();
     const view = new Uint8Array(buffer);
     
-    // Reject common executable signatures
     if (view.length >= 2) {
-      // MZ header (PE executable)
+      // MZ header (Windows PE executable: .exe, .dll, .scr, etc.)
       if (view[0] === 0x4d && view[1] === 0x5a) {
-        return { valid: false, error: "Executable files are not allowed" };
+        return { valid: false, error: "Executable files (.exe, .dll, etc.) are not allowed" };
       }
-      // Shebang (Unix scripts)
+      
+      // Shebang (Unix/Linux scripts)
       if (view[0] === 0x23 && view[1] === 0x21) {
         return { valid: false, error: "Script files are not allowed" };
       }
-    }
-    if (view.length >= 4) {
-      // ZIP header (0x504b0304)
-      if (view[0] === 0x50 && view[1] === 0x4b && view[2] === 0x03 && view[3] === 0x04) {
-        return { valid: false, error: "Archive files must be saved as .af files" };
+      
+      // ELF header (Linux/Unix executables)
+      if (view[0] === 0x7f && view[1] === 0x45 && view[2] === 0x4c && view[3] === 0x46) {
+        return { valid: false, error: "Executable files are not allowed" };
+      }
+      
+      // Mach-O header (macOS executables)
+      if ((view[0] === 0xfe && view[1] === 0xed && view[2] === 0xfa) || 
+          (view[0] === 0xca && view[1] === 0xfe && view[2] === 0xba && view[3] === 0xbe)) {
+        return { valid: false, error: "Executable files are not allowed" };
       }
     }
+    
+    if (view.length >= 4) {
+      // ZIP header (0x504b0304, 0x504b0506, 0x504b0708)
+      if (view[0] === 0x50 && view[1] === 0x4b) {
+        return { valid: false, error: "Archive files must be saved as .af files" };
+      }
+      
+      // RAR header (0x526172)
+      if (view[0] === 0x52 && view[1] === 0x61 && view[2] === 0x72) {
+        return { valid: false, error: "Archive files (RAR) are not allowed" };
+      }
+      
+      // 7z header (37 7A BC AF 27 1C)
+      if (view[0] === 0x37 && view[1] === 0x7a && view[2] === 0xbc && view[3] === 0xaf) {
+        return { valid: false, error: "Archive files (7z) are not allowed" };
+      }
+      
+      // PDF header (%PDF)
+      if (view[0] === 0x25 && view[1] === 0x50 && view[2] === 0x44 && view[3] === 0x46) {
+        return { valid: false, error: "PDF files are not allowed" };
+      }
+      
+      // Office Open XML files (DOCX, XLSX, PPTX - all are ZIP files)
+      if (view[0] === 0x50 && view[1] === 0x4b) {
+        return { valid: false, error: "Office documents and archives are not allowed" };
+      }
+      
+      // RTF header ({\rtf)
+      if (view[0] === 0x7b && view[1] === 0x5c && view[2] === 0x72 && view[3] === 0x74) {
+        return { valid: false, error: "Rich text files are not allowed" };
+      }
+      
+      // Java class file (CAFEBABE)
+      if (view[0] === 0xca && view[1] === 0xfe && view[2] === 0xba && view[3] === 0xbe) {
+        return { valid: false, error: "Executable files are not allowed" };
+      }
+      
+      // gzip header (1f 8b)
+      if (view[0] === 0x1f && view[1] === 0x8b) {
+        return { valid: false, error: "Compressed archive files are not allowed" };
+      }
+      
+      // tar header (ustar at offset 257)
+      if (view.length >= 262 && view[257] === 0x75 && view[258] === 0x73 && 
+          view[259] === 0x74 && view[260] === 0x61 && view[261] === 0x72) {
+        return { valid: false, error: "Archive files (tar) are not allowed" };
+      }
+    }
+    
+    // Check for NUL bytes at the start, which might indicate binary executables
+    if (view[0] === 0x00 && view[1] === 0x00 && view[2] === 0x00) {
+      return { valid: false, error: "Suspicious binary format detected. Please ensure this is a valid .af file" };
+    }
   } catch (e) {
-    // If we can't read the file, still allow it (might be a valid .af)
     console.warn("Could not validate file content:", e);
+    return { valid: false, error: "Failed to validate file format. Please try again" };
   }
 
   return { valid: true };
