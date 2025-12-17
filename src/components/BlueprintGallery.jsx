@@ -496,7 +496,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-12">
+        <div className="flex items-center justify-center gap-2 mt-12 flex-wrap">
           <button
             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
@@ -505,20 +505,56 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
             ← Previous
           </button>
 
-          <div className="flex gap-1">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`px-3 py-2 rounded-lg font-medium transition ${
-                  currentPage === page
-                    ? "bg-cyan-700 text-white border border-cyan-600"
-                    : "border border-cyan-700/60 bg-gray-800/70 text-gray-200 hover:bg-gray-700"
-                }`}
-              >
-                {page}
-              </button>
-            ))}
+          <div className="flex gap-1 flex-wrap justify-center">
+            {(() => {
+              const maxPagesToShow = 5;
+              const pages = [];
+              let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+              let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+              
+              // Adjust start if we're near the end
+              if (endPage - startPage + 1 < maxPagesToShow) {
+                startPage = Math.max(1, endPage - maxPagesToShow + 1);
+              }
+              
+              // Always show first page
+              if (startPage > 1) {
+                pages.push(1);
+                if (startPage > 2) {
+                  pages.push('...');
+                }
+              }
+              
+              // Show range around current page
+              for (let i = startPage; i <= endPage; i++) {
+                pages.push(i);
+              }
+              
+              // Always show last page
+              if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                  pages.push('...');
+                }
+                pages.push(totalPages);
+              }
+              
+              return pages.map((page) => (
+                <button
+                  key={page}
+                  onClick={() => typeof page === 'number' && setCurrentPage(page)}
+                  disabled={page === '...'}
+                  className={`px-3 py-2 rounded-lg font-medium transition ${
+                    page === currentPage
+                      ? "bg-cyan-700 text-white border border-cyan-600"
+                      : page === '...'
+                      ? "border border-transparent text-gray-400 cursor-default"
+                      : "border border-cyan-700/60 bg-gray-800/70 text-gray-200 hover:bg-gray-700"
+                  }`}
+                >
+                  {page}
+                </button>
+              ));
+            })()}
           </div>
 
           <button
