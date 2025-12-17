@@ -1,4 +1,4 @@
-import { X, Download, Heart, Calendar, User, Maximize2, Share2, Check, Edit2 } from "lucide-react";
+import { X, Download, Heart, Calendar, User, Maximize2, Share2, Check, Edit2, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { sanitizeCreatorName } from "../lib/sanitization";
@@ -11,6 +11,8 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
   const [isImageExpanded, setIsImageExpanded] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [showScrollIndicator, setShowScrollIndicator] = useState(false);
+  const [scrollableRef, setScrollableRef] = useState(null);
 
   useEffect(() => {
     setLikeCount(blueprint?.likes || 0);
@@ -40,6 +42,28 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
     window.addEventListener("keydown", handleEscapeKey);
     return () => window.removeEventListener("keydown", handleEscapeKey);
   }, [isImageExpanded]);
+
+  // Check for scrollable content
+  useEffect(() => {
+    const checkScroll = () => {
+      if (scrollableRef) {
+        const hasScroll = scrollableRef.scrollHeight > scrollableRef.clientHeight;
+        const isNotAtBottom = scrollableRef.scrollTop + scrollableRef.clientHeight < scrollableRef.scrollHeight - 10;
+        setShowScrollIndicator(hasScroll && isNotAtBottom);
+      }
+    };
+
+    checkScroll();
+    
+    if (scrollableRef) {
+      scrollableRef.addEventListener("scroll", checkScroll);
+      window.addEventListener("resize", checkScroll);
+      return () => {
+        scrollableRef.removeEventListener("scroll", checkScroll);
+        window.removeEventListener("resize", checkScroll);
+      };
+    }
+  }, [scrollableRef, isOpen]);
 
   if (!isOpen || !blueprint) return null;
 
@@ -71,9 +95,9 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
 
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-gradient-to-b from-gray-900 to-gray-950 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-cyan-700/50" onClick={(e) => e.stopPropagation()}>
+      <div ref={setScrollableRef} className="bg-gradient-to-b from-gray-900 to-gray-950 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-cyan-700/50 relative" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-blue-900 via-cyan-900 to-blue-900 text-white p-6 flex items-center justify-between">
+        <div className="sticky top-0 z-10 bg-gradient-to-r from-blue-900 via-cyan-900 to-blue-900 text-white p-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-amber-300 flex-1 truncate">{blueprint.title}</h2>
           <button
             onClick={onClose}
@@ -106,30 +130,30 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           )}
 
           {/* Stats Row */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-3">
             <div className="bg-blue-900/30 p-2 rounded-lg border-2 border-cyan-700/50 text-center">
-              <div className="text-2xl font-bold text-amber-300">{blueprint.downloads || 0}</div>
-              <div className="text-sm text-gray-400 flex items-center justify-center mt-1">
-                <Download className="w-4 h-4 mr-1" />
+              <div className="text-xl font-bold text-amber-300">{blueprint.downloads || 0}</div>
+              <div className="text-xs text-gray-400 flex items-center justify-center mt-1">
+                <Download className="w-3 h-3 mr-1" />
                 Downloads
               </div>
             </div>
             <div className="bg-blue-900/30 p-2 rounded-lg border-2 border-cyan-700/50 text-center">
-              <div className="text-2xl font-bold text-rose-400">{likeCount}</div>
-              <div className="text-sm text-gray-400 flex items-center justify-center mt-1">
-                <Heart className="w-4 h-4 mr-1" />
+              <div className="text-xl font-bold text-rose-400">{likeCount}</div>
+              <div className="text-xs text-gray-400 flex items-center justify-center mt-1">
+                <Heart className="w-3 h-3 mr-1" />
                 Likes
               </div>
             </div>
             <div className="bg-blue-900/30 p-2 rounded-lg border-2 border-cyan-700/50 text-center">
-              <div className="text-lg font-bold text-blue-300">
+              <div className="text-base font-bold text-blue-300">
                 {new Date(blueprint.created_at).toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
                 })}
               </div>
-              <div className="text-sm text-gray-400 flex items-center justify-center mt-2">
-                <Calendar className="w-4 h-4 mr-1" />
+              <div className="text-xs text-gray-400 flex items-center justify-center mt-1">
+                <Calendar className="w-3 h-3 mr-1" />
                 Uploaded
               </div>
             </div>
@@ -216,7 +240,24 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
         </div>
 
         {/* Footer Actions */}
-        <div className="sticky bottom-0 bg-gradient-to-t from-gray-950 to-gray-900 p-6 flex gap-3 border-t-2 border-cyan-600/50 flex-wrap">
+        <div className="sticky bottom-0 bg-gradient-to-t from-gray-950 to-gray-900 p-6 flex gap-3 border-t-2 border-cyan-600/50 flex-wrap relative">
+          {/* Scroll Indicator */}
+          {showScrollIndicator && (
+            <button
+              onClick={() => {
+                if (scrollableRef) {
+                  scrollableRef.scrollTo({ top: scrollableRef.scrollHeight, behavior: 'smooth' });
+                }
+              }}
+              className="absolute animate-bounce hover:opacity-80 transition cursor-pointer"
+              style={{ left: 'calc(50% - 18px)', top: '-22px', transform: 'translateX(-50%)' }}
+              title="Scroll down"
+            >
+              <div className="w-10 h-10 rounded-full border-2 border-cyan-500 flex items-center justify-center bg-gray-900/90">
+                <ChevronDown className="w-5 h-5 text-cyan-400" />
+              </div>
+            </button>
+          )}
           <a
             href={blueprint.file_url}
             download
