@@ -115,7 +115,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
               <img
                 src={blueprint.image_url}
                 alt={blueprint.title}
-                className="w-full h-96 object-cover rounded-lg border-2 border-cyan-700/50 cursor-pointer transition hover:border-cyan-500/70 hover:shadow-lg hover:shadow-cyan-900/50"
+                className="w-full h-48 sm:h-96 object-cover rounded-lg border-2 border-cyan-700/50 cursor-pointer transition hover:border-cyan-500/70 hover:shadow-lg hover:shadow-cyan-900/50"
                 onClick={() => setIsImageExpanded(true)}
                 loading="lazy"
               />
@@ -240,7 +240,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
         </div>
 
         {/* Footer Actions */}
-        <div className="sticky bottom-0 bg-gradient-to-t from-gray-950 to-gray-900 p-6 flex gap-3 border-t-2 border-cyan-600/50 flex-wrap relative">
+        <div className="sticky bottom-0 bg-gradient-to-t from-gray-950 to-gray-900 p-3 sm:p-6 flex gap-2 sm:gap-3 border-t-2 border-cyan-600/50 flex-wrap relative">
           {/* Scroll Indicator */}
           {showScrollIndicator && (
             <button
@@ -261,25 +261,27 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           <a
             href={blueprint.file_url}
             download
-            className="flex-1 min-w-[120px] bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
+            className="flex-1 min-w-0 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white py-2 sm:py-3 rounded-lg font-semibold transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
           >
-            <Download className="w-5 h-5" />
-            Download
+            <Download className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="hidden sm:inline">Download</span>
+            <span className="sm:hidden">Download</span>
           </a>
           <button
             onClick={handleLike}
-            className={`flex-1 min-w-[120px] flex items-center justify-center gap-2 py-3 rounded-lg font-semibold transition ${
+            className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 rounded-lg font-semibold transition text-sm sm:text-base ${
               isLiked
                 ? "bg-cyan-600 hover:bg-cyan-500 text-white"
                 : "bg-gray-700 hover:bg-gray-600 text-gray-200"
             }`}
           >
-            <Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
-            {isLiked ? "Liked" : "Like"}
+            <Heart className={`w-4 h-4 sm:w-5 sm:h-5 hidden sm:inline ${isLiked ? "fill-current" : ""}`} />
+            <span className="hidden sm:inline">{isLiked ? "Liked" : "Like"}</span>
+            <span className="sm:hidden">{isLiked ? "❤️" : "🤍"}</span>
           </button>
           <button
             onClick={handleShareBlueprint}
-            className={`px-4 py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2 ${
+            className={`flex-1 min-w-0 py-2 sm:py-3 rounded-lg font-semibold transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base ${
               copyFeedback
                 ? "bg-green-700 text-white"
                 : "bg-cyan-600 hover:bg-cyan-500 text-white"
@@ -288,24 +290,24 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           >
             {copyFeedback ? (
               <>
-                <Check className="w-5 h-5" />
-                Copied!
+                <Check className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">Copied!</span>
               </>
             ) : (
               <>
-                <Share2 className="w-5 h-5" />
-                Share
+                <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">Share</span>
               </>
             )}
           </button>
           {user && user.id === blueprint.user_id && (
             <button
               onClick={() => setIsEditOpen(true)}
-              className="px-4 py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white"
+              className="px-2 sm:px-4 py-2 sm:py-3 rounded-lg font-semibold transition flex items-center justify-center gap-1 sm:gap-2 bg-cyan-600 hover:bg-cyan-500 text-white text-sm sm:text-base"
               title="Edit this blueprint"
             >
-              <Edit2 className="w-5 h-5" />
-              Edit
+              <Edit2 className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="hidden sm:inline">Edit</span>
             </button>
           )}
         </div>
