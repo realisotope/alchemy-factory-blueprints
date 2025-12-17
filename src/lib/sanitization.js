@@ -13,7 +13,7 @@ export function sanitizeInput(input) {
 
 /**
  * Validate UUID format
- * @param {string} uuid - The UUID to validate
+ * @param {string} uuid
  * @returns {boolean} - True if valid UUID format
  */
 export function isValidUUID(uuid) {
@@ -23,11 +23,11 @@ export function isValidUUID(uuid) {
 
 /**
  * Validate and sanitize title input
- * @param {string} title - The title to validate
- * @param {number} maxLength - Maximum length (default 100)
+ * @param {string} title
+ * @param {number} maxLength
  * @returns {object} - { valid: boolean, error?: string, sanitized?: string }
  */
-export function validateAndSanitizeTitle(title, maxLength = 100) {
+export function validateAndSanitizeTitle(title, maxLength = 60) {
   if (!title || typeof title !== 'string') {
     return { valid: false, error: 'Title is required' };
   }
@@ -42,9 +42,9 @@ export function validateAndSanitizeTitle(title, maxLength = 100) {
     return { valid: false, error: `Title must be under ${maxLength} characters` };
   }
   
-  // Check for suspicious patterns
-  if (/<script|javascript:|on\w+\s*=|<iframe|<object/i.test(trimmed)) {
-    return { valid: false, error: 'Title contains invalid characters' };
+  // Looking for script tags, event handlers, and dangerous protocols
+  if (/<\s*script|javascript:|on\w+\s*=|<\s*iframe|<\s*object|<\s*embed|<\s*form|<\s*img\s+src|data:text\/html/i.test(trimmed)) {
+    return { valid: false, error: 'Title contains forbidden content' };
   }
   
   return { valid: true, sanitized: sanitizeInput(trimmed) };
@@ -71,9 +71,9 @@ export function validateAndSanitizeDescription(description, maxLength = 1400) {
     return { valid: false, error: `Description must be under ${maxLength} characters` };
   }
   
-  // Check for suspicious patterns
-  if (/<script|javascript:|on\w+\s*=|<iframe|<object/i.test(trimmed)) {
-    return { valid: false, error: 'Description contains invalid characters' };
+  // Looking for script tags, event handlers, and dangerous protocols
+  if (/<\s*script|javascript:|on\w+\s*=|<\s*iframe|<\s*object|<\s*embed|<\s*form|<\s*img\s+src|data:text\/html/i.test(trimmed)) {
+    return { valid: false, error: 'Description contains forbidden content' };
   }
   
   return { valid: true, sanitized: sanitizeInput(trimmed) };
@@ -114,9 +114,9 @@ export function validateAndSanitizeChangelog(changelog, maxLength = 200) {
     return { valid: false, error: `Changelog must be under ${maxLength} characters` };
   }
   
-  // Check for suspicious patterns
-  if (/<script|javascript:|on\w+\s*=|<iframe|<object/i.test(trimmed)) {
-    return { valid: false, error: 'Changelog contains invalid characters' };
+  // Looking for script tags, event handlers, and dangerous protocols
+  if (/<\s*script|javascript:|on\w+\s*=|<\s*iframe|<\s*object|<\s*embed|<\s*form|<\s*img\s+src|data:text\/html/i.test(trimmed)) {
+    return { valid: false, error: 'Changelog contains forbidden content' };
   }
   
   return { valid: true, sanitized: sanitizeInput(trimmed) };
@@ -124,7 +124,6 @@ export function validateAndSanitizeChangelog(changelog, maxLength = 200) {
 
 /**
  * Sanitize title for use as a filename
- * Only allows alphanumeric characters, removing all special characters
  * @param {string} title
  * @returns {string} - Safe filename string
  */
