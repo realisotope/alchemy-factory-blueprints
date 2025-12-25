@@ -7,8 +7,8 @@ import EditBlueprint from "./EditBlueprint";
 
 export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange, onSearchByCreator, onBlueprintUpdate, onDownload }) {
   const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(blueprint?.likes || 0);
-  const [downloadCount, setDownloadCount] = useState(blueprint?.downloads || 0);
+  const [likeCount, setLikeCount] = useState(blueprint?.likes ?? 0);
+  const [downloadCount, setDownloadCount] = useState(blueprint?.downloads ?? 0);
   const [isImageExpanded, setIsImageExpanded] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -16,8 +16,8 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
   const [scrollableRef, setScrollableRef] = useState(null);
 
   useEffect(() => {
-    setLikeCount(blueprint?.likes || 0);
-    setDownloadCount(blueprint?.downloads || 0);
+    setLikeCount(blueprint?.likes ?? 0);
+    setDownloadCount(blueprint?.downloads ?? 0);
     setIsLiked(false);
   }, [blueprint?.id, blueprint?.likes, blueprint?.downloads]);
 
