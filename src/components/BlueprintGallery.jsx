@@ -56,7 +56,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
     try {
       const { data, error } = await supabase
         .from("blueprints")
-        .select("*")
+        .select("id,title,description,user_id,creator_name,file_url,image_url,downloads,likes,tags,created_at,updated_at")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -68,6 +68,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         downloads: bp.downloads ?? 0
       }));
       
+      console.log("Fetched blueprints:", processedData);
       setBlueprints(processedData);
     } catch (err) {
       console.error("Error fetching blueprints:", err);
@@ -85,6 +86,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
     try {
       if (currentlyLiked) {
         // Remove like
+        console.log(`Removing like for ${blueprintId}`);
         const { error } = await supabase
           .from("blueprint_likes")
           .delete()
@@ -97,25 +99,9 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
           newSet.delete(blueprintId);
           return newSet;
         });
-        
-        // Update local blueprint state for like count
-        setBlueprints((prev) =>
-          prev.map((bp) =>
-            bp.id === blueprintId
-              ? { ...bp, likes: Math.max(0, (bp.likes ?? 0) - 1) }
-              : bp
-          )
-        );
-        
-        // Update selected blueprint if it's the one being liked
-        if (selectedBlueprint?.id === blueprintId) {
-          setSelectedBlueprint((prev) => ({
-            ...prev,
-            likes: Math.max(0, (prev?.likes ?? 0) - 1)
-          }));
-        }
       } else {
         // Add like
+        console.log(`Adding like for ${blueprintId}`);
         const { error } = await supabase.from("blueprint_likes").insert([
           {
             blueprint_id: blueprintId,
@@ -125,23 +111,37 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
 
         if (error) throw error;
         setUserLikes((prev) => new Set(prev).add(blueprintId));
-        
-        // Update local blueprint state for like count
-        setBlueprints((prev) =>
-          prev.map((bp) =>
-            bp.id === blueprintId
-              ? { ...bp, likes: (bp.likes ?? 0) + 1 }
-              : bp
-          )
-        );
-        
-        // Update selected blueprint if it's the one being liked
-        if (selectedBlueprint?.id === blueprintId) {
-          setSelectedBlueprint((prev) => ({
-            ...prev,
-            likes: (prev?.likes ?? 0) + 1
-          }));
-        }
+      }
+      
+      // Refetch the updated blueprint to ensure we have the latest like count
+      const { data: updatedBlueprint, error: fetchError } = await supabase
+        .from("blueprints")
+        .select("*")
+        .eq("id", blueprintId)
+        .single();
+      
+      if (fetchError) throw fetchError;
+      
+      // Normalize the data
+      const normalizedBp = {
+        ...updatedBlueprint,
+        likes: updatedBlueprint?.likes ?? 0,
+        downloads: updatedBlueprint?.downloads ?? 0
+      };
+      
+      console.log(`Refetched blueprint ${blueprintId}: likes=${normalizedBp.likes}`);
+      
+      // Update blueprints array
+      setBlueprints((prev) =>
+        prev.map((bp) =>
+          bp.id === blueprintId ? normalizedBp : bp
+        )
+      );
+      
+      // Update selected blueprint
+      if (selectedBlueprint?.id === blueprintId) {
+        console.log(`Updated selected blueprint with refetched data: likes=${normalizedBp.likes}`);
+        setSelectedBlueprint(normalizedBp);
       }
     } catch (err) {
       console.error("Error updating like:", err);
@@ -160,21 +160,37 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
 
       if (error) throw error;
 
-      // Update local state
+      console.log(`Download incremented for ${blueprint.id}`);
+      
+      // Refetch the updated blueprint to ensure we have the latest download count
+      const { data: updatedBlueprint, error: fetchError } = await supabase
+        .from("blueprints")
+        .select("*")
+        .eq("id", blueprint.id)
+        .single();
+      
+      if (fetchError) throw fetchError;
+      
+      // Normalize the data
+      const normalizedBp = {
+        ...updatedBlueprint,
+        likes: updatedBlueprint?.likes ?? 0,
+        downloads: updatedBlueprint?.downloads ?? 0
+      };
+      
+      console.log(`Refetched blueprint ${blueprint.id}: downloads=${normalizedBp.downloads}`);
+      
+      // Update blueprints array
       setBlueprints(
         blueprints.map((bp) =>
-          bp.id === blueprint.id
-            ? { ...bp, downloads: (bp.downloads ?? 0) + 1 }
-            : bp
+          bp.id === blueprint.id ? normalizedBp : bp
         )
       );
       
       // Update selected blueprint if it's the one being downloaded
       if (selectedBlueprint?.id === blueprint.id) {
-        setSelectedBlueprint((prev) => ({
-          ...prev,
-          downloads: (prev?.downloads ?? 0) + 1
-        }));
+        console.log(`Updated selected blueprint with refetched data: downloads=${normalizedBp.downloads}`);
+        setSelectedBlueprint(normalizedBp);
       }
 
       // Trigger download
