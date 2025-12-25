@@ -575,9 +575,10 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         user={user}
         onLikeChange={(liked) => {
           if (selectedBlueprint) {
-            handleLike(selectedBlueprint.id, liked);
+            handleLike(selectedBlueprint.id, !liked);
           }
         }}
+        onDownload={handleDownload}
         onSearchByCreator={handleSearchByCreator}
         onBlueprintUpdate={() => {
           // Refresh the gallery to get updated blueprint data

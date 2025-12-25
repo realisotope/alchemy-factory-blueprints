@@ -5,9 +5,10 @@ import { sanitizeCreatorName } from "../lib/sanitization";
 import { updateBlueprintMetaTags, resetMetaTags } from "../lib/metaTags";
 import EditBlueprint from "./EditBlueprint";
 
-export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange, onSearchByCreator, onBlueprintUpdate }) {
+export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange, onSearchByCreator, onBlueprintUpdate, onDownload }) {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(blueprint?.likes || 0);
+  const [downloadCount, setDownloadCount] = useState(blueprint?.downloads || 0);
   const [isImageExpanded, setIsImageExpanded] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -16,7 +17,9 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
 
   useEffect(() => {
     setLikeCount(blueprint?.likes || 0);
-  }, [blueprint?.likes]);
+    setDownloadCount(blueprint?.downloads || 0);
+    setIsLiked(false);
+  }, [blueprint?.id, blueprint?.likes, blueprint?.downloads]);
 
   // Update meta tags when blueprint is opened/closed
   useEffect(() => {
@@ -73,9 +76,23 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
       return;
     }
     
-    onLikeChange?.(!isLiked);
-    setIsLiked(!isLiked);
-    setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+    const currentlyLiked = isLiked;
+    onLikeChange?.(currentlyLiked);
+    setIsLiked(!currentlyLiked);
+    setLikeCount(currentlyLiked ? likeCount - 1 : likeCount + 1);
+  };
+
+  const handleDownloadClick = async () => {
+    onDownload?.(blueprint);
+    
+    setDownloadCount(downloadCount + 1);
+    
+    const a = document.createElement("a");
+    a.href = blueprint.file_url;
+    a.download = blueprint.title;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const handleShareBlueprint = () => {
@@ -132,7 +149,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           {/* Stats Row */}
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-blue-900/30 p-2 rounded-lg border-2 border-cyan-700/50 text-center">
-              <div className="text-xl font-bold text-amber-300">{blueprint.downloads || 0}</div>
+              <div className="text-xl font-bold text-amber-300">{downloadCount}</div>
               <div className="text-xs text-gray-400 flex items-center justify-center mt-1">
                 <Download className="w-3 h-3 mr-1" />
                 Downloads
@@ -258,15 +275,14 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
               </div>
             </button>
           )}
-          <a
-            href={blueprint.file_url}
-            download
+          <button
+            onClick={handleDownloadClick}
             className="flex-1 min-w-0 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white py-2 sm:py-3 rounded-lg font-semibold transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
           >
             <Download className="w-4 h-4 sm:w-5 sm:h-5" />
             <span className="hidden sm:inline">Download</span>
             <span className="sm:hidden">Download</span>
-          </a>
+          </button>
           <button
             onClick={handleLike}
             className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 rounded-lg font-semibold transition text-sm sm:text-base ${
