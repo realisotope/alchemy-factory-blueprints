@@ -60,7 +60,15 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setBlueprints(data || []);
+      
+      // Ensure likes and downloads are properly set (default to 0 if NULL)
+      const processedData = (data || []).map(bp => ({
+        ...bp,
+        likes: bp.likes ?? 0,
+        downloads: bp.downloads ?? 0
+      }));
+      
+      setBlueprints(processedData);
     } catch (err) {
       console.error("Error fetching blueprints:", err);
     } finally {
@@ -94,10 +102,18 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         setBlueprints((prev) =>
           prev.map((bp) =>
             bp.id === blueprintId
-              ? { ...bp, likes: Math.max(0, (bp.likes || 1) - 1) }
+              ? { ...bp, likes: Math.max(0, (bp.likes ?? 0) - 1) }
               : bp
           )
         );
+        
+        // Update selected blueprint if it's the one being liked
+        if (selectedBlueprint?.id === blueprintId) {
+          setSelectedBlueprint((prev) => ({
+            ...prev,
+            likes: Math.max(0, (prev?.likes ?? 0) - 1)
+          }));
+        }
       } else {
         // Add like
         const { error } = await supabase.from("blueprint_likes").insert([
@@ -114,10 +130,18 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         setBlueprints((prev) =>
           prev.map((bp) =>
             bp.id === blueprintId
-              ? { ...bp, likes: (bp.likes || 0) + 1 }
+              ? { ...bp, likes: (bp.likes ?? 0) + 1 }
               : bp
           )
         );
+        
+        // Update selected blueprint if it's the one being liked
+        if (selectedBlueprint?.id === blueprintId) {
+          setSelectedBlueprint((prev) => ({
+            ...prev,
+            likes: (prev?.likes ?? 0) + 1
+          }));
+        }
       }
     } catch (err) {
       console.error("Error updating like:", err);
@@ -131,7 +155,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
       // Increment download count
       const { error } = await supabase
         .from("blueprints")
-        .update({ downloads: (blueprint.downloads || 0) + 1 })
+        .update({ downloads: (blueprint.downloads ?? 0) + 1 })
         .eq("id", blueprint.id);
 
       if (error) throw error;
@@ -140,10 +164,18 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
       setBlueprints(
         blueprints.map((bp) =>
           bp.id === blueprint.id
-            ? { ...bp, downloads: (bp.downloads || 0) + 1 }
+            ? { ...bp, downloads: (bp.downloads ?? 0) + 1 }
             : bp
         )
       );
+      
+      // Update selected blueprint if it's the one being downloaded
+      if (selectedBlueprint?.id === blueprint.id) {
+        setSelectedBlueprint((prev) => ({
+          ...prev,
+          downloads: (prev?.downloads ?? 0) + 1
+        }));
+      }
 
       // Trigger download
       const a = document.createElement("a");
