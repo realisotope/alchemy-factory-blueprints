@@ -9,11 +9,11 @@ import JSZip from "jszip";
 import { m } from "framer-motion";
 
 // Constants for validation
-const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB
+const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
 const MAX_IMAGE_WIDTH = 4000;
 const MAX_IMAGE_HEIGHT = 4000;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const AF_FILE_MAX_SIZE = 50 * 1024 * 1024; // 50MB
+const AF_FILE_MAX_SIZE = 25 * 1024 * 1024; // 25MB
 
 // Predefined tags list
 const AVAILABLE_TAGS = [
