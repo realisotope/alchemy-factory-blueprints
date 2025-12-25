@@ -16,6 +16,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
   const [scrollableRef, setScrollableRef] = useState(null);
 
   useEffect(() => {
+    console.log(`BlueprintDetail mounted/updated for ${blueprint?.id}: likes=${blueprint?.likes}, downloads=${blueprint?.downloads}`);
     setLikeCount(blueprint?.likes ?? 0);
     setDownloadCount(blueprint?.downloads ?? 0);
     setIsLiked(false);
