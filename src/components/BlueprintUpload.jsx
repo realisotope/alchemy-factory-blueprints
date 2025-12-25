@@ -447,6 +447,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
           file_url: fileUrl,
           image_url: imageUrl,
           tags: tags.length > 0 ? tags : null,
+          downloads: 0,
+          likes: 0,
         },
       ]);
 
