@@ -153,15 +153,12 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
   const handleDownload = async (blueprint) => {
     setDownloadingId(blueprint.id);
     try {
-      // Increment download count
-      const { error } = await supabase
-        .from("blueprints")
-        .update({ downloads: (blueprint.downloads ?? 0) + 1 })
-        .eq("id", blueprint.id);
+      // Increment download count via secure function
+      const { error } = await supabase.rpc('increment_blueprint_downloads', {
+        blueprint_id: blueprint.id
+      });
 
       if (error) throw error;
-
-      console.log(`Download incremented for ${blueprint.id}`);
       
       // Refetch the updated blueprint to ensure we have the latest download count
       const { data: updatedBlueprint, error: fetchError } = await supabase
