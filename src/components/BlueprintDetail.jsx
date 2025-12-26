@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { sanitizeCreatorName } from "../lib/sanitization";
 import { updateBlueprintMetaTags, resetMetaTags } from "../lib/metaTags";
+import { getDetailViewUrl, getLightboxUrl } from "../lib/imageOptimization";
 import EditBlueprint from "./EditBlueprint";
 
 export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange, onSearchByCreator, onBlueprintUpdate, onDownload }) {
@@ -131,7 +132,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           {blueprint.image_url && (
             <div className="relative group">
               <img
-                src={blueprint.image_url}
+                src={getDetailViewUrl(blueprint.image_url)}
                 alt={blueprint.title}
                 className="w-full h-48 sm:h-96 object-cover rounded-lg border-2 border-cyan-700/50 cursor-pointer transition hover:border-cyan-500/70 hover:shadow-lg hover:shadow-cyan-900/50"
                 onClick={() => setIsImageExpanded(true)}
@@ -354,9 +355,10 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           >
             <div className="relative">
               <img
-                src={blueprint.image_url}
+                src={getLightboxUrl(blueprint.image_url)}
                 alt={blueprint.title}
                 className="max-w-full max-h-full object-contain rounded-lg"
+                loading="lazy"
               />
               <button
                 onClick={() => setIsImageExpanded(false)}

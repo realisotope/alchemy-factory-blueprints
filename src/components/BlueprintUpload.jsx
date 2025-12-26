@@ -418,12 +418,12 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       // Upload image if provided (using Vercel Blob for automatic optimization)
       if (imageFile) {
         try {
-          // Compress image to ensure it's under 300KB
+          // Compress image
           const options = {
             maxSizeMB: 0.3,
-            maxWidthOrHeight: 2000,
+            maxWidthOrHeight: 1500,
             useWebWorker: true,
-            quality: 0.75,
+            quality: 0.55,
           };
           const compressedFile = await imageCompression(imageFile, options);
           

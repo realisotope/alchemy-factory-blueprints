@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase";
 import { Search, Download, Trash2, Loader, Heart, X } from "lucide-react";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { sanitizeCreatorName } from "../lib/sanitization";
+import { getThumbnailUrl } from "../lib/imageOptimization";
 import BlueprintDetail from "./BlueprintDetail";
 
 export default function BlueprintGallery({ user, refreshTrigger, initialBlueprintId }) {
@@ -414,7 +415,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
               {/* Image */}
               {blueprint.image_url ? (
                 <img
-                  src={blueprint.image_url}
+                  src={getThumbnailUrl(blueprint.image_url)}
                   alt={blueprint.title}
                   className="w-full h-48 object-cover bg-gray-700 flex-shrink-0"
                   loading="lazy"
