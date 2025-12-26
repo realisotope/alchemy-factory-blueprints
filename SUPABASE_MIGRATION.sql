@@ -23,7 +23,11 @@ CREATE POLICY "Users can delete their own likes" ON blueprint_likes FOR DELETE U
 
 -- Create a function to update blueprint likes count when a like is added/removed
 CREATE OR REPLACE FUNCTION update_blueprint_likes_count()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER 
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
 BEGIN
   IF TG_OP = 'INSERT' THEN
     UPDATE blueprints SET likes = likes + 1 WHERE id = NEW.blueprint_id;
@@ -32,7 +36,7 @@ BEGIN
   END IF;
   RETURN NULL;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- Create trigger to call the function
 DROP TRIGGER IF EXISTS update_likes_count_trigger ON blueprint_likes;
