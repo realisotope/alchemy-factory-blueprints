@@ -425,32 +425,9 @@ export const SAMPLE_BUILDINGS = [
 
 // Function to add sample data to blueprints for testing
 export function addSampleDataToBlueprints(blueprints) {
-  return blueprints.map((blueprint, index) => {
-    // Add sample data to every other blueprint for testing variety
-    if (index % 2 === 0) {
-      return {
-        ...blueprint,
-        materials: SAMPLE_MATERIALS,
-        buildings: SAMPLE_BUILDINGS,
-      };
-    }
-    return blueprint;
-  });
-}
-
-// Alternative: Add sample data only to blueprints with specific titles (for testing)
-export function addSampleDataToSpecificBlueprints(blueprints) {
-  return blueprints.map((blueprint) => {
-    // Add sample data if blueprint title contains certain keywords
-    if (blueprint.title.toLowerCase().includes("diamonds") || 
-        blueprint.title.toLowerCase().includes("factory") ||
-        index === 0) { // Also add to first blueprint
-      return {
-        ...blueprint,
-        materials: SAMPLE_MATERIALS,
-        buildings: SAMPLE_BUILDINGS,
-      };
-    }
-    return blueprint;
-  });
+  return blueprints.map((blueprint) => ({
+    ...blueprint,
+    materials: SAMPLE_MATERIALS,
+    buildings: SAMPLE_BUILDINGS,
+  }));
 }
