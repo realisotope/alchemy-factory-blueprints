@@ -2,7 +2,7 @@ import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 
 export default function BlueprintStats({ materials = [], buildings = [] }) {
-  const [expandedSection, setExpandedSection] = useState("materials");
+  const [expandedSection, setExpandedSection] = useState(null);
 
   const toggleSection = (section) => {
     setExpandedSection(expandedSection === section ? null : section);
