@@ -5,6 +5,7 @@ import { sanitizeCreatorName } from "../lib/sanitization";
 import { updateBlueprintMetaTags, resetMetaTags } from "../lib/metaTags";
 import { getDetailViewUrl, getLightboxUrl } from "../lib/imageOptimization";
 import EditBlueprint from "./EditBlueprint";
+import BlueprintStats from "./BlueprintStats";
 
 export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange, onSearchByCreator, onBlueprintUpdate, onDownload }) {
   const [isLiked, setIsLiked] = useState(false);
@@ -206,6 +207,12 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
               </p>
             </div>
           )}
+
+          {/* Blueprint Stats - Materials and Buildings */}
+          <BlueprintStats 
+            materials={blueprint.materials || []} 
+            buildings={blueprint.buildings || []} 
+          />
 
           {/* Tags */}
           {blueprint.tags && blueprint.tags.length > 0 && (

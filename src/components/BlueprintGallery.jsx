@@ -4,6 +4,7 @@ import { Search, Download, Trash2, Loader, Heart, X } from "lucide-react";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { sanitizeCreatorName } from "../lib/sanitization";
 import { getThumbnailUrl } from "../lib/imageOptimization";
+import { addSampleDataToBlueprints } from "../lib/sampleData";
 import BlueprintDetail from "./BlueprintDetail";
 
 export default function BlueprintGallery({ user, refreshTrigger, initialBlueprintId }) {
@@ -69,8 +70,11 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         downloads: bp.downloads ?? 0
       }));
       
-      console.log("Fetched blueprints:", processedData);
-      setBlueprints(processedData);
+      // Add sample materials and buildings data for testing
+      const dataWithSamples = addSampleDataToBlueprints(processedData);
+      
+      console.log("Fetched blueprints:", dataWithSamples);
+      setBlueprints(dataWithSamples);
     } catch (err) {
       console.error("Error fetching blueprints:", err);
     } finally {
