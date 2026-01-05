@@ -400,7 +400,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
             />
           </div>
 
-          {/* Changelog */}
+          {/* Changelog
           <div>
             <label className="block text-sm font-medium text-cyan-200 mb-2">
               What's Changed? (optional)
@@ -413,7 +413,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               className="w-full px-4 py-2 border border-cyan-600/50 rounded-lg focus:ring-2 focus:ring-cyan-500 bg-gray-800 text-white placeholder-gray-400"
               disabled={isLoading}
             />
-          </div>
+          </div> */}
 
           {/* Blueprint File */}
           <div>
