@@ -556,7 +556,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="flex-1 bg-[#59452e] text-red-600/50 py-3 rounded-lg font-semibold hover:bg-red-900/30 transition disabled:opacity-50"
+              className="flex-1 bg-[#59452e] text-white py-3 rounded-lg font-semibold hover:bg-red-900/40 transition disabled:opacity-50"
             >
               Cancel
             </button>
