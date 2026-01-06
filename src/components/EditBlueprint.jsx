@@ -541,7 +541,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
             <button
               type="submit"
               disabled={isLoading}
-              className="flex-1 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 bg-gradient-to-r from-[#d1a94f] to-[#ddb52c] hover:from-amber-500 hover:to-yellow-500 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {isLoading ? (
                 <>
