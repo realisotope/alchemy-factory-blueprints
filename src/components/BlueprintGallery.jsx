@@ -447,7 +447,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
               )}
 
               {/* Gallery Content*/}
-              <div className="p-5 space-y-3 flex-grow flex flex-col bg-gradient-to-b from-[#9f8569]/80 to-[#af9170]/90">
+              <div className="p-4 space-y-2 flex-grow flex flex-col bg-gradient-to-b from-[#9f8569]/80 to-[#af9170]/90">
                 {/* Title and Description */}
                 <div>
                   <h3 className="text-lg font-bold text-[#fcd34d] truncate group-hover:text-[#ffe797]/90 transition">
@@ -507,7 +507,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2 pt-2 mt-auto">
+                <div className="flex gap-2 mt-auto">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();

@@ -91,7 +91,7 @@ export default function App() {
                 Alchemy Factory Blueprints
               </h1>
             </div>
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-end sm:items-center sm:justify-end flex-shrink-0 ml-4">
+            <div className="hidden sm:flex flex-col sm:flex-row gap-2 sm:gap-3 items-end sm:items-center sm:justify-end flex-shrink-0 ml-4">
               <DiscordLogin user={user} onLogout={handleLogout} />
               <button
                 onClick={() => setIsHowToOpen(true)}
