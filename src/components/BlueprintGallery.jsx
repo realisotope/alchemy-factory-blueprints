@@ -164,7 +164,9 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
       // Update selected blueprint
       if (selectedBlueprint?.id === blueprintId) {
         console.log(`Updated selected blueprint with refetched data: likes=${normalizedBp.likes}`);
-        setSelectedBlueprint(normalizedBp);
+        setSelectedBlueprint((prev) => 
+          prev ? { ...prev, likes: normalizedBp.likes } : null
+        );
       }
     } catch (err) {
       console.error("Error updating like:", err);
