@@ -202,7 +202,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           {blueprint.description && (
             <div>
               <h3 className="text-lg font-bold text-[#fcd34d] mb-2">Description</h3>
-              <p className="text-[#ffeed3] leading-relaxed whitespace-pre-wrap break-words">
+              <p className="text-[#fbe5c2] leading-relaxed whitespace-pre-wrap break-words">
                 {blueprint.description}
               </p>
             </div>
@@ -242,7 +242,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           )} */}
 
           {/* Date Info */}
-          <div className="text-sm text-[#ffeed3] pt-4 border-t border-[#d3b593] space-y-1">
+          <div className="text-sm text-[#ffe1b2] pt-4 border-t border-[#d3b593] space-y-1">
             {blueprint.updated_at && blueprint.updated_at !== blueprint.created_at && (
               <div>
                 Updated on{" "}

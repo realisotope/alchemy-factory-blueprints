@@ -463,12 +463,12 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
                 )}
 
                 {/* Stats */}
-                <div className="flex gap-4 text-sm text-[#ffeed3] border-t border-[#6b5d45]/60 pt-3 flex-wrap items-center">
+                <div className="flex gap-4 text-sm text-[#ffeed3] border-t border-[#dbb87c]/60 pt-3 flex-wrap items-center">
                   <div className="flex items-center gap-1 hover:text-[#ffdca7] transition">
                     <Download className="w-4 h-4" />
                     <span>{blueprint.downloads || 0}</span>
                   </div>
-                  <div className="flex items-center gap-1 hover:text-rose-400 transition">
+                  <div className="flex items-center gap-1 hover:text-rose-400 transition ">
                     <Heart className="w-4 h-4" />
                     <span>{blueprint.likes || 0}</span>
                   </div>
@@ -496,13 +496,13 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
                       handleDownload(blueprint);
                     }}
                     disabled={downloadingId === blueprint.id}
-                    className="flex-1 bg-gradient-to-r from-[#5b4a39]/50 to-[#59452e]/50 hover:from-[#dbb84a] hover:to-[#fbcd32] disabled:from-[#cda87d] disabled:to-[#7d6d54] font-semibold py-2 rounded-lg transition shadow-md hover:shadow-lg hover:shadow-[#bba664]/30 hover:text-[#654e35] flex items-center justify-center text-sm"
+                    className="flex-1 bg-gradient-to-r from-[#5b4a39]/50 to-[#59452e]/50 hover:from-[#dbb84a] hover:to-[#fbcd32] disabled:from-amber-600 disabled:to-yellow-600 font-semibold py-2 rounded-lg transition shadow-md hover:shadow-lg hover:shadow-[#bba664]/30 hover:text-[#654e35] flex items-center justify-center text-sm"
                   >
                     {downloadingId === blueprint.id ? (
                       <Loader className="w-4 h-4 animate-spin" />
                     ) : (
                       <>
-                        <Download className="w-4 h-4 mr-1" />
+                        <Download className="w-4 h-4 mr-1 " />
                         Download
                       </>
                     )}
@@ -515,8 +515,8 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
                     }}
                     className={`px-3 py-2 rounded-lg transition font-semibold flex items-center justify-center ${
                       isLiked
-                        ? "bg-rose-700 hover:bg-rose-600 text-white"
-                        : "bg-[#59452e]/40 hover:bg-amber-300 text-[#ffdca7] hover:text-red-600"
+                        ? "bg-[#59452e]/50 hover:bg-rose-600 text-white"
+                        : "bg-[#59452e]/60 hover:bg-amber-300 text-[#ffdca7] hover:text-red-600"
                     }`}
                   >
                     <Heart className={`w-4 h-4 ${isLiked ? "fill-current" : ""}`} />

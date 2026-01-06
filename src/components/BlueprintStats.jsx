@@ -48,10 +48,10 @@ export default function BlueprintStats({ materials = [], buildings = [] }) {
                         <span className="text-[#6b5d45] text-xs">No icon</span>
                       )}
                     </div>
-                    <div className="text-sm font-bold text-[#ffdca7]">
+                    <div className="text-sm font-bold text-amber-300">
                       {material.quantity}
                     </div>
-                    <div className="text-xs text-[#bba664] truncate">
+                    <div className="text-xs truncate">
                       {material.name}
                     </div>
                   </div>
@@ -96,10 +96,10 @@ export default function BlueprintStats({ materials = [], buildings = [] }) {
                         <span className="text-[#6b5d45] text-xs">No icon</span>
                       )}
                     </div>
-                    <div className="text-sm font-bold text-[#ffdca7]">
+                    <div className="text-sm font-bold text-amber-300">
                       {building.quantity}
                     </div>
-                    <div className="text-xs text-[#bba664] truncate">
+                    <div className="text-xs truncate">
                       {building.name}
                     </div>
                   </div>
