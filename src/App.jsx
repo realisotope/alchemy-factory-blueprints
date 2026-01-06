@@ -40,7 +40,7 @@ export default function App() {
     // Check for blueprint ID in URL params
     const params = new URLSearchParams(window.location.search);
     const blueprintId = params.get("blueprintId");
-    
+
     // Validate UUID format to prevent injection attacks
     if (blueprintId && isValidUUID(blueprintId)) {
       setInitialBlueprintId(blueprintId);
@@ -69,167 +69,148 @@ export default function App() {
   }
 
   return (
-    <div 
-      className="min-h-screen w-full bg-[#020617] relative"
+    <div
+      className="min-h-screen w-full relative flex flex-col"
       style={{
-      background: "#0f172a",
-      backgroundImage: `
-        radial-gradient(circle, rgba(92, 202, 246, 0.6) 1px, transparent 1px),
-        radial-gradient(circle, rgba(59,130,246,0.4) 1px, transparent 1px),
-        radial-gradient(circle, rgba(72, 83, 236, 0.5) 1px, transparent 1px)
+        background: "#876e54",
+        backgroundImage: `
+        radial-gradient(circle, rgb(252, 211, 77) 1px, transparent 1px),
+        radial-gradient(circle, rgba(159, 133, 105, 0.4) 1px, transparent 1px),
+        radial-gradient(circle, rgba(135, 114, 90, 0.5) 1px, transparent 1px)
       `,
-      backgroundSize: "72px 72px, 72px 72px, 100% 100%",
+        backgroundSize: "72px 72px, 72px 72px, 100% 100%",
       }}
     >
-      <div className="relative z-10">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-blue-900 via-cyan-900 to-blue-900 text-white shadow-2xl sticky top-0 z-50 border-b border-cyan-700/50">
-        <div className="max-w-7xl mx-auto px-4 py-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-4xl">⚗️</span>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-300 to-yellow-300 bg-clip-text text-transparent">
-              Alchemy Factory Blueprints
-            </h1>
-          </div>
-          <DiscordLogin user={user} onLogout={handleLogout} />
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-12 space-y-12">
-        {/* Upload Section */}
-        {user ? (
-          <div className="bg-gradient-to-br from-blue-900/60 via-cyan-900/50 to-blue-900/60 rounded-xl shadow-2xl p-6 border border-cyan-600/50 backdrop-blur-md hover:border-cyan-500/70 transition-all">
-            <h2 className="text-2xl font-bold text-amber-300 mb-4">
-              ✨ Ready to share your blueprint?
-            </h2>
-            <p className="text-gray-300 mb-6 text-lg">
-              Upload your factory blueprint along with an image and description.
-            </p>
-            <button
-              onClick={() => setIsUploadModalOpen(true)}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-semibold py-3 px-8 rounded-lg transition shadow-lg hover:shadow-xl hover:shadow-amber-500/30"
-            >
-              <Upload className="w-5 h-5" />
-              Upload Blueprint
-            </button>
-          </div>
-        ) : (
-          <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/30 rounded-lg shadow-xl p-6 border border-cyan-700/50 backdrop-blur-sm">
-            <div className="text-center mb-4">
-              <h2 className="text-xl font-bold text-cyan-300 mb-2">
-                🔐 Login to Upload Blueprints
-              </h2>
-              <p className="text-gray-300 text-sm">
-                Sign in with Discord to share your factory blueprints with the community.
-              </p>
+      <div className="relative z-10 flex flex-col flex-grow">
+        {/* Header */}
+        <header className="bg-gradient-to-r from-[#a78158] via-[#9f7f5a] to-[#9b7956] text-white shadow-2x1 sticky top-0 z-50 border-b border-[#bba664]/50">
+          <div className="max-w-7xl mx-auto px-4 py-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-4xl">⚗️</span>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-[#fcd34d] to-[#fde047] bg-clip-text text-transparent">
+                Alchemy Factory Blueprints
+              </h1>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
               <DiscordLogin user={user} onLogout={handleLogout} />
               <button
                 onClick={() => setIsHowToOpen(true)}
-                className="flex items-center gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold py-2 px-4 rounded-lg transition shadow-lg hover:shadow-xl"
+                className="flex items-center gap-2 bg-gradient-to-r from-[#5b4a39]/50 to-[#59452e]/50 hover:from-[#dbb84a] hover:to-[#fbcd32] font-semibold py-2 px-4 rounded-lg transition shadow-lg hover:shadow-xl"
                 title="How to use blueprints"
               >
                 <BookOpen className="w-4 h-4" />
                 How to Use Blueprints
               </button>
+              {user ? (
+                <button
+                  onClick={() => setIsUploadModalOpen(true)}
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-[#dbb84a]/80 to-[#fbcd32]/70 hover:from-[#dbb84a] hover:to-[#fbcd32] hover:text-[#654e35] font-semibold py-2 px-8 rounded-lg transition shadow-lg hover:shadow-xl hover:shadow-[#fbcd32]/30"
+                >
+                  <Upload className="w-5 h-5" />
+                  Upload Blueprint
+                </button>
+              ) : (
+                <></>)}
+
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="max-w-7xl mx-auto px-4 py-12 space-y-12 flex-grow w-full min-w-0">
+
+          {/* Gallery Section */}
+          <section>
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-[#fcd34d] to-[#fde047] bg-clip-text text-transparent mb-2">
+              Blueprint Gallery
+            </h2>
+            <BlueprintGallery user={user} refreshTrigger={refreshGallery} initialBlueprintId={initialBlueprintId} />
+          </section>
+        </main>
+
+        {/* Upload Modal */}
+        <UploadModal
+          isOpen={isUploadModalOpen}
+          onClose={() => setIsUploadModalOpen(false)}
+          user={user}
+          onUploadSuccess={handleUploadSuccess}
+        />
+
+        {/* How to Use Modal */}
+        {isHowToOpen && (
+          <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setIsHowToOpen(false)}>
+            <div className="bg-gradient-to-b from-[#b99a77] to-[#876e54] rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-[#cfb153]" onClick={(e) => e.stopPropagation()}>
+              {/* Header */}
+              <div className="sticky top-0 z-10 bg-gradient-to-r from-[#a78158] via-[#9f7f5a] to-[#9b7956] text-white p-6 flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-amber-300 flex-1">How to Use Blueprints</h2>
+                <button
+                  onClick={() => setIsHowToOpen(false)}
+                  className="ml-4 p-2 hover:bg-white/10 rounded-lg transition"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 space-y-6">
+                <section>
+                  <h3 className="text-xl font-bold text-amber-300 mb-3">🔧 What are Blueprints?</h3>
+                  <p>
+                    Blueprints are saved factory designs that allow you to share complex production setups with other players. They contain information about machine placement, connections, and configurations.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-amber-300 mb-3">📥 Importing Blueprints</h3>
+                  <ol className="list-decimal list-inside space-y-2 ml-2">
+                    <li>Download the blueprint file (.af) from this site.</li>
+                    <i>(Some larger blueprints may be compressed into a zip file.)</i>
+                    <li>Drag and drop the .af from the zip into the games blueprints directory.</li>
+                    <li>Your newly downloaded blueprint will appear in-game without any restarts.</li>
+                  </ol>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-amber-300 mb-3">💾 File Storage</h3>
+                  <p className="mb-2">Blueprint files are typically stored in:</p>
+                  <code className="bg-[#6f5d45]/50 p-3 rounded-lg block text-sm overflow-x-auto">
+                    C:\Users\YOURUSERNAME\AppData\Local\AlchemyFactory\Saved\Blueprints\
+                  </code>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-amber-300 mb-3">📤 Exporting Your Blueprints</h3>
+                  <ol className="list-decimal list-inside space-y-2 ml-2">
+                    <li>In Alchemy Factory, select all the components you want to include in your blueprint.</li>
+                    <li>Press <b>F</b> to confirm your selection and <b>H</b> to save your blueprint.</li>
+                    <li>Click your new blueprint in the menu and hit the Export button.</li>
+                  </ol>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-amber-300 mb-3">❓ Tips & Tricks</h3>
+                  <ul className="list-disc list-inside space-y-2 ml-2">
+                    <li>Name your blueprints clearly for easy identification.</li>
+                    <li>Take a screenshot to use as a preview image.</li>
+                    <li>Write descriptions explaining what your blueprint produces.</li>
+                    <li>Include information about production rates and efficiency.</li>
+                  </ul>
+                </section>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Gallery Section */}
-        <section>
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-300 to-yellow-300 bg-clip-text text-transparent mb-8">
-            Blueprint Gallery
-          </h2>
-          <BlueprintGallery user={user} refreshTrigger={refreshGallery} initialBlueprintId={initialBlueprintId} />
-        </section>
-      </main>
-
-      {/* Upload Modal */}
-      <UploadModal
-        isOpen={isUploadModalOpen}
-        onClose={() => setIsUploadModalOpen(false)}
-        user={user}
-        onUploadSuccess={handleUploadSuccess}
-      />
-
-      {/* How to Use Modal */}
-      {isHowToOpen && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setIsHowToOpen(false)}>
-          <div className="bg-gradient-to-b from-gray-900 to-gray-950 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-cyan-700/50" onClick={(e) => e.stopPropagation()}>
-            {/* Header */}
-            <div className="sticky top-0 z-10 bg-gradient-to-r from-blue-900 via-cyan-900 to-blue-900 text-white p-6 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-amber-300 flex-1">How to Use Blueprints</h2>
-              <button
-                onClick={() => setIsHowToOpen(false)}
-                className="ml-4 p-2 hover:bg-white/10 rounded-lg transition"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="p-6 space-y-6 text-gray-300">
-              <section>
-                <h3 className="text-xl font-bold text-amber-300 mb-3">🔧 What are Blueprints?</h3>
-                <p>
-                  Blueprints are saved factory designs that allow you to share complex production setups with other players. They contain information about machine placement, connections, and configurations.
-                </p>
-              </section>
-
-              <section>
-                <h3 className="text-xl font-bold text-amber-300 mb-3">📥 Importing Blueprints</h3>
-                <ol className="list-decimal list-inside space-y-2 ml-2">
-                  <li>Download the blueprint file (.af) from this site.</li>
-                  <i>(Some larger blueprints may be compressed into a zip file.)</i>
-                  <li>Drag and drop the .af from the zip into the games blueprints directory.</li>
-                  <li>Your newly downloaded blueprint will appear in-game without any restarts.</li>
-                </ol>
-              </section>
-
-              <section>
-                <h3 className="text-xl font-bold text-amber-300 mb-3">💾 File Storage</h3>
-                <p className="mb-2">Blueprint files are typically stored in:</p>
-                <code className="bg-gray-800 p-3 rounded-lg block text-sm overflow-x-auto">
-                  C:\Users\YOURUSERNAME\AppData\Local\AlchemyFactory\Saved\Blueprints\
-                </code>
-              </section>
-
-              <section>
-                <h3 className="text-xl font-bold text-amber-300 mb-3">📤 Exporting Your Blueprints</h3>
-                <ol className="list-decimal list-inside space-y-2 ml-2">
-                  <li>In Alchemy Factory, select all the components you want to include in your blueprint.</li>
-                  <li>Press <b>F</b> to confirm your selection and <b>H</b> to save your blueprint.</li>
-                  <li>Click your new blueprint in the menu and hit the Export button.</li>
-                </ol>
-              </section>
-
-              <section>
-                <h3 className="text-xl font-bold text-amber-300 mb-3">❓ Tips & Tricks</h3>
-                <ul className="list-disc list-inside space-y-2 ml-2">
-                  <li>Name your blueprints clearly for easy identification.</li>
-                  <li>Take a screenshot to use as a preview image.</li>
-                  <li>Write descriptions explaining what your blueprint produces.</li>
-                  <li>Include information about production rates and efficiency.</li>
-                </ul>
-              </section>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Footer */}
-      <footer className="bg-gradient-to-r from-blue-950 via-cyan-950 to-blue-950 text-gray-300 text-center py-4 mt-12 border-t border-cyan-700/50">
-        <p>
-          Upload and share your Alchemy Factory Blueprints - Not affiliated with Alchemy Factory.
-        </p>
-        <p>
-          created with React, Vite, Vercel and Supabase
-        </p>
-        <p>by <b>realisotope</b> - <b><a href="https://github.com/realisotope/alchemy-factory-blueprints">GitHub Source Code</a></b></p>
-      </footer>
+        {/* Footer */}
+        <footer className="bg-gradient-to-r from-[#a78158] via-[#9f7f5a] to-[#9b7956] text-[#ffdca7] text-center py-4 border-t border-[#bba664]/50 mt-auto">
+          <p>
+            Upload and share your Alchemy Factory Blueprints - Not affiliated with Alchemy Factory.
+          </p>
+          <p>
+            created with React, Vite, Vercel and Supabase
+          </p>
+          <p>by <b>realisotope</b> - <b><a href="https://github.com/realisotope/alchemy-factory-blueprints">GitHub Source Code</a></b></p>
+        </footer>
       </div>
     </div>
   );

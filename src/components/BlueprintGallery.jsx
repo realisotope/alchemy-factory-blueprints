@@ -306,18 +306,19 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
       {/* Search and Sort */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-3 w-5 h-5 text-gray-500" />
+          <Search className="absolute left-3 top-3 w-5 h-5 text-[#ffdca7]" />
           <input
+            name="input-search"
             type="text"
-            placeholder="Search blueprints or tags..."
+            placeholder="Search for blueprints....."
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-10 pr-10 py-2.5 border-2 border-cyan-700/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-gray-800/70 text-gray-100 placeholder-gray-500 transition-all shadow-sm"
+            className="w-full pl-10 pr-10 py-2.5 border border-[#fff0a6]/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f5d84b] focus:border-[#f5d84b] bg-[#8b7256]/90 text-[#ffdca7] placeholder-[#ffdca7] transition-all shadow-sm"
           />
           {searchTerm && (
             <button
               onClick={() => handleSearch("")}
-              className="absolute right-3 top-3 text-gray-500 hover:text-gray-300 transition"
+              className="absolute right-3 top-3 text-[#ffdca7] hover:text-[#f5d84b] transition"
               title="Clear search"
             >
               <X className="w-5 h-5" />
@@ -328,7 +329,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
           <button
             type="button"
             onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
-            className="w-full sm:w-auto px-4 py-2.5 border-2 border-cyan-700/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-gray-800/70 text-gray-200 font-medium transition-all shadow-sm hover:border-cyan-600/80 flex items-center justify-between gap-2"
+            className="w-full sm:w-auto px-4 py-2.5 border border-[#fff0a6]/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f5d84b] focus:border-[#f5d84b] bg-[#8b7256]/70 text-[#ffdca7] font-medium transition-all shadow-sm hover:border-[#9f8569]/80 flex items-center justify-between gap-2"
           >
             <span>
               {sortBy === "newest" ? "Newest First" : sortBy === "oldest" ? "Oldest First" : sortBy === "alphabetical" ? "Alphabetical" : sortBy === "updated" ? "Recently Updated" : sortBy === "downloaded" ? "Most Downloaded" : "Most Liked"}
@@ -337,46 +338,46 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
           </button>
           
           {sortDropdownOpen && (
-            <div className="absolute top-full right-0 mt-1 bg-gray-800 border border-cyan-700/50 rounded-lg shadow-lg z-50 w-48">
+            <div className="absolute top-full right-0 mt-1 bg-[#8b7256] border border-[#fff0a6]/50 rounded-lg shadow-lg z-50 w-48">
               <button
                 type="button"
                 onClick={() => { handleSort("newest"); setSortDropdownOpen(false); }}
-                className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 text-gray-100 transition first:rounded-t-lg border-b border-cyan-700/20"
+                className="w-full text-left px-4 py-2.5 hover:bg-[#67523c]/40 text-[#ffdca7] transition first:rounded-t-lg border-b border-[#fff0a6]/20"
               >
                 Newest First
               </button>
               <button
                 type="button"
                 onClick={() => { handleSort("oldest"); setSortDropdownOpen(false); }}
-                className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 text-gray-100 transition border-b border-cyan-700/20"
+                className="w-full text-left px-4 py-2.5 hover:bg-[#67523c]/40 text-[#ffdca7] transition border-b border-[#fff0a6]/20"
               >
                 Oldest First
               </button>
               <button
                 type="button"
                 onClick={() => { handleSort("alphabetical"); setSortDropdownOpen(false); }}
-                className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 text-gray-100 transition border-b border-cyan-700/20"
+                className="w-full text-left px-4 py-2.5 hover:bg-[#67523c]/40 text-[#ffdca7] transition border-b border-[#fff0a6]/20"
               >
                 Alphabetical
               </button>
               <button
                 type="button"
                 onClick={() => { handleSort("updated"); setSortDropdownOpen(false); }}
-                className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 text-gray-100 transition border-b border-cyan-700/20"
+                className="w-full text-left px-4 py-2.5 hover:bg-[#67523c]/40 text-[#ffdca7] transition border-b border-[#fff0a6]/20"
               >
                 Recently Updated
               </button>
               <button
                 type="button"
                 onClick={() => { handleSort("downloaded"); setSortDropdownOpen(false); }}
-                className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 text-gray-100 transition border-b border-cyan-700/20"
+                className="w-full text-left px-4 py-2.5 hover:bg-[#67523c]/40 text-[#ffdca7] transition border-b border-[#fff0a6]/20"
               >
                 Most Downloaded
               </button>
               <button
                 type="button"
                 onClick={() => { handleSort("popular"); setSortDropdownOpen(false); }}
-                className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 text-gray-100 transition last:rounded-b-lg last:border-b-0"
+                className="w-full text-left px-4 py-2.5 hover:bg-[#67523c]/40 text-[#ffdca7] transition last:rounded-b-lg last:border-b-0"
               >
                 Most Liked
               </button>
@@ -388,14 +389,14 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
       {/* Loading State */}
       {loading && (
         <div className="flex items-center justify-center py-12">
-          <Loader className="w-8 h-8 animate-spin text-cyan-500" />
+          <Loader className="w-8 h-8 animate-spin text-[#ffeb9d]" />
         </div>
       )}
 
       {/* Empty State */}
       {!loading && filteredBlueprints.length === 0 && (
-        <div className="text-center py-12 bg-gradient-to-b from-cyan-900/30 to-blue-900/30 rounded-lg border border-cyan-700/50">
-          <p className="text-gray-300 text-lg">
+        <div className="text-center py-12 bg-gradient-to-b from-[#977958]/30 to-[#9f8569]/30 rounded-lg border border-[#87725a]/50">
+          <p className="text-[#ffeb9d] text-lg">
             {blueprints.length === 0
               ? "✨ No blueprints yet. Be the first to upload one!"
               : "No blueprints match your search."}
@@ -410,7 +411,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
           return (
             <div
               key={blueprint.id}
-              className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-lg overflow-hidden border-2 border-cyan-700/50 hover:border-cyan-500/70 hover:shadow-2xl hover:shadow-cyan-900/30 transition-all duration-300 cursor-pointer flex flex-col h-full group"
+              className="bg-gradient-to-br from-[#9f8569] to-[#87725a] rounded-xl shadow-lg overflow-hidden hover:shadow-2xl hover:shadow-[#fcd34d]/20 transition-all duration-150 cursor-pointer flex flex-col h-full group"
               onClick={() => setSelectedBlueprint(blueprint)}
             >
               {/* Image */}
@@ -418,24 +419,24 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
                 <img
                   src={getThumbnailUrl(blueprint.image_url)}
                   alt={blueprint.title}
-                  className="w-full h-48 object-cover bg-gray-700 flex-shrink-0"
+                  className="w-full h-48 object-cover bg-[#ffdca7] flex-shrink-0 transition-opacity duration-150 group-hover:opacity-90 opacity-80"
                   loading="lazy"
                 />
               ) : (
-                <div className="w-full h-48 bg-gradient-to-br from-blue-900 to-cyan-900 flex items-center justify-center flex-shrink-0">
+                <div className="w-full h-48 bg-gradient-to-br from-[#ffdca7] to-[#87725a] flex items-center justify-center flex-shrink-0">
                   <span className="text-4xl">⚗️</span>
                 </div>
               )}
 
               {/* Gallery Content*/}
-              <div className="p-5 space-y-3 flex-grow flex flex-col bg-gradient-to-b from-gray-800/80 to-gray-900/90">
+              <div className="p-5 space-y-3 flex-grow flex flex-col bg-gradient-to-b from-[#9f8569]/80 to-[#af9170]/90">
                 {/* Title and Description */}
                 <div>
-                  <h3 className="text-lg font-bold text-amber-300 truncate group-hover:text-amber-200 transition">
+                  <h3 className="text-lg font-bold text-[#fcd34d] truncate group-hover:text-[#ffe797]/90 transition">
                     {blueprint.title}
                   </h3>
 
-                  <p className="text-sm text-gray-400 line-clamp-3 mt-1">
+                  <p className="text-sm text-[#ffeed3] line-clamp-3 mt-1">
                     {blueprint.description || "No description provided."}
                   </p>
                 </div>
@@ -448,7 +449,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
                     {blueprint.tags.slice(0, 3).map((tag) => (
                       <span
                         key={tag}
-                        className="text-xs bg-cyan-700/50 text-cyan-200 px-2.5 py-1 rounded-full border border-cyan-500/30 font-medium hover:bg-cyan-700/70 transition"
+                        className="text-xs bg-[#87725a]/50 text-[#ffeed3] px-2.5 py-1 rounded-full border border-[#6b5d45]/30 font-medium hover:bg-[#87725a]/70 transition"
                       >
                         {tag}
                       </span>
@@ -462,8 +463,8 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
                 )}
 
                 {/* Stats */}
-                <div className="flex gap-4 text-sm text-gray-400 border-t border-gray-700/60 pt-3 flex-wrap items-center">
-                  <div className="flex items-center gap-1 hover:text-cyan-300 transition">
+                <div className="flex gap-4 text-sm text-[#ffeed3] border-t border-[#6b5d45]/60 pt-3 flex-wrap items-center">
+                  <div className="flex items-center gap-1 hover:text-[#ffdca7] transition">
                     <Download className="w-4 h-4" />
                     <span>{blueprint.downloads || 0}</span>
                   </div>
@@ -472,14 +473,14 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
                     <span>{blueprint.likes || 0}</span>
                   </div>
                   <div className="text-xs text-gray-500 ml-auto">
-                    <p className="font-semibold text-gray-400 hover:text-gray-300 transition">
+                    <p className="font-semibold text-amber-200 hover:text-amber-100 transition">
                       by{" "}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleSearchByCreator(blueprint.creator_name);
                         }}
-                        className="text-cyan-400 hover:text-cyan-300 hover:underline transition cursor-pointer"
+                        className="text-[#fcd34d] hover:text-[#ffdca7]/80 hover:underline transition cursor-pointer"
                       >
                         {sanitizeCreatorName(stripDiscordDiscriminator(blueprint.creator_name))}
                       </button>
@@ -495,7 +496,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
                       handleDownload(blueprint);
                     }}
                     disabled={downloadingId === blueprint.id}
-                    className="flex-1 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 disabled:from-gray-700 disabled:to-gray-800 text-black font-semibold py-2 rounded-lg transition shadow-md hover:shadow-lg hover:shadow-amber-500/30 flex items-center justify-center text-sm"
+                    className="flex-1 bg-gradient-to-r from-[#5b4a39]/50 to-[#59452e]/50 hover:from-[#dbb84a] hover:to-[#fbcd32] disabled:from-[#cda87d] disabled:to-[#7d6d54] font-semibold py-2 rounded-lg transition shadow-md hover:shadow-lg hover:shadow-[#bba664]/30 hover:text-[#654e35] flex items-center justify-center text-sm"
                   >
                     {downloadingId === blueprint.id ? (
                       <Loader className="w-4 h-4 animate-spin" />
@@ -515,7 +516,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
                     className={`px-3 py-2 rounded-lg transition font-semibold flex items-center justify-center ${
                       isLiked
                         ? "bg-rose-700 hover:bg-rose-600 text-white"
-                        : "bg-gray-700 hover:bg-gray-600 text-gray-200"
+                        : "bg-[#59452e]/40 hover:bg-amber-300 text-[#ffdca7] hover:text-red-600"
                     }`}
                   >
                     <Heart className={`w-4 h-4 ${isLiked ? "fill-current" : ""}`} />
@@ -528,7 +529,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
                         handleDelete(blueprint);
                       }}
                       disabled={deleting === blueprint.id}
-                      className="bg-red-700 hover:bg-red-600 disabled:bg-gray-700 text-white font-semibold py-2 px-3 rounded-lg transition flex items-center justify-center"
+                      className="bg-red-700 hover:bg-red-600 disabled:bg-[#6b5d45] text-white font-semibold py-2 px-3 rounded-lg transition flex items-center justify-center"
                     >
                       {deleting === blueprint.id ? (
                         <Loader className="w-4 h-4 animate-spin" />
@@ -550,7 +551,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
           <button
             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
-            className="px-4 py-2 rounded-lg border border-cyan-700/60 bg-gray-800/70 text-gray-200 font-medium hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            className="px-4 py-2 rounded-lg border border-[#87725a]/60 bg-[#3a3227]/70 text-[#ffdca7] font-medium hover:bg-[#4a4033] disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
             ← Previous
           </button>
@@ -595,10 +596,10 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
                   disabled={page === '...'}
                   className={`px-3 py-2 rounded-lg font-medium transition ${
                     page === currentPage
-                      ? "bg-cyan-700 text-white border border-cyan-600"
+                      ? "bg-[#a2876a] text-amber-300 border border-[#cfb493]"
                       : page === '...'
-                      ? "border border-transparent text-gray-400 cursor-default"
-                      : "border border-cyan-700/60 bg-gray-800/70 text-gray-200 hover:bg-gray-700"
+                      ? "border border-transparent text-[#6b5d45] cursor-default"
+                      : "border border-[#87725a]/60 bg-[#67543d]/70 text-[#ffdca7] hover:bg-[#4a4033]"
                   }`}
                 >
                   {page}
@@ -610,7 +611,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
           <button
             onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage === totalPages}
-            className="px-4 py-2 rounded-lg border border-cyan-700/60 bg-gray-800/70 text-gray-200 font-medium hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            className="px-4 py-2 rounded-lg border border-[#87725a]/60 bg-[#4b3d2c]/70 text-[#ffdca7] font-medium hover:bg-[#4a4033] disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
             Next →
           </button>

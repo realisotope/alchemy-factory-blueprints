@@ -475,13 +475,13 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
   };
 
   return (
-    <div className="backdrop-blur-sm">
+    <div className="backdrop-blur-sm text-[#fcd34d]">
       <h2 className="text-2xl font-bold text-amber-300 mb-6">Upload Your Blueprint</h2>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Title */}
         <div>
-          <label className="block text-sm font-medium text-amber-300 mb-2">
+          <label className="block text-l font-medium mb-2">
             Blueprint Title *
           </label>
           <input
@@ -489,13 +489,13 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g., Efficient Iron Production Setup"
-            className="w-full px-4 py-2 border border-cyan-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-gray-800/50 text-gray-100 placeholder-gray-500"
+            className="w-full px-4 py-2 border border-[#87725a]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#bba664] bg-[#6f5d45]/50 text-[#ffdca7] placeholder-[#ffdca7]"
           />
         </div>
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-medium text-amber-300 mb-2">
+          <label className="block text-l font-medium mb-2">
             Description
           </label>
           <textarea
@@ -503,13 +503,13 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe your blueprint, its purpose, and any special features..."
             rows="4"
-            className="w-full px-4 py-2 border border-cyan-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-gray-800/50 text-gray-100 placeholder-gray-500"
+            className="w-full px-4 py-2 border border-[#87725a]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#bba664] bg-[#6f5d45]/50 text-[#ffdca7] placeholder-[#ffdca7]"
           />
         </div>
 
         {/* Tags */}
         <div>
-          <label className="block text-sm font-medium text-amber-300 mb-2">
+          <label className="block text-sm font-medium mb-2">
             Tags (Select up to 3)
           </label>
           <div className="space-y-2">
@@ -518,22 +518,22 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
                 <button
                   type="button"
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="w-full px-4 py-2 border border-cyan-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-gray-800/50 text-gray-100 text-left flex items-center justify-between hover:border-cyan-600/70 transition"
+                  className="w-full px-4 py-2 border border-[#87725a]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#bba664] bg-[#6f5d45]/50 text-[#ffdca7] text-left flex items-center justify-between hover:border-[#9f8569]/80 transition"
                 >
-                  <span className={tagInput ? "text-gray-100" : "text-gray-500"}>
+                  <span className={tagInput ? "text-[#ffdca7]" : "text-[#ffdca7]"}>
                     {tagInput || "-- Select a tag --"}
                   </span>
                   <span className={`transition transform ${dropdownOpen ? "rotate-180" : ""}`}>▼</span>
                 </button>
                 
                 {dropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-cyan-700/50 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-[#6f5d45] border border-[#87725a]/50 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
                     {AVAILABLE_TAGS.filter(tag => !tags.includes(tag)).map((tag) => (
                       <button
                         key={tag}
                         type="button"
                         onClick={() => handleSelectTag(tag)}
-                        className="w-full text-left px-4 py-2.5 hover:bg-cyan-900/40 text-gray-100 transition first:rounded-t-lg last:rounded-b-lg border-b border-cyan-700/20 last:border-b-0"
+                        className="w-full text-left px-4 py-2.5 hover:bg-[#977958]/40 text-[#ffdca7] transition first:rounded-t-lg last:rounded-b-lg border-b border-[#87725a]/20 last:border-b-0"
                       >
                         {tag}
                       </button>
@@ -546,21 +546,13 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
                   </div>
                 )}
               </div>
-              <button
-                type="button"
-                onClick={handleAddTag}
-                disabled={tags.length >= 3 || !tagInput}
-                className="px-4 py-2 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-black rounded-lg font-semibold transition"
-              >
-                Add
-              </button>
             </div>
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="bg-cyan-700/50 text-amber-300 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 border border-purple-600/50"
+                    className="bg-[#87725a]/50 text-[#ffdca7] px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 border border-[#6b5d45]/50"
                   >
                     #{tag}
                     <button
@@ -579,7 +571,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
 
         {/* Blueprint File Upload */}
         <div>
-          <label className="block text-sm font-medium text-amber-300 mb-2">
+          <label className="block text-s font-medium mb-2">
             Blueprint File (.af) *
           </label>
           <div
@@ -600,8 +592,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
               htmlFor="blueprint-input"
               className={`flex items-center justify-center w-full px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition ${
                 blueprintDragActive
-                  ? "border-cyan-500 bg-cyan-900/30 text-cyan-300"
-                  : "border-cyan-700/50 hover:border-cyan-600/70 hover:bg-cyan-900/10 text-gray-300"
+                  ? "border-[#bba664] bg-[#977958]/30"
+                  : "border-[#fcd34d]/50 hover:border-[#ffd39c]/70 hover:bg-[#6f5d45]/50"
               }`}
             >
               <Upload className="w-5 h-5 mr-2 text-amber-400" />
@@ -618,7 +610,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
 
         {/* Image Upload */}
         <div>
-          <label className="block text-sm font-medium text-amber-300 mb-2">
+          <label className="block text-s font-medium mb-2">
             Preview Image (PNG/JPG)
           </label>
           <div className="space-y-3">
@@ -626,7 +618,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
               <img
                 src={imagePreview}
                 alt="Preview"
-                className="w-full h-48 object-cover rounded-lg border border-cyan-700/50"
+                className="w-full h-48 object-cover rounded-lg border border-[#87725a]/50"
               />
             )}
             <div
@@ -647,8 +639,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
                 htmlFor="image-input"
                 className={`flex items-center justify-center w-full px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition ${
                   imageDragActive
-                    ? "border-cyan-500 bg-cyan-900/30 text-cyan-300"
-                    : "border-cyan-700/50 hover:border-cyan-600/70 hover:bg-cyan-900/10 text-gray-300"
+                    ? "border-[#bba664] bg-[#977958]/30"
+                    : "border-[#fcd34d]/50 hover:border-[#ffd39c]/70 hover:bg-[#6f5d45]/50"
                 }`}
               >
                 <Upload className="w-5 h-5 mr-2 text-amber-400" />
@@ -675,7 +667,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 disabled:from-gray-600 disabled:to-gray-700 text-black font-semibold py-3 rounded-lg transition flex items-center justify-center shadow-lg"
+          className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white disabled:from-gray-600 disabled:to-gray-700 font-semibold py-3 rounded-lg transition flex items-center justify-center shadow-lg"
         >
           {loading ? (
             <>

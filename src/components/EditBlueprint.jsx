@@ -349,10 +349,10 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
 
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-gray-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-cyan-600/50" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-[#3a3227] rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-[#87725a]/50" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-cyan-900 via-blue-900 to-cyan-900 text-white p-6 flex items-center justify-between border-b-2 border-cyan-600">
-          <h2 className="text-2xl font-bold text-cyan-300">Edit Blueprint</h2>
+        <div className="sticky top-0 bg-gradient-to-r from-[#6b5d45] via-[#7d6d54] to-[#6b5d45] text-white p-6 flex items-center justify-between border-b-2 border-[#87725a]">
+          <h2 className="text-2xl font-bold text-[#ffdca7]">Edit Blueprint</h2>
           <button
             onClick={onClose}
             className="ml-4 p-2 hover:bg-white/10 rounded-lg transition"
@@ -372,7 +372,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
 
           {/* Title */}
           <div>
-            <label className="block text-sm font-medium text-cyan-200 mb-2">
+            <label className="block text-sm font-medium mb-2">
               Blueprint Title *
             </label>
             <input
@@ -380,14 +380,14 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., Advanced Smeltery Setup"
-              className="w-full px-4 py-2 border border-cyan-600/50 rounded-lg focus:ring-2 focus:ring-cyan-500 bg-gray-800 text-white placeholder-gray-400"
+              className="w-full px-4 py-2 border border-[#87725a]/50 rounded-lg focus:ring-2 focus:ring-[#bba664] bg-[#2c2416] text-[#ffdca7] placeholder-[#9f8569]"
               disabled={isLoading}
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-cyan-200 mb-2">
+            <label className="block text-sm font-medium text-[#ffdca7] mb-2">
               Description
             </label>
             <textarea
@@ -395,7 +395,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe your blueprint..."
               rows={4}
-              className="w-full px-4 py-2 border border-cyan-600/50 rounded-lg focus:ring-2 focus:ring-cyan-500 bg-gray-800 text-white placeholder-gray-400"
+              className="w-full px-4 py-2 border border-[#87725a]/50 rounded-lg focus:ring-2 focus:ring-[#bba664] bg-[#2c2416] text-[#ffdca7] placeholder-[#9f8569]"
               disabled={isLoading}
             />
           </div>
