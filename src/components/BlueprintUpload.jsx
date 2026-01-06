@@ -31,6 +31,10 @@ const AVAILABLE_TAGS = [
   "currency",
   "misc",
   "experimental",
+  "automation",
+  "liquid",
+  "relic",
+  "decorative",
 ];
 
 // Validate .af file by checking extension and file structure

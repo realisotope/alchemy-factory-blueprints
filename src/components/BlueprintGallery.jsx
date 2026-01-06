@@ -321,6 +321,26 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
 
   return (
     <>
+      {/* Stats Dashboard */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4 p-3 bg-gradient-to-r from-[#a3805a]/60 to-[#9f8364]/60 rounded-lg border border-[#bba664]/30">
+        <div className="text-center">
+          <p className="text-[#f5d84b] font-bold text-xl sm:text-2xl">{blueprints.length}</p>
+          <p className="text-[#ffdca7] text-xs sm:text-sm">Total Blueprints</p>
+        </div>
+        <div className="text-center">
+          <p className="text-[#f5d84b] font-bold text-xl sm:text-2xl">{filteredBlueprints.length}</p>
+          <p className="text-[#ffdca7] text-xs sm:text-sm">Matching Results</p>
+        </div>
+        <div className="text-center">
+          <p className="text-[#f5d84b] font-bold text-xl sm:text-2xl">{blueprints.reduce((sum, bp) => sum + (bp.downloads || 0), 0).toLocaleString()}</p>
+          <p className="text-[#ffdca7] text-xs sm:text-sm">Total Downloads</p>
+        </div>
+        <div className="text-center">
+          <p className="text-[#f5d84b] font-bold text-xl sm:text-2xl">{blueprints.reduce((sum, bp) => sum + (bp.likes || 0), 0).toLocaleString()}</p>
+          <p className="text-[#ffdca7] text-xs sm:text-sm">Total Likes</p>
+        </div>
+      </div>
+
       {/* Search and Sort */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="flex-1 relative">
@@ -429,7 +449,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
           return (
             <div
               key={blueprint.id}
-              className="bg-gradient-to-br from-[#9f8569] to-[#87725a] rounded-xl shadow-lg overflow-hidden hover:shadow-2xl hover:shadow-[#fcd34d]/20 transition-all duration-150 cursor-pointer flex flex-col h-full group"
+              className="fade-in-card bg-gradient-to-br from-[#9f8569] to-[#87725a] rounded-xl shadow-lg overflow-hidden hover:shadow-2xl hover:shadow-[#fcd34d]/20 transition-all duration-150 cursor-pointer flex flex-col h-full group"
               onClick={() => setSelectedBlueprint(blueprint)}
             >
               {/* Image */}

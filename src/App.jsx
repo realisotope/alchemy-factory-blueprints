@@ -123,7 +123,7 @@ export default function App() {
 
           {/* Gallery Section */}
           <section>
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-[#fcd34d] to-[#fde047] bg-clip-text text-transparent mb-2">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-[#fcd34d] to-[#fde047] bg-clip-text text-transparent mb-3">
               Blueprint Gallery
             </h2>
             <BlueprintGallery user={user} refreshTrigger={refreshGallery} initialBlueprintId={initialBlueprintId} />
