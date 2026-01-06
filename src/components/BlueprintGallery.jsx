@@ -19,7 +19,25 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
   const [downloadingId, setDownloadingId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const initialBlueprintAppliedRef = useRef(false);
-  const ITEMS_PER_PAGE = 8;
+  
+  // Responsive items per page: 8 for desktop (4 cols, 2 rows), 12 for 4K (6 cols, 2 rows)
+  const getItemsPerPage = () => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 3840 ? 12 : 8;
+    }
+    return 8;
+  };
+  
+  const [itemsPerPage, setItemsPerPage] = useState(getItemsPerPage());
+
+  // Update items per page on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setItemsPerPage(getItemsPerPage());
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     fetchBlueprints();
@@ -279,11 +297,11 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
     });
 
   // Pagination
-  const totalPages = Math.ceil(filteredBlueprints.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const totalPages = Math.ceil(filteredBlueprints.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedBlueprints = filteredBlueprints.slice(
     startIndex,
-    startIndex + ITEMS_PER_PAGE
+    startIndex + itemsPerPage
   );
 
   // Reset to page 1 when search changes
@@ -405,7 +423,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
       )}
 
       {/* Blueprint Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 4k:grid-cols-6 gap-4">
         {paginatedBlueprints.map((blueprint) => {
           const isLiked = userLikes.has(blueprint.id);
           return (

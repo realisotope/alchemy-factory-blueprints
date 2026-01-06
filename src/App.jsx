@@ -85,29 +85,31 @@ export default function App() {
         {/* Header */}
         <header className="bg-gradient-to-r from-[#a78158] via-[#9f7f5a] to-[#9b7956] text-white shadow-2x1 sticky top-0 z-50 border-b border-[#bba664]/50">
           <div className="max-w-7xl mx-auto px-4 py-6 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-4xl">⚗️</span>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-[#fcd34d] to-[#fde047] bg-clip-text text-transparent">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="text-4xl flex-shrink-0">⚗️</span>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-[#fcd34d] to-[#fde047] bg-clip-text text-transparent truncate">
                 Alchemy Factory Blueprints
               </h1>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-end sm:items-center sm:justify-end flex-shrink-0 ml-4">
               <DiscordLogin user={user} onLogout={handleLogout} />
               <button
                 onClick={() => setIsHowToOpen(true)}
-                className="flex items-center gap-2 bg-gradient-to-r from-[#5b4a39]/50 to-[#59452e]/50 hover:from-[#dbb84a] hover:to-[#fbcd32] font-semibold py-2 px-4 rounded-lg transition shadow-lg hover:shadow-xl"
+                className="flex items-center gap-2 text-sm sm:text-base bg-gradient-to-r from-[#5b4a39]/50 to-[#59452e]/50 hover:from-[#dbb84a] hover:to-[#fbcd32] font-semibold py-2 px-3 sm:px-4 rounded-lg transition shadow-lg hover:shadow-xl whitespace-nowrap"
                 title="How to use blueprints"
               >
-                <BookOpen className="w-4 h-4" />
-                How to Use Blueprints
+                <BookOpen className="w-4 h-4 flex-shrink-0" />
+                <span className="hidden sm:inline">How to Use Blueprints</span>
+                <span className="sm:hidden">How to Use</span>
               </button>
               {user ? (
                 <button
                   onClick={() => setIsUploadModalOpen(true)}
-                  className="inline-flex items-center gap-2 bg-gradient-to-r from-[#dbb84a]/80 to-[#fbcd32]/70 hover:from-[#dbb84a] hover:to-[#fbcd32] hover:text-[#654e35] font-semibold py-2 px-8 rounded-lg transition shadow-lg hover:shadow-xl hover:shadow-[#fbcd32]/30"
+                  className="inline-flex items-center gap-2 text-sm sm:text-base bg-gradient-to-r from-[#dbb84a]/80 to-[#fbcd32]/70 hover:from-[#dbb84a] hover:to-[#fbcd32] hover:text-[#654e35] font-semibold py-2 px-4 sm:px-8 rounded-lg transition shadow-lg hover:shadow-xl hover:shadow-[#fbcd32]/30 whitespace-nowrap"
                 >
-                  <Upload className="w-5 h-5" />
-                  Upload Blueprint
+                  <Upload className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                  <span className="hidden sm:inline">Upload Blueprint</span>
+                  <span className="sm:hidden">Upload</span>
                 </button>
               ) : (
                 <></>)}
@@ -117,7 +119,7 @@ export default function App() {
         </header>
 
         {/* Main Content */}
-        <main className="max-w-7xl mx-auto px-4 py-12 space-y-12 flex-grow w-full min-w-0">
+        <main className="max-w-7xl 4k:max-w-[120rem] mx-auto px-4 py-12 space-y-12 flex-grow w-full min-w-0">
 
           {/* Gallery Section */}
           <section>
