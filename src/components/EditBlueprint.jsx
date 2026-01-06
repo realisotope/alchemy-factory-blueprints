@@ -349,7 +349,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
 
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-gradient-to-b from-[#b99a77] to-[#876e54] rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-[#87725a]/50" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-gradient-to-b from-[#b99a77] to-[#876e54] rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-[#cfb153]" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="sticky top-0 bg-gradient-to-r from-[#a78158] via-[#9f7f5a] to-[#9b7956] text-white p-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-[#fcd34d]">Edit Blueprint</h2>
