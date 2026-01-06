@@ -80,7 +80,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
     }
     
     const currentlyLiked = isLiked;
-    onLikeChange?.(currentlyLiked);
+    onLikeChange?.(!currentlyLiked);
     setIsLiked(!currentlyLiked);
     setLikeCount(currentlyLiked ? likeCount - 1 : likeCount + 1);
   };
