@@ -59,7 +59,7 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-amber-100 to-orange-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[#9c8368] flex items-center justify-center">
         <div className="text-center">
           <div className="text-5xl mb-4">⚗️</div>
           <p className="text-2xl text-amber-900 font-bold">Loading...</p>

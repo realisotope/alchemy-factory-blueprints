@@ -493,7 +493,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g., Efficient Iron Production Setup"
-            className="w-full px-4 py-2 border border-[#87725a]/50 rounded-lg focus:ring-2 focus:ring-[#bba664] bg-[#6f5d45]/50 text-[#ffdca7] placeholder-[#ffdca7]"
+            className="w-full px-4 py-2 border border-[#87725a]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#bba664] bg-[#6f5d45]/50 text-[#ffdca7] placeholder-[#ffdca7]"
           />
         </div>
 
@@ -507,7 +507,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe your blueprint, its purpose, and any special features..."
             rows="4"
-            className="w-full px-4 py-2 border border-[#87725a]/50 rounded-lg focus:ring-2 focus:ring-[#bba664] bg-[#6f5d45]/50 text-[#ffdca7] placeholder-[#ffdca7]"
+            className="w-full px-4 py-2 border border-[#87725a]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#bba664] bg-[#6f5d45]/50 text-[#ffdca7] placeholder-[#ffdca7]"
           />
         </div>
 

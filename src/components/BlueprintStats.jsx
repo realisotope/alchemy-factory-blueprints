@@ -1,7 +1,7 @@
 import { ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { useState, memo } from "react";
 
-export default function BlueprintStats({ materials = [], buildings = [] }) {
+const BlueprintStats = memo(function BlueprintStats({ materials = [], buildings = [] }) {
   const [expandedSection, setExpandedSection] = useState(null);
 
   const toggleSection = (section) => {
@@ -111,4 +111,6 @@ export default function BlueprintStats({ materials = [], buildings = [] }) {
       )}
     </div>
   );
-}
+});
+
+export default BlueprintStats;

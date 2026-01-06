@@ -380,7 +380,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., Advanced Smeltery Setup"
-              className="w-full px-4 py-2 border border-[#87725a]/50 rounded-lg focus:ring-2 focus:ring-[#bba664] bg-[#6f5d45]/50 text-[#ffdca7] placeholder-[#ffdca7]"
+              className="w-full px-4 py-2 border border-[#87725a]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#bba664] bg-[#6f5d45]/50 text-[#ffdca7] placeholder-[#ffdca7]"
               disabled={isLoading}
             />
           </div>
@@ -395,7 +395,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe your blueprint..."
               rows={4}
-              className="w-full px-4 py-2 border border-[#87725a]/50 rounded-lg focus:ring-2 focus:ring-[#bba664] bg-[#6f5d45]/50 text-[#ffdca7] placeholder-[#ffdca7]"
+              className="w-full px-4 py-2 border border-[#87725a]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#bba664] bg-[#6f5d45]/50 text-[#ffdca7] placeholder-[#ffdca7]"
               disabled={isLoading}
             />
           </div>
