@@ -664,6 +664,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         isOpen={!!selectedBlueprint}
         onClose={() => setSelectedBlueprint(null)}
         user={user}
+        userLikes={userLikes}
         onLikeChange={(liked) => {
           if (selectedBlueprint) {
             handleLike(selectedBlueprint.id, !liked);
