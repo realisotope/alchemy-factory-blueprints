@@ -351,7 +351,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onClick={onClose}>
       <div className="bg-gradient-to-b from-[#b99a77] to-[#876e54] rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-[#87725a]/50" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-[#a78158] via-[#9f7f5a] to-[#9b7956] text-white p-6 flex items-center justify-between border-b-2 border-[#87725a]">
+        <div className="sticky top-0 bg-gradient-to-r from-[#a78158] via-[#9f7f5a] to-[#9b7956] text-white p-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-[#fcd34d]">Edit Blueprint</h2>
           <button
             onClick={onClose}
@@ -387,7 +387,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
 
           {/* Description */}
           <div>
-            <label className="block text-l font-medium text-[#ffdca7] mb-2">
+            <label className="block text-l font-medium mb-2">
               Description
             </label>
             <textarea
@@ -420,14 +420,14 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
             <label className="block text-l font-medium mb-2">
               Blueprint File (.af)
             </label>
-            <p className="text-xs text-gray-400 mb-2">
+            <p className="text-xs mb-2">
               {blueprintFile ? "New file selected" : "Keep existing file or upload a new one"}
             </p>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={isLoading}
-              className="w-full px-4 py-3 border-2 border-dashed border-cyan-600/50 rounded-lg hover:border-cyan-500/70 hover:bg-cyan-900/20 transition bg-gray-800 text-cyan-200 font-medium disabled:opacity-50"
+              className="w-full px-4 py-3 border-2 border-dashed border-[#fcd34d]/50 hover:border-[#ffd39c]/70 hover:bg-[#6f5d45]/50 rounded-lg transition font-medium disabled:opacity-50"
             >
               {blueprintFile ? `✓ ${blueprintFile.name}` : "Click to select or upload .af file"}
             </button>
@@ -489,14 +489,14 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
 
           {/* Tags */}
           <div>
-            <label className="block text-sm font-medium text-cyan-200 mb-2">
+            <label className="block text-l font-medium mb-2">
               Tags (up to 3)
             </label>
             <div className="flex gap-2 mb-2 flex-wrap">
               {tags.map((tag) => (
                 <span
                   key={tag}
-                  className="bg-cyan-600/50 text-cyan-100 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 border border-cyan-600/50"
+                  className="bg-[#6f5d45]/50 text-[#ffdca7] px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 border border-[#87725a]/50"
                 >
                   {tag}
                   <button
@@ -514,19 +514,19 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               <button
                 type="button"
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="w-full px-4 py-2 border border-cyan-600/50 rounded-lg focus:ring-2 focus:ring-cyan-500 bg-gray-800 text-cyan-200 text-left disabled:opacity-50"
+                className="w-full px-4 py-2 rounded-lg border border-[#87725a]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#bba664] bg-[#6f5d45]/50 text-[#ffdca7] text-left disabled:opacity-50"
                 disabled={isLoading || tags.length >= 3}
               >
                 {tagInput || "Select tags..."}
               </button>
               {dropdownOpen && (
-                <div className="absolute z-10 w-full mt-2 bg-gray-800 border border-cyan-600/50 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                <div className="absolute z-10 w-full mt-2 bg-[#6f5d45] border border-[#87725a]/50 rounded-lg shadow-lg max-h-64 overflow-y-auto">
                   {AVAILABLE_TAGS.filter((tag) => !tags.includes(tag)).map((tag) => (
                     <button
                       key={tag}
                       type="button"
                       onClick={() => handleSelectTag(tag)}
-                      className="w-full text-left px-4 py-2 hover:bg-cyan-900/40 transition text-cyan-200 border-b border-cyan-600/30 last:border-b-0"
+                      className="w-full text-left px-4 py-2 hover:bg-[#977958]/40 text-[#ffdca7] transition border-b border-[#87725a]/20 last:border-b-0"
                     >
                       {tag}
                     </button>
@@ -541,7 +541,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
             <button
               type="submit"
               disabled={isLoading}
-              className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {isLoading ? (
                 <>
@@ -556,7 +556,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="flex-1 border border-cyan-600/50 text-cyan-200 py-3 rounded-lg font-semibold hover:bg-cyan-900/30 transition disabled:opacity-50"
+              className="flex-1 bg-[#59452e] text-red-600/50 py-3 rounded-lg font-semibold hover:bg-red-900/30 transition disabled:opacity-50"
             >
               Cancel
             </button>

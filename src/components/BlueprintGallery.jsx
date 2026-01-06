@@ -567,7 +567,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
                         handleDelete(blueprint);
                       }}
                       disabled={deleting === blueprint.id}
-                      className="bg-red-700 hover:bg-red-600 disabled:bg-[#6b5d45] text-white font-semibold py-2 px-3 rounded-lg transition flex items-center justify-center"
+                      className="bg-[#59452e]/75 hover:bg-red-600/50 disabled:bg-[#6b5d45] text-white font-semibold py-2 px-3 rounded-lg transition flex items-center justify-center"
                     >
                       {deleting === blueprint.id ? (
                         <Loader className="w-4 h-4 animate-spin" />
