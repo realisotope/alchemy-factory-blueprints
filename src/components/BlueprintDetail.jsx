@@ -215,6 +215,40 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
             buildings={blueprint.buildings || []} 
           />
 
+          {/* Skills */}
+          {blueprint.skills && blueprint.skills.length > 0 && (
+            <div>
+              <h3 className="text-lg font-bold text-amber-300 mb-2">Required Skills</h3>
+              <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-11 gap-1">
+                {blueprint.skills.map((skill) => (
+                  <div
+                    key={skill.id}
+                    className="flex flex-col items-center text-center"
+                    title={`${skill.name}: Level ${skill.level}`}
+                  >
+                    <div className="rounded border border-[#816545] w-full aspect-square flex items-center justify-center overflow-hidden mb-1 opacity-80">
+                      {skill.icon ? (
+                        <img
+                          src={skill.icon}
+                          alt={skill.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-[#6b5d45] text-xs">No icon</span>
+                      )}
+                    </div>
+                    <div className="text-xs font-bold text-amber-300 leading-tight">
+                      Lvl {skill.level}
+                    </div>
+                    <div className="text-xs text-[#ffdca7] truncate max-w-full line-clamp-2 text-[10px]">
+                      {skill.name}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Tags */}
           {blueprint.tags && blueprint.tags.length > 0 && (
             <div>

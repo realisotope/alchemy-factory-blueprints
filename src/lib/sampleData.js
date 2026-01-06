@@ -423,11 +423,82 @@ export const SAMPLE_BUILDINGS = [
   },
 ];
 
+// Sample skills data for testing
+export const SAMPLE_SKILLS = [
+  {
+    id: "playerlevel",
+    name: "Player Level",
+    level: 0,
+    icon: "/icons/skills/playerlevel.png",
+  },
+  {
+    id: "alchemy",
+    name: "Alchemy",
+    level: 0,
+    icon: "/icons/skills/alchemy.png",
+  },
+  {
+    id: "customer",
+    name: "Customer",
+    level: 0,
+    icon: "/icons/skills/customer.png",
+  },
+  {
+    id: "factory",
+    name: "Factory",
+    level: 0,
+    icon: "/icons/skills/factory.png",
+  },
+  {
+    id: "fertilizer",
+    name: "Fertilizer",
+    level: 0,
+    icon: "/icons/skills/fertilizer.png",
+  },
+  {
+    id: "fuel",
+    name: "Fuel",
+    level: 0,
+    icon: "/icons/skills/fuel.png",
+  },
+  {
+    id: "logistics",
+    name: "Logistics",
+    level: 0,
+    icon: "/icons/skills/logistics.png",
+  },
+  {
+    id: "negotiation",
+    name: "Negotiation",
+    level: 0,
+    icon: "/icons/skills/negotiation.png",
+  },
+  {
+    id: "relic",
+    name: "Relic",
+    level: 0,
+    icon: "/icons/skills/relic.png",
+  },
+  {
+    id: "sales",
+    name: "Sales",
+    level: 0,
+    icon: "/icons/skills/sales.png",
+  },
+  {
+    id: "throwing",
+    name: "Throwing",
+    level: 0,
+    icon: "/icons/skills/throwing.png",
+  }
+];
+
 // Function to add sample data to blueprints for testing
 export function addSampleDataToBlueprints(blueprints) {
   return blueprints.map((blueprint) => ({
     ...blueprint,
     materials: SAMPLE_MATERIALS,
     buildings: SAMPLE_BUILDINGS,
+    skills: SAMPLE_SKILLS,
   }));
 }
