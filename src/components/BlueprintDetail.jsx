@@ -7,8 +7,8 @@ import { getDetailViewUrl, getLightboxUrl } from "../lib/imageOptimization";
 import EditBlueprint from "./EditBlueprint";
 import BlueprintStats from "./BlueprintStats";
 
-export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange, onSearchByCreator, onBlueprintUpdate, onDownload }) {
-  const [isLiked, setIsLiked] = useState(false);
+export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange, onSearchByCreator, onBlueprintUpdate, onDownload, userLikes = new Set() }) {
+  const [isLiked, setIsLiked] = useState(userLikes.has(blueprint?.id));
   const [likeCount, setLikeCount] = useState(blueprint?.likes ?? 0);
   const [downloadCount, setDownloadCount] = useState(blueprint?.downloads ?? 0);
   const [isImageExpanded, setIsImageExpanded] = useState(false);
@@ -21,8 +21,8 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
     console.log(`BlueprintDetail mounted/updated for ${blueprint?.id}: likes=${blueprint?.likes}, downloads=${blueprint?.downloads}`);
     setLikeCount(blueprint?.likes ?? 0);
     setDownloadCount(blueprint?.downloads ?? 0);
-    setIsLiked(false);
-  }, [blueprint?.id, blueprint?.likes, blueprint?.downloads]);
+    setIsLiked(userLikes.has(blueprint?.id));
+  }, [blueprint?.id, blueprint?.likes, blueprint?.downloads, userLikes]);
 
   // Update meta tags when blueprint is opened/closed
   useEffect(() => {
