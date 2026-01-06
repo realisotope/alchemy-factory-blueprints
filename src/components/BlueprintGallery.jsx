@@ -156,10 +156,14 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
       
       console.log(`Refetched blueprint ${blueprintId}: likes=${normalizedBp.likes}`);
       
-      // Update blueprints array
+      // Update blueprints array - preserve materials/buildings from existing data
       setBlueprints((prev) =>
         prev.map((bp) =>
-          bp.id === blueprintId ? normalizedBp : bp
+          bp.id === blueprintId ? {
+            ...normalizedBp,
+            materials: bp.materials ?? normalizedBp.materials ?? [],
+            buildings: bp.buildings ?? normalizedBp.buildings ?? []
+          } : bp
         )
       );
       
