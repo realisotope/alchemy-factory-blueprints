@@ -671,7 +671,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-gradient-to-r from-[#d1a94f] to-[#ddb52c] hover:from-amber-500 hover:to-yellow-500 text-white disabled:from-gray-600 disabled:to-gray-700 font-semibold py-3 rounded-lg transition flex items-center justify-center shadow-lg"
+          className="w-full bg-gradient-to-r from-[#d1a94f] to-[#ddb52c] hover:from-amber-500 hover:to-yellow-500 text-white disabled:from-amber-500 disabled:to-yellow-500 font-semibold py-3 rounded-lg transition flex items-center justify-center shadow-lg"
         >
           {loading ? (
             <>

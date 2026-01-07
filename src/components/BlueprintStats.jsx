@@ -37,7 +37,7 @@ const BlueprintStats = memo(function BlueprintStats({ materials = [], buildings 
                     className="bg-[#634116]/30 rounded-lg border-2 border-[#87725a] shadow-lg p-2 text-center transition"
                     title={material.name}
                   >
-                    <div className="aspect-square rounded flex items-center justify-center mb-2 overflow-hidden">
+                    <div className="aspect-square rounded flex items-center justify-center overflow-hidden">
                       {material.icon ? (
                         <img
                           src={material.icon}
@@ -85,7 +85,7 @@ const BlueprintStats = memo(function BlueprintStats({ materials = [], buildings 
                     className="bg-[#593e21]/30 rounded-lg border-2 border-[#87725a] p-2 text-center hover:border-[#af9170]/70 transition"
                     title={building.name}
                   >
-                    <div className="aspect-square rounded flex items-center justify-center mb-2 overflow-hidden">
+                    <div className="aspect-square rounded flex items-center justify-center mb-1 overflow-hidden">
                       {building.icon ? (
                         <img
                           src={building.icon}
