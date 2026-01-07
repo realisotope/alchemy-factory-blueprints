@@ -1,7 +1,9 @@
 import { ChevronDown } from "lucide-react";
 import { useState, memo } from "react";
+import { useTheme } from "../lib/ThemeContext";
 
 const BlueprintStats = memo(function BlueprintStats({ materials = [], buildings = [] }) {
+  const { theme } = useTheme();
   const [expandedSection, setExpandedSection] = useState(null);
 
   const toggleSection = (section) => {
@@ -16,25 +18,33 @@ const BlueprintStats = memo(function BlueprintStats({ materials = [], buildings 
     <div className="space-y-2">
       {/* Materials Section */}
       {materials.length > 0 && (
-        <div className="border-2 border-[#bba664] rounded-lg overflow-hidden">
+        <div style={{ borderColor: theme.colors.cardBorder }} className="border-2 rounded-lg overflow-hidden">
           <button
             onClick={() => toggleSection("materials")}
-            className="w-full bg-gradient-to-r from-[#634116]/30 to-[#9f722e]/30 hover:from-[#634116]/60 hover:to-[#9f722e]/60 shadow-lg p-3 flex items-center justify-between transition"
+            style={{
+              backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`,
+            }}
+            className="w-full hover:opacity-80 shadow-lg p-3 flex items-center justify-between transition" onMouseEnter={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}60, ${theme.colors.gradientTo}60)`} onMouseLeave={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`}
           >
-            <h3 className="text-lg font-bold text-amber-300">Materials</h3>
+            <h3 style={{ color: theme.colors.accentYellow }} className="text-lg font-bold">Materials</h3>
             <ChevronDown
-              className={`w-5 h-5 text-[#ffdca7] transition-transform ${
+              style={{ color: theme.colors.textPrimary }}
+              className={`w-5 h-5 transition-transform ${
                 expandedSection === "materials" ? "rotate-180" : ""
               }`}
             />
           </button>
           {expandedSection === "materials" && (
-            <div className="bg-[#f7c995]/20 p-4">
+            <div style={{ backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)` }} className="p-4">
               <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-7 gap-2">
                 {materials.map((material) => (
                   <div
                     key={material.id}
-                    className="bg-[#634116]/30 rounded-lg border-2 border-[#87725a] shadow-lg p-2 text-center transition"
+                    style={{
+                      backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`,
+                      borderColor: theme.colors.cardBorder,
+                    }}
+                    className="rounded-lg border-2 shadow-lg p-2 text-center transition hover:shadow-lg"
                     title={material.name}
                   >
                     <div className="aspect-square rounded flex items-center justify-center overflow-hidden">
@@ -45,13 +55,13 @@ const BlueprintStats = memo(function BlueprintStats({ materials = [], buildings 
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <span className="text-[#6b5d45] text-xs">No icon</span>
+                        <span style={{ color: theme.colors.textSecondary }} className="text-xs">No icon</span>
                       )}
                     </div>
-                    <div className="text-sm font-bold text-amber-300">
+                    <div className="text-sm font-bold" style={{ color: theme.colors.accentYellow }}>
                       {material.quantity}
                     </div>
-                    <div className="text-xs truncate">
+                    <div style={{ color: theme.colors.textSecondary }} className="text-xs truncate">
                       {material.name}
                     </div>
                   </div>
@@ -64,25 +74,33 @@ const BlueprintStats = memo(function BlueprintStats({ materials = [], buildings 
 
       {/* Buildings Section */}
       {buildings.length > 0 && (
-        <div className="border-2 border-[#bba664] rounded-lg overflow-hidden">
+        <div style={{ borderColor: theme.colors.cardBorder }} className="border-2 rounded-lg overflow-hidden">
           <button
             onClick={() => toggleSection("buildings")}
-            className="w-full bg-gradient-to-r from-[#634116]/30 to-[#9f722e]/30 hover:from-[#634116]/60 hover:to-[#9f722e]/60 p-3 flex items-center justify-between transition"
+            style={{
+              backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`,
+            }}
+            className="w-full hover:opacity-80 p-3 flex items-center justify-between transition" onMouseEnter={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}60, ${theme.colors.gradientTo}60)`} onMouseLeave={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`}
           >
-            <h3 className="text-lg font-bold text-amber-300">Buildings</h3>
+            <h3 style={{ color: theme.colors.accentYellow }} className="text-lg font-bold">Buildings</h3>
             <ChevronDown
-              className={`w-5 h-5 text-[#ffdca7] transition-transform ${
+              style={{ color: theme.colors.textPrimary }}
+              className={`w-5 h-5 transition-transform ${
                 expandedSection === "buildings" ? "rotate-180" : ""
               }`}
             />
           </button>
           {expandedSection === "buildings" && (
-            <div className="bg-[#f7c995]/20 p-4">
+            <div style={{ backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)` }} className="p-4">
               <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-7 gap-2">
                 {buildings.map((building) => (
                   <div
                     key={building.id}
-                    className="bg-[#593e21]/30 rounded-lg border-2 border-[#87725a] p-2 text-center hover:border-[#af9170]/70 transition"
+                    style={{
+                      backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`,
+                      borderColor: theme.colors.cardBorder,
+                    }}
+                    className="rounded-lg border-2 p-2 text-center transition hover:shadow-lg"
                     title={building.name}
                   >
                     <div className="aspect-square rounded flex items-center justify-center mb-1 overflow-hidden">
@@ -93,13 +111,13 @@ const BlueprintStats = memo(function BlueprintStats({ materials = [], buildings 
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <span className="text-[#6b5d45] text-xs">No icon</span>
+                        <span style={{ color: theme.colors.textSecondary }} className="text-xs">No icon</span>
                       )}
                     </div>
-                    <div className="text-sm font-bold text-amber-300">
+                    <div style={{ color: theme.colors.accentYellow }} className="text-sm font-bold">
                       {building.quantity}
                     </div>
-                    <div className="text-xs truncate">
+                    <div style={{ color: theme.colors.textSecondary }} className="text-xs truncate">
                       {building.name}
                     </div>
                   </div>

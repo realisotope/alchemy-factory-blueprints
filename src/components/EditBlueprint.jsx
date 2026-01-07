@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { validateAndSanitizeTitle, validateAndSanitizeDescription, validateAndSanitizeChangelog, sanitizeTitleForFilename } from "../lib/sanitization";
+import { useTheme } from "../lib/ThemeContext";
 import { Upload, Loader, X } from "lucide-react";
 import { put, del as blobDelete } from "@vercel/blob";
 import imageCompression from "browser-image-compression";
@@ -102,6 +103,7 @@ const validateImageFile = async (file) => {
 };
 
 export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpdate }) {
+  const { theme } = useTheme();
   const [title, setTitle] = useState(blueprint?.title || "");
   const [description, setDescription] = useState(blueprint?.description || "");
   const [changelog, setChangelog] = useState("");
@@ -349,10 +351,10 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
 
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-gradient-to-b from-[#b99a77] to-[#876e54] rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-[#cfb153]" onClick={(e) => e.stopPropagation()}>
+      <div className="rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto" style={{ backgroundColor: `${theme.colors.elementBg}`, borderColor: theme.colors.cardBorder, borderWidth: '2px' }} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-[#a78158] via-[#9f7f5a] to-[#9b7956] text-white p-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-[#fcd34d]">Edit Blueprint</h2>
+        <div className="sticky top-0 text-white p-6 flex items-center justify-between" style={{ backgroundImage: `linear-gradient(to right, ${theme.colors.headerGradientFrom}, ${theme.colors.headerGradientVia}, ${theme.colors.headerGradientTo})` }}>
+          <h2 className="text-2xl font-bold" style={{ color: theme.colors.accentYellow }}>Edit Blueprint</h2>
           <button
             onClick={onClose}
             className="ml-4 p-2 hover:bg-white/10 rounded-lg transition"
@@ -363,16 +365,16 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6 text-[#fcd34d]">
+        <form onSubmit={handleSubmit} className="p-6 space-y-6" style={{ color: theme.colors.textPrimary }}>
           {error && (
-            <div className="bg-red-900/30 border border-red-700/50 text-red-200 px-4 py-3 rounded-lg text-sm">
+            <div className="border rounded-lg text-sm px-4 py-3" style={{ backgroundColor: `${theme.colors.cardBg}33`, borderColor: theme.colors.cardBorder, color: '#fca5a5' }}>
               {error}
             </div>
           )}
 
           {/* Title */}
           <div>
-            <label className="block text-l font-medium mb-2">
+            <label className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
               Blueprint Title *
             </label>
             <input
@@ -380,14 +382,15 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., Advanced Smeltery Setup"
-              className="w-full px-4 py-2 border border-[#87725a]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#bba664] bg-[#6f5d45]/50 text-[#ffdca7] placeholder-[#ffdca7]"
+              style={{ borderColor: theme.colors.cardBorder, backgroundColor: `${theme.colors.cardBg}33`, color: theme.colors.textPrimary }}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 placeholder-opacity-50"
               disabled={isLoading}
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-l font-medium mb-2">
+            <label className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
               Description
             </label>
             <textarea
@@ -395,7 +398,8 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe your blueprint..."
               rows={4}
-              className="w-full px-4 py-2 border border-[#87725a]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#bba664] bg-[#6f5d45]/50 text-[#ffdca7] placeholder-[#ffdca7]"
+              style={{ borderColor: theme.colors.cardBorder, backgroundColor: `${theme.colors.cardBg}33`, color: theme.colors.textPrimary }}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 placeholder-opacity-50"
               disabled={isLoading}
             />
           </div>
@@ -417,17 +421,18 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
 
           {/* Blueprint File */}
           <div>
-            <label className="block text-l font-medium mb-2">
+            <label className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
               Blueprint File (.af)
             </label>
-            <p className="text-xs mb-2">
+            <p className="text-xs mb-2" style={{ color: theme.colors.textSecondary }}>
               {blueprintFile ? "New file selected" : "Keep existing file or upload a new one"}
             </p>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={isLoading}
-              className="w-full px-4 py-3 border-2 border-dashed border-[#fcd34d]/50 hover:border-[#ffd39c]/70 hover:bg-[#6f5d45]/50 rounded-lg transition font-medium disabled:opacity-50"
+              style={{ borderColor: `${theme.colors.accentYellow}80`, color: theme.colors.accentYellow }}
+              className="w-full px-4 py-3 border-2 border-dashed rounded-lg transition font-medium disabled:opacity-50 hover:opacity-80"
             >
               {blueprintFile ? `✓ ${blueprintFile.name}` : "Click to select or upload .af file"}
             </button>
@@ -443,7 +448,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
 
           {/* Image */}
           <div>
-            <label className="block text-l font-medium mb-2">
+            <label className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
               Preview Image (optional)
             </label>
             <div
@@ -451,11 +456,11 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               onDragLeave={handleImageDragLeave}
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleImageDrop}
-              className={`border-2 border-dashed rounded-lg p-6 text-center transition cursor-pointer ${
-                imageDragActive
-                  ? "border-[#bba664] bg-[#977958]/30"
-                  : "border-[#fcd34d]/50 hover:border-[#ffd39c]/70 hover:bg-[#6f5d45]/50"
-              } ${isLoading ? "opacity-50" : ""}`}
+              className={`border-2 border-dashed rounded-lg p-6 text-center transition cursor-pointer ${isLoading ? "opacity-50" : ""}`}
+              style={{
+                borderColor: imageDragActive ? theme.colors.cardBorder : `${theme.colors.accentYellow}80`,
+                backgroundColor: imageDragActive ? `${theme.colors.cardBorder}20` : 'transparent'
+              }}
               onClick={() => imageInputRef.current?.click()}
             >
               {imagePreview && !imageFile ? (
@@ -465,15 +470,15 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
                     alt="Current preview"
                     className="w-24 h-24 object-cover rounded-lg mx-auto mb-2"
                   />
-                  <p className="text-sm">Click to change image</p>
+                  <p className="text-sm" style={{ color: theme.colors.textPrimary }}>Click to change image</p>
                 </>
               ) : (
                 <>
-                  <Upload className="w-8 h-8 mx-auto mb-2" />
-                  <p className="font-medium">
+                  <Upload className="w-8 h-8 mx-auto mb-2" style={{ color: theme.colors.textPrimary }} />
+                  <p className="font-medium" style={{ color: theme.colors.textPrimary }}>
                     {imageFile ? `✓ ${imageFile.name}` : "Drag image here or click to select"}
                   </p>
-                  <p className="text-xs">PNG, JPEG, or WebP • Max 5MB</p>
+                  <p className="text-xs" style={{ color: theme.colors.textSecondary }}>PNG, JPEG, or WebP • Max 5MB</p>
                 </>
               )}
             </div>
@@ -489,14 +494,15 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
 
           {/* Tags */}
           <div>
-            <label className="block text-l font-medium mb-2">
+            <label className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
               Tags (up to 3)
             </label>
             <div className="flex gap-2 mb-2 flex-wrap">
               {tags.map((tag) => (
                 <span
                   key={tag}
-                  className="bg-[#6f5d45]/50 text-[#ffdca7] px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 border border-[#87725a]/50"
+                  className="px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2"
+                  style={{ backgroundColor: `${theme.colors.cardBg}66`, color: theme.colors.textPrimary, borderColor: theme.colors.cardBorder, borderWidth: '1px' }}
                 >
                   {tag}
                   <button
@@ -514,19 +520,23 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               <button
                 type="button"
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="w-full px-4 py-2 rounded-lg border border-[#87725a]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#bba664] bg-[#6f5d45]/50 text-[#ffdca7] text-left disabled:opacity-50"
+                className="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 text-left disabled:opacity-50"
+                style={{ borderColor: theme.colors.cardBorder, backgroundColor: `${theme.colors.cardBg}33`, color: theme.colors.textPrimary }}
                 disabled={isLoading || tags.length >= 3}
               >
                 {tagInput || "Select tags..."}
               </button>
               {dropdownOpen && (
-                <div className="absolute z-10 w-full mt-2 bg-[#6f5d45] border border-[#87725a]/50 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                <div className="absolute z-10 w-full mt-2 border rounded-lg shadow-lg max-h-64 overflow-y-auto" style={{ borderColor: theme.colors.cardBorder, backgroundColor: theme.colors.elementBg }}>
                   {AVAILABLE_TAGS.filter((tag) => !tags.includes(tag)).map((tag) => (
                     <button
                       key={tag}
                       type="button"
                       onClick={() => handleSelectTag(tag)}
-                      className="w-full text-left px-4 py-2 hover:bg-[#977958]/40 text-[#ffdca7] transition border-b border-[#87725a]/20 last:border-b-0"
+                      className="w-full text-left px-4 py-2 transition border-b last:border-b-0"
+                      style={{ color: theme.colors.textPrimary, borderColor: `${theme.colors.cardBorder}33` }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                     >
                       {tag}
                     </button>
@@ -541,7 +551,11 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
             <button
               type="submit"
               disabled={isLoading}
-              className="flex-1 bg-gradient-to-r from-[#d1a94f] to-[#ddb52c] hover:from-amber-500 hover:to-yellow-500 text-white py-3 rounded-lg font-semibold transition disabled:from-amber-500 disabled:to-yellow-500 flex items-center justify-center gap-2"
+              style={{
+                backgroundImage: `linear-gradient(to right, ${theme.colors.buttonBg}, ${theme.colors.accentGold})`,
+                color: theme.colors.buttonText
+              }}
+              className="flex-1 py-3 rounded-lg font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2 hover:opacity-90"
             >
               {isLoading ? (
                 <>
@@ -556,7 +570,8 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="flex-1 bg-[#59452e] text-white py-3 rounded-lg font-semibold hover:bg-red-900/40 transition disabled:opacity-50"
+              className="flex-1 py-3 rounded-lg font-semibold transition disabled:opacity-50 hover:opacity-90"
+              style={{ backgroundColor: theme.colors.cardBorder, color: theme.colors.textPrimary }}
             >
               Cancel
             </button>

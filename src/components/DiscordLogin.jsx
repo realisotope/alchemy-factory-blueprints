@@ -1,7 +1,10 @@
 import { supabase } from "../lib/supabase";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
+import { useTheme } from "../lib/ThemeContext";
 
 export default function DiscordLogin({ user, onLogout }) {
+  const { theme } = useTheme();
+
   async function login() {
     await supabase.auth.signInWithOAuth({
       provider: "discord",
@@ -21,7 +24,10 @@ export default function DiscordLogin({ user, onLogout }) {
       <div className="flex items-center gap-3">
         <button
           onClick={logout}
-          className="px-4 py-2 bg-red-600/70 hover:bg-red-700 text-white rounded-lg font-semibold transition"
+          style={{
+            backgroundColor: theme.name === "dark" ? "#dc2626" : "#991b1b",
+          }}
+          className="px-4 py-2 hover:opacity-90 text-white rounded-lg font-semibold transition"
         >
           Logout
         </button>
@@ -32,7 +38,11 @@ export default function DiscordLogin({ user, onLogout }) {
   return (
     <button
       onClick={login}
-      className="px-4 py-2 bg-blue-600/70 hover:bg-blue-700 text-white rounded-lg shadow-lg font-semibold transition hover:shadow-xl"
+      style={{
+        backgroundColor: theme.colors.buttonBg,
+        color: theme.colors.buttonText,
+      }}
+      className="px-4 py-2 rounded-lg shadow-lg font-semibold transition hover:shadow-xl hover:opacity-90"
     >
       Login with Discord
     </button>

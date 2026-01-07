@@ -2,6 +2,7 @@ import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { validateAndSanitizeTitle, validateAndSanitizeDescription, sanitizeTitleForFilename } from "../lib/sanitization";
+import { useTheme } from "../lib/ThemeContext";
 import { Upload, Loader, X } from "lucide-react";
 import { put } from "@vercel/blob";
 import imageCompression from "browser-image-compression";
@@ -196,6 +197,7 @@ const validateImageFile = async (file) => {
 };
 
 export default function BlueprintUpload({ user, onUploadSuccess }) {
+  const { theme } = useTheme();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [blueprintFile, setBlueprintFile] = useState(null);
@@ -479,13 +481,13 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
   };
 
   return (
-    <div className="backdrop-blur-sm text-[#fcd34d]">
-      <h2 className="text-2xl font-bold text-amber-300 mb-6">Upload Your Blueprint</h2>
+    <div className="backdrop-blur-sm">
+      <h2 style={{ color: theme.colors.accentYellow }} className="text-2xl font-bold mb-6">Upload Your Blueprint</h2>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Title */}
         <div>
-          <label className="block text-l font-medium mb-2">
+          <label style={{ color: theme.colors.textPrimary }} className="block text-l font-medium mb-2">
             Blueprint Title *
           </label>
           <input
@@ -493,13 +495,14 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g., Efficient Iron Production Setup"
-            className="w-full px-4 py-2 border border-[#87725a]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#bba664] bg-[#6f5d45]/50 text-[#ffdca7] placeholder-[#ffdca7]"
+            style={{ borderColor: theme.colors.cardBorder, backgroundColor: `${theme.colors.cardBg}33`, color: theme.colors.textPrimary }}
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 placeholder-opacity-50"
           />
         </div>
 
         {/* Description */}
         <div>
-          <label className="block text-l font-medium mb-2">
+          <label style={{ color: theme.colors.textPrimary }} className="block text-l font-medium mb-2">
             Description
           </label>
           <textarea
@@ -507,13 +510,14 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe your blueprint, its purpose, and any special features..."
             rows="4"
-            className="w-full px-4 py-2 border border-[#87725a]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#bba664] bg-[#6f5d45]/50 text-[#ffdca7] placeholder-[#ffdca7]"
+            style={{ borderColor: theme.colors.cardBorder, backgroundColor: `${theme.colors.cardBg}33`, color: theme.colors.textPrimary }}
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 placeholder-opacity-50"
           />
         </div>
 
         {/* Tags */}
         <div>
-          <label className="block text-sm font-medium mb-2">
+          <label style={{ color: theme.colors.textPrimary }} className="block text-sm font-medium mb-2">
             Tags (Select up to 3)
           </label>
           <div className="space-y-2">
@@ -522,28 +526,32 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
                 <button
                   type="button"
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="w-full px-4 py-2 border border-[#87725a]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#bba664] bg-[#6f5d45]/50 text-[#ffdca7] text-left flex items-center justify-between hover:border-[#9f8569]/80 transition"
+                  style={{ borderColor: theme.colors.cardBorder, backgroundColor: `${theme.colors.cardBg}33`, color: theme.colors.textPrimary }}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 text-left flex items-center justify-between transition"
                 >
-                  <span className={tagInput ? "text-[#ffdca7]" : "text-[#ffdca7]"}>
+                  <span style={{ color: theme.colors.textPrimary }}>
                     {tagInput || "-- Select a tag --"}
                   </span>
                   <span className={`transition transform ${dropdownOpen ? "rotate-180" : ""}`}>▼</span>
                 </button>
                 
                 {dropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-[#6f5d45] border border-[#87725a]/50 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                  <div style={{ borderColor: theme.colors.cardBorder, backgroundColor: theme.colors.elementBg }} className="absolute top-full left-0 right-0 mt-1 border rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
                     {AVAILABLE_TAGS.filter(tag => !tags.includes(tag)).map((tag) => (
                       <button
                         key={tag}
                         type="button"
                         onClick={() => handleSelectTag(tag)}
-                        className="w-full text-left px-4 py-2.5 hover:bg-[#977958]/40 text-[#ffdca7] transition first:rounded-t-lg last:rounded-b-lg border-b border-[#87725a]/20 last:border-b-0"
+                        style={{ color: theme.colors.textPrimary, borderColor: `${theme.colors.cardBorder}33` }}
+                        className="w-full text-left px-4 py-2.5 transition first:rounded-t-lg last:rounded-b-lg border-b last:border-b-0"
+                        onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                       >
                         {tag}
                       </button>
                     ))}
                     {AVAILABLE_TAGS.filter(tag => !tags.includes(tag)).length === 0 && (
-                      <div className="px-4 py-2.5 text-gray-500 text-center">
+                      <div style={{ color: theme.colors.textSecondary }} className="px-4 py-2.5 text-center">
                         All tags selected
                       </div>
                     )}
@@ -556,13 +564,14 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
                 {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="bg-[#87725a]/50 text-[#ffdca7] px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 border border-[#6b5d45]/50"
+                    style={{ backgroundColor: `${theme.colors.cardBg}66`, color: theme.colors.textPrimary, borderColor: theme.colors.cardBorder }}
+                    className="px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 border"
                   >
                     #{tag}
                     <button
                       type="button"
                       onClick={() => handleRemoveTag(tag)}
-                      className="hover:text-amber-200"
+                      className="hover:text-red-400"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -575,7 +584,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
 
         {/* Blueprint File Upload */}
         <div>
-          <label className="block text-s font-medium mb-2">
+          <label style={{ color: theme.colors.textPrimary }} className="block text-s font-medium mb-2">
             Blueprint File (.af) *
           </label>
           <div
@@ -594,13 +603,14 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
             />
             <label
               htmlFor="blueprint-input"
-              className={`flex items-center justify-center w-full px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition ${
-                blueprintDragActive
-                  ? "border-[#bba664] bg-[#977958]/30"
-                  : "border-[#fcd34d]/50 hover:border-[#ffd39c]/70 hover:bg-[#6f5d45]/50"
-              }`}
+              style={{
+                borderColor: blueprintDragActive ? theme.colors.cardBorder : `${theme.colors.accentYellow}80`,
+                backgroundColor: blueprintDragActive ? `${theme.colors.cardBorder}20` : 'transparent',
+                color: theme.colors.textPrimary
+              }}
+              className="flex items-center justify-center w-full px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition"
             >
-              <Upload className="w-5 h-5 mr-2 text-amber-400" />
+              <Upload className="w-5 h-5 mr-2" style={{ color: theme.colors.accentYellow }} />
               <span>
                 {blueprintFile
                   ? blueprintFile.name
@@ -614,7 +624,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
 
         {/* Image Upload */}
         <div>
-          <label className="block text-s font-medium mb-2">
+          <label style={{ color: theme.colors.textPrimary }} className="block text-s font-medium mb-2">
             Preview Image (PNG/JPG)
           </label>
           <div className="space-y-3">
@@ -622,7 +632,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
               <img
                 src={imagePreview}
                 alt="Preview"
-                className="w-full h-48 object-cover rounded-lg border border-[#87725a]/50"
+                style={{ borderColor: theme.colors.cardBorder }}
+                className="w-full h-48 object-cover rounded-lg border"
               />
             )}
             <div
@@ -641,13 +652,14 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
               />
               <label
                 htmlFor="image-input"
-                className={`flex items-center justify-center w-full px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition ${
-                  imageDragActive
-                    ? "border-[#bba664] bg-[#977958]/30"
-                    : "border-[#fcd34d]/50 hover:border-[#ffd39c]/70 hover:bg-[#6f5d45]/50"
-                }`}
+                style={{
+                  borderColor: imageDragActive ? theme.colors.cardBorder : `${theme.colors.accentYellow}80`,
+                  backgroundColor: imageDragActive ? `${theme.colors.cardBorder}20` : 'transparent',
+                  color: theme.colors.textPrimary
+                }}
+                className="flex items-center justify-center w-full px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition"
               >
-                <Upload className="w-5 h-5 mr-2 text-amber-400" />
+                <Upload className="w-5 h-5 mr-2" style={{ color: theme.colors.accentYellow }} />
                 <span>
                   {imageFile
                     ? imageFile.name
@@ -662,7 +674,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
 
         {/* Error Message */}
         {error && (
-          <div className="p-4 bg-red-900/30 border border-red-700/50 text-red-300 rounded-lg">
+          <div style={{ backgroundColor: `${theme.colors.cardBg}33`, borderColor: theme.colors.cardBorder, color: '#fca5a5' }} className="p-4 border rounded-lg">
             {error}
           </div>
         )}
@@ -671,7 +683,11 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-gradient-to-r from-[#d1a94f] to-[#ddb52c] hover:from-amber-500 hover:to-yellow-500 text-white disabled:from-amber-500 disabled:to-yellow-500 font-semibold py-3 rounded-lg transition flex items-center justify-center shadow-lg"
+          style={{
+            backgroundImage: `linear-gradient(to right, ${theme.colors.buttonBg}, ${theme.colors.accentGold})`,
+            color: theme.colors.buttonText
+          }}
+          className="w-full font-semibold py-3 rounded-lg transition flex items-center justify-center shadow-lg hover:opacity-90 disabled:opacity-50"
         >
           {loading ? (
             <>
