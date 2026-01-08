@@ -5,7 +5,7 @@ import { Search, Download, Trash2, Loader, Heart, X } from "lucide-react";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { sanitizeCreatorName } from "../lib/sanitization";
 import { getThumbnailUrl } from "../lib/imageOptimization";
-import { addSampleDataToBlueprints } from "../lib/sampleData";
+import { transformParsedMaterials, transformParsedBuildings } from "../lib/blueprintMappings";
 import { useTheme } from "../lib/ThemeContext";
 import BlueprintDetail from "./BlueprintDetail";
 import BlueprintCard from "./BlueprintCard";
