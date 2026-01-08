@@ -41,7 +41,7 @@ export default function BlueprintCard({
         <img
           src={getThumbnailUrl(blueprint.image_url)}
           alt={blueprint.title}
-          style={{ backgroundColor: theme.colors.accentLighter }}
+          style={{ backgroundColor: theme.colors.elementBg }}
           className="w-full h-48 object-cover flex-shrink-0 transition-opacity duration-150 group-hover:opacity-90 opacity-80"
           loading="lazy"
         />
@@ -106,7 +106,7 @@ export default function BlueprintCard({
             <span>{blueprint.likes || 0}</span>
           </div>
           <div style={{ color: theme.colors.textSecondary }} className="text-xs ml-auto">
-            <p style={{ color: theme.colors.accentGold }} className="font-semibold hover:opacity-80 transition">
+            <p style={{ color: theme.colors.textSecondary }} className="font-semibold hover:opacity-80 transition">
               by{" "}
               <button
                 onClick={(e) => {
@@ -151,7 +151,7 @@ export default function BlueprintCard({
               onLike(blueprint.id, isLiked);
             }}
             style={{
-              backgroundColor: isLiked ? `${theme.colors.buttonBg2}` : `${theme.colors.buttonBg2}80`,
+              backgroundColor: isLiked ? `${theme.colors.buttonBg2}90` : `${theme.colors.buttonBg2}80`,
               color: isLiked ? theme.colors.buttonBg : theme.colors.textPrimary
             }}
             className="px-3 py-2 rounded-lg transition font-semibold flex items-center justify-center hover:opacity-50"
@@ -167,7 +167,7 @@ export default function BlueprintCard({
               }}
               disabled={deleting === blueprint.id}
               style={{
-                backgroundColor: `${theme.colors.buttonBg2}`
+                backgroundColor: `${theme.colors.buttonBg2}90`
               }}
               className="font-semibold py-2 px-3 rounded-lg transition flex items-center text-red-500 justify-center hover:opacity-50 disabled:opacity-50"
             >
