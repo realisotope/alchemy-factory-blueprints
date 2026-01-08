@@ -151,8 +151,8 @@ export default function BlueprintCard({
               onLike(blueprint.id, isLiked);
             }}
             style={{
-              backgroundColor: isLiked ? theme.colors.buttonBg : `${theme.colors.cardBg}99`,
-              color: isLiked ? theme.colors.buttonText : theme.colors.textPrimary
+              backgroundColor: isLiked ? `${theme.colors.buttonBg2}80` : `${theme.colors.cardBg}99`,
+              color: isLiked ? theme.colors.buttonBg : theme.colors.textPrimary
             }}
             className="px-3 py-2 rounded-lg transition font-semibold flex items-center justify-center hover:opacity-80"
           >
@@ -167,10 +167,9 @@ export default function BlueprintCard({
               }}
               disabled={deleting === blueprint.id}
               style={{
-                backgroundColor: `${theme.colors.cardBorder}99`,
-                color: theme.colors.textPrimary
+                backgroundColor: `${theme.colors.buttonBg2}99`
               }}
-              className="font-semibold py-2 px-3 rounded-lg transition flex items-center justify-center hover:opacity-80 disabled:opacity-50"
+              className="font-semibold py-2 px-3 rounded-lg transition flex items-center text-red-500 justify-center hover:opacity-80 disabled:opacity-50"
             >
               {deleting === blueprint.id ? (
                 <Loader className="w-4 h-4 animate-spin" />
