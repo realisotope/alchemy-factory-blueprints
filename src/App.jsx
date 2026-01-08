@@ -142,7 +142,7 @@ export default function App() {
           {/* Gallery Section */}
           <section>
             <h2 style={{
-              backgroundImage: `linear-gradient(to right, ${theme.colors.accentYellow}, ${theme.colors.accentLighter})`,
+              backgroundColor: theme.colors.elementBg,
             }} className="text-3xl font-bold bg-clip-text text-transparent mb-3">
               Blueprint Gallery
             </h2>
