@@ -494,11 +494,12 @@ export const SAMPLE_SKILLS = [
 ];
 
 // Function to add sample data to blueprints for testing
+// Only adds if materials/buildings don't already exist from parsed data
 export function addSampleDataToBlueprints(blueprints) {
   return blueprints.map((blueprint) => ({
     ...blueprint,
-    materials: SAMPLE_MATERIALS,
-    buildings: SAMPLE_BUILDINGS,
-    skills: SAMPLE_SKILLS,
+    materials: blueprint.materials || SAMPLE_MATERIALS,
+    buildings: blueprint.buildings || SAMPLE_BUILDINGS,
+    skills: blueprint.skills || SAMPLE_SKILLS,
   }));
 }

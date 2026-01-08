@@ -1,0 +1,89 @@
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.VITE_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+const PARSER_SECRET = process.env.VITE_PARSER_SECRET_KEY;
+
+export default async function handler(req, res) {
+  if (!PARSER_SECRET) {
+    console.error("VITE_PARSER_SECRET_KEY environment variable is not set");
+    return res.status(500).json({ error: "Server configuration error" });
+  }
+
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  const providedSecret = req.headers["x-alchemy-secret"];
+  if (providedSecret !== PARSER_SECRET) {
+    console.error("Invalid parser secret");
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const { fileHash, parsed, customId } = req.body;
+
+    if (!fileHash || !parsed) {
+      return res.status(400).json({ error: "Missing fileHash or parsed data" });
+    }
+
+    console.log(`Received parsed data for fileHash: ${fileHash}${customId ? ` (customId: ${customId})` : ""}`);
+
+    let blueprint;
+    let findError;
+    
+    if (customId) {
+      const result = await supabase
+        .from("blueprints")
+        .select("id")
+        .eq("id", customId)
+        .single();
+      blueprint = result.data;
+      findError = result.error;
+    }
+    
+    if (!blueprint) {
+      const result = await supabase
+        .from("blueprints")
+        .select("id")
+        .eq("filehash", fileHash)
+        .single();
+      blueprint = result.data;
+      findError = result.error;
+    }
+
+    if (findError || !blueprint) {
+      console.error("Blueprint not found for fileHash:", fileHash);
+      return res.status(404).json({ error: "Blueprint not found" });
+    }
+
+    const materials = parsed.Materials || {};
+    const buildings = parsed.Buildings || {};
+    const skills = parsed.SupplyItems || {};
+
+    const { error: updateError } = await supabase
+      .from("blueprints")
+      .update({ 
+        parsed: parsed,
+        filehash: fileHash,
+        materials: materials,
+        buildings: buildings,
+        skills: skills,
+      })
+      .eq("id", blueprint.id);
+
+    if (updateError) {
+      console.error("Error updating blueprint:", updateError);
+      return res.status(500).json({ error: "Failed to update blueprint" });
+    }
+
+    console.log(`Successfully updated blueprint ${blueprint.id} with parsed data`);
+    return res.status(200).json({ success: true, blueprintId: blueprint.id });
+  } catch (error) {
+    console.error("Webhook handler error:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
