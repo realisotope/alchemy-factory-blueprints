@@ -115,18 +115,6 @@ export default function App() {
                 <span className="hidden sm:inline">How to Use Blueprints</span>
                 <span className="sm:hidden">How to Use</span>
               </button>
-              <button
-                  onClick={() => setIsUploadModalOpen(true)}
-                  style={{
-                    backgroundColor: theme.colors.buttonBgAlt,
-                    color: theme.colors.buttonText,
-                  }}
-                  className="inline-flex items-center gap-2 text-sm sm:text-base font-semibold py-2 px-4 sm:px-8 rounded-lg transition shadow-lg hover:shadow-xl hover:scale-105 hover:opacity-70 whitespace-nowrap"
-                >
-                  <Upload className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                  <span className="hidden sm:inline">Upload Blueprint</span>
-                  <span className="sm:hidden">Upload</span>
-                </button>
               {user ? (
                 <button
                   onClick={() => setIsUploadModalOpen(true)}
