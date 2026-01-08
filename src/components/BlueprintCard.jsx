@@ -27,8 +27,8 @@ export default function BlueprintCard({
         backgroundImage: `linear-gradient(to bottom-right, ${theme.colors.cardBg}99, ${theme.colors.elementBgDark}99)`,
         borderColor: theme.colors.cardBorder,
         boxShadow: isHovered 
-          ? `0 20px 25px -5px ${theme.colors.cardShadow}60`
-          : `0 10px 15px -3px ${theme.colors.cardShadow}40`
+          ? `0 12px 18px -5px ${theme.colors.cardShadow}60`
+          : `0 10px 15px -5px ${theme.colors.cardShadow}40`
       }}
       className="fade-in-card rounded-xl overflow-hidden transition-all duration-200 border-2 rounded-lg cursor-pointer flex flex-col h-full group"
       whileHover={{ y: -8, scale: 1.02, transition: { duration: 0.3, type: "spring", stiffness: 300, damping: 20 } }}
