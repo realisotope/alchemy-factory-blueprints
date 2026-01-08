@@ -28,6 +28,10 @@ h1, h2, h3, h4, h5, h6 {
   background: #8b8b8b;
 }
 
+input::placeholder {
+    color: #e0e0e0;
+}
+
 /* Fade-in animation for blueprint cards */
 @keyframes fadeInUp {
   from {
