@@ -181,10 +181,63 @@ export const darkerTheme = {
   },
 };
 
+export const darkNightTheme = {
+  name: "darknight",
+  colors: {
+    primary: "#0A0A0A",
+    secondary: "#121212",
+    tertiary: "#1E1E1E",
+
+    headerGradientFrom: "#222222",
+    headerGradientVia: "#1E1E1E",
+    headerGradientTo: "#121212",
+    headerBorder: "#303030",
+
+    accentYellow: "#E0E0E0",
+    accentGold: "#FFFFFF",
+    accentLighter: "#999999",
+
+    textPrimary: "#F0F0F0",
+    textSecondary: "#A0A0A0",
+    textDark: "#0A0A0A",
+
+    elementBg: "#222222",
+    elementBgDark: "#121212",
+    elementBgCard: "#1E1E1E",
+    elementBorder: "#303030",
+
+    buttonBg: "#303030",
+    buttonBg2: "#404040",
+    buttonBgAlt: "#FFFFFF",
+    buttonHover: "#404040",
+    buttonText: "#F0F0F0",
+
+    cardBg: "#1E1E1E",
+    cardBorder: "#303030",
+    cardHoverBorder: "#FFFFFF",
+    cardShadow: "#474747",
+
+    gradientFrom: "#1E1E1E",
+    gradientTo: "#252525",
+
+    scrollbarTrack: "#121212",
+    scrollbarThumb: "#404040",
+    scrollbarThumbHover: "#505050",
+  },
+  gradients: {
+    dots: [
+      "rgb(255, 255, 255)",
+      "rgba(60, 60, 60, 0.4)",
+      "rgba(30, 30, 30, 0.5)",
+    ],
+  },
+};
+
 export const THEMES = {
   light: lightTheme,
   dark: darkTheme,
   darker: darkerTheme,
+  darknight: darkNightTheme,
 };
 
 export const THEME_NAMES = Object.keys(THEMES);

@@ -169,7 +169,7 @@ export default function BlueprintCard({
               style={{
                 backgroundColor: `${theme.colors.buttonBg2}90`
               }}
-              className="font-semibold py-2 px-3 rounded-lg transition flex items-center text-red-500 justify-center hover:opacity-50 disabled:opacity-50"
+              className="font-semibold py-2 px-3 rounded-lg transition flex items-center text-red-900 justify-center hover:opacity-50 disabled:opacity-50"
             >
               {deleting === blueprint.id ? (
                 <Loader className="w-4 h-4 animate-spin" />

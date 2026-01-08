@@ -432,8 +432,8 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={isLoading}
-              style={{ borderColor: `${theme.colors.accentYellow}80`, color: theme.colors.accentYellow }}
-              className="w-full px-4 py-3 border-2 border-dashed rounded-lg transition font-medium disabled:opacity-50 hover:opacity-80"
+              style={{ borderColor: theme.colors.accentYellow, color: theme.colors.accentYellow }}
+              className="w-full px-4 py-3 border-2 border-dashed rounded-lg transition font-medium disabled:opacity-50 hover:opacity-60"
             >
               {blueprintFile ? `✓ ${blueprintFile.name}` : "Click to select or upload .af file"}
             </button>
@@ -457,10 +457,10 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               onDragLeave={handleImageDragLeave}
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleImageDrop}
-              className={`border-2 border-dashed rounded-lg p-6 text-center transition cursor-pointer ${isLoading ? "opacity-50" : ""}`}
+              className={`border-2 border-dashed rounded-lg p-6 text-center transition cursor-pointer hover:opacity-60 ${isLoading ? "opacity-50" : ""}`}
               style={{
-                borderColor: imageDragActive ? theme.colors.cardBorder : `${theme.colors.accentYellow}80`,
-                backgroundColor: imageDragActive ? `${theme.colors.cardBorder}20` : 'transparent'
+                borderColor: imageDragActive ? theme.colors.cardBorder : `${theme.colors.accentYellow}`,
+                backgroundColor: imageDragActive ? `${theme.colors.cardBorder}20` : `${theme.colors.cardBorder}20`
               }}
               onClick={() => imageInputRef.current?.click()}
             >
@@ -556,7 +556,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
                 backgroundImage: `linear-gradient(to right, ${theme.colors.buttonBg}, ${theme.colors.accentGold})`,
                 color: theme.colors.buttonText
               }}
-              className="flex-1 py-3 rounded-lg font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2 hover:opacity-90"
+              className="flex-1 py-3 rounded-lg font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2 hover:opacity-70"
             >
               {isLoading ? (
                 <>
@@ -571,7 +571,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="flex-1 py-3 rounded-lg font-semibold transition disabled:opacity-50 hover:opacity-90"
+              className="flex-1 py-3 rounded-lg font-semibold transition disabled:opacity-50 hover:opacity-70"
               style={{ backgroundColor: theme.colors.cardBorder, color: theme.colors.textPrimary }}
             >
               Cancel

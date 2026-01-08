@@ -101,7 +101,6 @@ export default function App() {
             </div>
             <div className="hidden sm:flex flex-col sm:flex-row gap-2 sm:gap-3 items-end sm:items-center sm:justify-end flex-shrink-0 ml-4">
               <ThemeToggle />
-              <DiscordLogin user={user} onLogout={handleLogout} />
               <button
                 onClick={() => setIsHowToOpen(true)}
                 style={{
@@ -131,7 +130,7 @@ export default function App() {
                 </button>
               ) : (
                 <></>)}
-
+                <DiscordLogin user={user} onLogout={handleLogout} />
             </div>
           </div>
         </header>
@@ -143,6 +142,7 @@ export default function App() {
           <section>
             <h2 style={{
               backgroundColor: theme.colors.elementBg,
+              color: theme.colors.accentYellow,
             }} className="text-3xl font-bold bg-clip-text text-transparent mb-3">
               Blueprint Gallery
             </h2>
@@ -201,7 +201,7 @@ export default function App() {
                   <h3 style={{ color: theme.colors.accentYellow }} className="text-xl font-bold mb-3">💾 File Storage</h3>
                   <p className="mb-2">Blueprint files are typically stored in:</p>
                   <code style={{
-                    backgroundColor: `${theme.colors.elementBgDark}80`,
+                    backgroundColor: `${theme.colors.elementBgDark}`,
                   }} className="p-3 rounded-lg block text-sm overflow-x-auto">
                     C:\Users\YOURUSERNAME\AppData\Local\AlchemyFactory\Saved\Blueprints\
                   </code>

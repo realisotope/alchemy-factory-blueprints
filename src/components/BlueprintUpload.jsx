@@ -604,11 +604,11 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
             <label
               htmlFor="blueprint-input"
               style={{
-                borderColor: blueprintDragActive ? theme.colors.cardBorder : `${theme.colors.accentYellow}80`,
-                backgroundColor: blueprintDragActive ? `${theme.colors.cardBorder}20` : 'transparent',
+                borderColor: blueprintDragActive ? theme.colors.cardBorder : `${theme.colors.accentYellow}`,
+                backgroundColor: blueprintDragActive ? `${theme.colors.cardBorder}20` : `${theme.colors.cardBorder}20`,
                 color: theme.colors.textPrimary
               }}
-              className="flex items-center justify-center w-full px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition"
+              className="flex items-center justify-center w-full px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition hover:opacity-60"
             >
               <Upload className="w-5 h-5 mr-2" style={{ color: theme.colors.accentYellow }} />
               <span>
@@ -653,11 +653,11 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
               <label
                 htmlFor="image-input"
                 style={{
-                  borderColor: imageDragActive ? theme.colors.cardBorder : `${theme.colors.accentYellow}80`,
-                  backgroundColor: imageDragActive ? `${theme.colors.cardBorder}20` : 'transparent',
+                  borderColor: imageDragActive ? theme.colors.cardBorder : `${theme.colors.accentYellow}`,
+                  backgroundColor: imageDragActive ? `${theme.colors.cardBorder}20` : `${theme.colors.cardBorder}20`,
                   color: theme.colors.textPrimary
                 }}
-                className="flex items-center justify-center w-full px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition"
+                className="flex items-center justify-center w-full px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition hover:opacity-60"
               >
                 <Upload className="w-5 h-5 mr-2" style={{ color: theme.colors.accentYellow }} />
                 <span>
@@ -687,7 +687,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
             backgroundImage: `linear-gradient(to right, ${theme.colors.buttonBg}, ${theme.colors.accentGold})`,
             color: theme.colors.buttonText
           }}
-          className="w-full font-semibold py-3 rounded-lg transition flex items-center justify-center shadow-lg hover:opacity-90 disabled:opacity-50"
+          className="w-full font-semibold py-3 rounded-lg transition flex items-center justify-center shadow-lg hover:opacity-70 disabled:opacity-50"
         >
           {loading ? (
             <>
