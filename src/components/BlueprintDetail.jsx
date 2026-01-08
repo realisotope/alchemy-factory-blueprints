@@ -90,15 +90,6 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
 
   const handleDownloadClick = async () => {
     onDownload?.(blueprint);
-    
-    setDownloadCount(downloadCount + 1);
-    
-    const a = document.createElement("a");
-    a.href = blueprint.file_url;
-    a.download = blueprint.title;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
   };
 
   const handleShareBlueprint = () => {
@@ -433,7 +424,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           {user && user.id === blueprint.user_id && (
             <button
               onClick={() => setIsEditOpen(true)}
-              className="px-2 sm:px-4 py-2 sm:py-3 rounded-lg font-semibold transition flex items-center justify-center gap-1 sm:gap-2 bg-[#59452e]/60 hover:bg-[#fbcd32] text-[#ffdca7] hover:text-red-500 text-sm sm:text-base"
+              className="px-2 sm:px-4 py-2 sm:py-3 rounded-lg font-semibold transition flex items-center justify-center gap-1 sm:gap-2 bg-[#121212]/50 hover:bg-[#121212]/70 hover:text-red-500 hover:text-red-500 text-sm sm:text-base"
               title="Edit this blueprint"
             >
               <Edit2 className="w-4 h-4 sm:w-5 sm:h-5" />

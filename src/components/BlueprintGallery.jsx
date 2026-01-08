@@ -205,26 +205,36 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
       
       if (fetchError) throw fetchError;
       
-      // Normalize the data
+      // Normalize the data and preserve materials/buildings/skills from the existing blueprint
       const normalizedBp = {
         ...updatedBlueprint,
         likes: updatedBlueprint?.likes ?? 0,
-        downloads: updatedBlueprint?.downloads ?? 0
+        downloads: updatedBlueprint?.downloads ?? 0,
+        materials: selectedBlueprint?.materials ?? updatedBlueprint?.materials ?? [],
+        buildings: selectedBlueprint?.buildings ?? updatedBlueprint?.buildings ?? [],
+        skills: selectedBlueprint?.skills ?? updatedBlueprint?.skills ?? []
       };
       
       console.log(`Refetched blueprint ${blueprint.id}: downloads=${normalizedBp.downloads}`);
       
-      // Update blueprints array
-      setBlueprints(
-        blueprints.map((bp) =>
-          bp.id === blueprint.id ? normalizedBp : bp
+      // Update blueprints array - preserve materials/buildings/skills from existing data
+      setBlueprints((prev) =>
+        prev.map((bp) =>
+          bp.id === blueprint.id ? {
+            ...normalizedBp,
+            materials: bp.materials ?? normalizedBp.materials ?? [],
+            buildings: bp.buildings ?? normalizedBp.buildings ?? [],
+            skills: bp.skills ?? normalizedBp.skills ?? []
+          } : bp
         )
       );
       
       // Update selected blueprint if it's the one being downloaded
       if (selectedBlueprint?.id === blueprint.id) {
         console.log(`Updated selected blueprint with refetched data: downloads=${normalizedBp.downloads}`);
-        setSelectedBlueprint(normalizedBp);
+        setSelectedBlueprint((prev) => 
+          prev ? { ...prev, downloads: normalizedBp.downloads } : null
+        );
       }
 
       // Trigger download
