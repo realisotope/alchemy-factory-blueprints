@@ -8,6 +8,8 @@ import { put } from "@vercel/blob";
 import imageCompression from "browser-image-compression";
 import JSZip from "jszip";
 import { m } from "framer-motion";
+import { sendBlueprintToParser } from "../lib/blueprintParser";
+import { transformParsedMaterials, transformParsedBuildings } from "../lib/blueprintMappings";
 
 // Constants for validation
 const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
@@ -444,21 +446,63 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       }
 
       // Insert blueprint record into database using sanitized data
-      const { error: dbError } = await supabase.from("blueprints").insert([
-        {
-          title: titleValidation.sanitized,
-          description: descriptionValidation.sanitized || null,
-          user_id: user.id,
-          creator_name: stripDiscordDiscriminator(user.user_metadata?.name) || "Anonymous",
-          file_url: fileUrl,
-          image_url: imageUrl,
-          tags: tags.length > 0 ? tags : null,
-          downloads: 0,
-          likes: 0,
-        },
-      ]);
+      const { data: insertedBlueprint, error: dbError } = await supabase
+        .from("blueprints")
+        .insert([
+          {
+            title: titleValidation.sanitized,
+            description: descriptionValidation.sanitized || null,
+            user_id: user.id,
+            creator_name: stripDiscordDiscriminator(user.user_metadata?.name) || "Anonymous",
+            file_url: fileUrl,
+            image_url: imageUrl,
+            tags: tags.length > 0 ? tags : null,
+            downloads: 0,
+            likes: 0,
+          },
+        ])
+        .select()
+        .single();
 
       if (dbError) throw dbError;
+
+      // Send blueprint to parser API (non-blocking)
+      if (insertedBlueprint?.id) {
+        try {
+          console.log("Sending blueprint to parser...");
+          const parserResponse = await sendBlueprintToParser(blueprintFile, insertedBlueprint.id);
+          
+          if (parserResponse.duplicate && parserResponse.parsed) {
+            // If already parsed, update the blueprint immediately with parsed data
+            console.log("Blueprint already parsed, updating database...");
+            const materials = transformParsedMaterials(parserResponse.parsed.Materials);
+            const buildings = transformParsedBuildings(parserResponse.parsed.Buildings);
+            
+            await supabase
+              .from("blueprints")
+              .update({
+                parsed: parserResponse.parsed,
+                filehash: parserResponse.fileHash,
+                materials: parserResponse.parsed.Materials || {},
+                buildings: parserResponse.parsed.Buildings || {},
+                skills: parserResponse.parsed.SupplyItems || {},
+              })
+              .eq("id", insertedBlueprint.id);
+            
+            console.log("Blueprint updated with parsed data");
+          } else if (parserResponse.queued) {
+            // Store the fileHash for webhook callback
+            console.log("Blueprint queued for parsing, fileHash:", parserResponse.fileHash);
+            await supabase
+              .from("blueprints")
+              .update({ filehash: parserResponse.fileHash })
+              .eq("id", insertedBlueprint.id);
+          }
+        } catch (parserError) {
+          // Parser error is non-blocking - blueprint is already uploaded
+          console.error("Parser API error (non-blocking):", parserError);
+        }
+      }
 
       // Reset form
       setTitle("");

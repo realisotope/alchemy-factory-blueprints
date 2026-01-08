@@ -80,23 +80,42 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
     try {
       const { data, error } = await supabase
         .from("blueprints")
-        .select("id,title,description,user_id,creator_name,file_url,image_url,downloads,likes,tags,created_at,updated_at")
+        .select("*")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
       
-      // Ensure likes and downloads are properly set (default to 0 if NULL)
-      const processedData = (data || []).map(bp => ({
-        ...bp,
-        likes: bp.likes ?? 0,
-        downloads: bp.downloads ?? 0
-      }));
+      // Process blueprints: ensure likes/downloads are set and transform parsed data
+      const processedData = (data || []).map(bp => {
+        // Transform materials and buildings from parsed data objects to arrays
+        let materials = [];
+        let buildings = [];
+        
+        try {
+          if (bp.materials && typeof bp.materials === 'object' && !Array.isArray(bp.materials)) {
+            materials = transformParsedMaterials(bp.materials);
+          }
+          
+          if (bp.buildings && typeof bp.buildings === 'object' && !Array.isArray(bp.buildings)) {
+            buildings = transformParsedBuildings(bp.buildings);
+          }
+        } catch (error) {
+          console.error(`Error transforming parsed data for blueprint ${bp.id}:`, error);
+          // Continue with empty arrays if transformation fails
+        }
+        
+        return {
+          ...bp,
+          likes: bp.likes ?? 0,
+          downloads: bp.downloads ?? 0,
+          materials: materials,
+          buildings: buildings,
+          skills: bp.skills || []
+        };
+      });
       
-      // Add sample materials and buildings data for testing
-      const dataWithSamples = addSampleDataToBlueprints(processedData);
-      
-      console.log("Fetched blueprints:", dataWithSamples);
-      setBlueprints(dataWithSamples);
+      console.log("Fetched blueprints with parsed data:", processedData);
+      setBlueprints(processedData);
     } catch (err) {
       console.error("Error fetching blueprints:", err);
     } finally {
@@ -149,14 +168,26 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
       
       if (fetchError) throw fetchError;
       
+      // Transform materials and buildings from database objects to arrays
+      let materials = [];
+      let buildings = [];
+      
+      if (updatedBlueprint.materials && typeof updatedBlueprint.materials === 'object') {
+        materials = transformParsedMaterials(updatedBlueprint.materials);
+      }
+      
+      if (updatedBlueprint.buildings && typeof updatedBlueprint.buildings === 'object') {
+        buildings = transformParsedBuildings(updatedBlueprint.buildings);
+      }
+      
       // Normalize the data and preserve materials/buildings/skills from the existing blueprint
       const normalizedBp = {
         ...updatedBlueprint,
         likes: updatedBlueprint?.likes ?? 0,
         downloads: updatedBlueprint?.downloads ?? 0,
-        materials: selectedBlueprint?.materials ?? updatedBlueprint?.materials ?? [],
-        buildings: selectedBlueprint?.buildings ?? updatedBlueprint?.buildings ?? [],
-        skills: selectedBlueprint?.skills ?? updatedBlueprint?.skills ?? []
+        materials: materials.length > 0 ? materials : (selectedBlueprint?.materials ?? []),
+        buildings: buildings.length > 0 ? buildings : (selectedBlueprint?.buildings ?? []),
+        skills: updatedBlueprint?.skills ?? selectedBlueprint?.skills ?? []
       };
       
       console.log(`Refetched blueprint ${blueprintId}: likes=${normalizedBp.likes}`);
@@ -205,14 +236,26 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
       
       if (fetchError) throw fetchError;
       
+      // Transform materials and buildings from database objects to arrays
+      let materials = [];
+      let buildings = [];
+      
+      if (updatedBlueprint.materials && typeof updatedBlueprint.materials === 'object') {
+        materials = transformParsedMaterials(updatedBlueprint.materials);
+      }
+      
+      if (updatedBlueprint.buildings && typeof updatedBlueprint.buildings === 'object') {
+        buildings = transformParsedBuildings(updatedBlueprint.buildings);
+      }
+      
       // Normalize the data and preserve materials/buildings/skills from the existing blueprint
       const normalizedBp = {
         ...updatedBlueprint,
         likes: updatedBlueprint?.likes ?? 0,
         downloads: updatedBlueprint?.downloads ?? 0,
-        materials: selectedBlueprint?.materials ?? updatedBlueprint?.materials ?? [],
-        buildings: selectedBlueprint?.buildings ?? updatedBlueprint?.buildings ?? [],
-        skills: selectedBlueprint?.skills ?? updatedBlueprint?.skills ?? []
+        materials: materials.length > 0 ? materials : (selectedBlueprint?.materials ?? []),
+        buildings: buildings.length > 0 ? buildings : (selectedBlueprint?.buildings ?? []),
+        skills: updatedBlueprint?.skills ?? selectedBlueprint?.skills ?? []
       };
       
       console.log(`Refetched blueprint ${blueprint.id}: downloads=${normalizedBp.downloads}`);
