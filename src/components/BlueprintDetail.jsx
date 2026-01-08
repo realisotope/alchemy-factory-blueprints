@@ -243,7 +243,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
 
           {/* Blueprint Data*/}
           {blueprint.parsed && (
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm px-3 p-1">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm px-2 p-1">
               {/* Min Tier */}
               {blueprint.parsed.MinTierRequired !== undefined && (
                 <div className="flex items-center gap-2">
