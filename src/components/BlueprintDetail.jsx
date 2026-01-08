@@ -169,7 +169,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
             </div>
           )}
 
-          {/* Stats and Creator Row*/}
+          {/* Stats and Creator Row */}
           <div className="flex flex-col lg:flex-row gap-2 items-stretch">
             {/* Stats Grid */}
             <div className="grid grid-cols-3 gap-2 lg:flex-1">
@@ -241,7 +241,63 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
             </div>
           )}
 
-          {/* Blueprint Stats - Materials and Buildings */}
+          {/* Blueprint Data*/}
+          {blueprint.parsed && (
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm px-3 p-1">
+              {/* Min Tier */}
+              {blueprint.parsed.MinTierRequired !== undefined && (
+                <div className="flex items-center gap-2">
+                  <span style={{ color: theme.colors.accentYellow }} className="font-semibold">Min Tier:</span>
+                  <span 
+                    style={{ 
+                      color: theme.colors.accentYellow,
+                      backgroundColor: theme.colors.cardBg,
+                      borderColor: theme.colors.cardBorder
+                    }} 
+                    className="px-3 py-1 rounded border font-bold"
+                  >
+                    {blueprint.parsed.MinTierRequired}
+                  </span>
+                </div>
+              )}
+
+              {/* Inventory Slots */}
+              {blueprint.parsed.InventorySlotsRequired !== undefined && (
+                <div className="flex items-center gap-2">
+                  <span style={{ color: theme.colors.accentYellow }} className="font-semibold">Inventory Slots:</span>
+                  <span 
+                    style={{ 
+                      color: theme.colors.accentYellow,
+                      backgroundColor: theme.colors.cardBg,
+                      borderColor: theme.colors.cardBorder
+                    }} 
+                    className="px-3 py-1 rounded border font-bold"
+                  >
+                    {blueprint.parsed.InventorySlotsRequired}
+                  </span>
+                </div>
+              )}
+
+              {/* Grid Area */}
+              {blueprint.parsed.GridArea && (
+                <div className="flex items-center gap-2">
+                  <span style={{ color: theme.colors.accentYellow }} className="font-semibold">Grid Size:</span>
+                  <span 
+                    style={{ 
+                      color: theme.colors.accentYellow,
+                      backgroundColor: theme.colors.cardBg,
+                      borderColor: theme.colors.cardBorder
+                    }} 
+                    className="px-3 py-1 rounded border font-bold"
+                  >
+                    {blueprint.parsed.GridArea.x} × {blueprint.parsed.GridArea.y}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Materials and Buildings */}
           <BlueprintStats 
             key={`${blueprint.id}-stats`}
             materials={blueprint.materials || []} 
