@@ -25,9 +25,9 @@ export default function DiscordLogin({ user, onLogout }) {
         <button
           onClick={logout}
           style={{
-            backgroundColor: theme.name === "dark" ? "#dc2626" : "#991b1b",
+            backgroundColor: "#991b1b"
           }}
-          className="px-4 py-2 hover:opacity-90 text-white rounded-lg font-semibold transition"
+          className="px-4 py-2 hover:opacity-70 hover:scale-105 text-white rounded-lg font-semibold transition"
         >
           Logout
         </button>
@@ -39,10 +39,10 @@ export default function DiscordLogin({ user, onLogout }) {
     <button
       onClick={login}
       style={{
-        backgroundColor: theme.colors.buttonBg,
+        backgroundColor: theme.colors.buttonBgAlt,
         color: theme.colors.buttonText,
       }}
-      className="px-4 py-2 rounded-lg shadow-lg font-semibold transition hover:shadow-xl hover:opacity-90"
+      className="px-4 py-2 rounded-lg shadow-lg font-semibold transition hover:shadow-xl hover:scale-105 hover:opacity-70"
     >
       Login with Discord
     </button>

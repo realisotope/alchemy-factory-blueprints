@@ -8,7 +8,7 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded-lg transition flex items-center justify-center"
+      className="p-2 rounded-lg transition flex items-center justify-center hover:opacity-70 hover:scale-105"
       title={`Switch to ${isDark ? "light" : "dark"} theme`}
       style={{
         backgroundColor: isDark ? "rgba(15, 23, 42, 0.5)" : "rgba(91, 74, 57, 0.5)",

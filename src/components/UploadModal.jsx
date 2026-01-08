@@ -24,13 +24,14 @@ export default function UploadModal({ isOpen, onClose, user, onUploadSuccess }) 
           }}
           className="sticky top-0 text-white p-6 flex items-center justify-between"
         >
+          <span className="text-2xl flex-shrink-0">✨</span>
           <h2
             style={{
               backgroundImage: `linear-gradient(to right, ${theme.colors.accentYellow}, ${theme.colors.accentLighter})`,
             }}
             className="text-2xl font-bold bg-clip-text text-transparent flex-1"
           >
-            ✨ Upload Blueprint
+            Upload Blueprint
           </h2>
           <button
             onClick={onClose}

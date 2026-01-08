@@ -731,7 +731,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
             backgroundImage: `linear-gradient(to right, ${theme.colors.buttonBg}, ${theme.colors.accentGold})`,
             color: theme.colors.buttonText
           }}
-          className="w-full font-semibold py-3 rounded-lg transition flex items-center justify-center shadow-lg hover:opacity-70 disabled:opacity-50"
+          className="w-full font-semibold py-3 rounded-lg transition flex items-center justify-center shadow-lg hover:opacity-70 hover:scale-105 disabled:opacity-50"
         >
           {loading ? (
             <>

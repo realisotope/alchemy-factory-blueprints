@@ -556,7 +556,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
                 backgroundImage: `linear-gradient(to right, ${theme.colors.buttonBg}, ${theme.colors.accentGold})`,
                 color: theme.colors.buttonText
               }}
-              className="flex-1 py-3 rounded-lg font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2 hover:opacity-70"
+              className="flex-1 py-3 rounded-lg font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2 hover:opacity-70 hover:scale-105"
             >
               {isLoading ? (
                 <>
@@ -571,8 +571,8 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="flex-1 py-3 rounded-lg font-semibold transition disabled:opacity-50 hover:opacity-70"
-              style={{ backgroundColor: theme.colors.cardBorder, color: theme.colors.textPrimary }}
+              className="flex-1 py-3 rounded-lg font-semibold transition disabled:opacity-50 hover:opacity-70 hover:scale-105"
+              style={{ backgroundColor: theme.colors.buttonBg, color: "text-red-500" }}
             >
               Cancel
             </button>

@@ -133,7 +133,7 @@ export default function BlueprintCard({
               backgroundColor: `${theme.colors.buttonBg2}80`,
               color: theme.colors.textPrimary
             }}
-            className="flex-1 font-semibold py-2 rounded-lg transition shadow-md hover:opacity-50 disabled:opacity-50 flex items-center justify-center text-sm"
+            className="flex-1 font-semibold py-2 rounded-lg transition shadow-md hover:opacity-60 hover:scale-105 disabled:opacity-50 flex items-center justify-center text-sm"
           >
             {downloadingId === blueprint.id ? (
               <Loader className="w-4 h-4 animate-spin" />
@@ -154,7 +154,7 @@ export default function BlueprintCard({
               backgroundColor: isLiked ? `${theme.colors.buttonBg2}90` : `${theme.colors.buttonBg2}80`,
               color: isLiked ? theme.colors.buttonBg : theme.colors.textPrimary
             }}
-            className="px-3 py-2 rounded-lg transition font-semibold flex items-center justify-center hover:opacity-50"
+            className="px-3 py-2 rounded-lg transition font-semibold flex items-center justify-center hover:opacity-50 hover:scale-105"
           >
             <Heart className={`w-4 h-4 ${isLiked ? "fill-current" : ""}`} />
           </button>
@@ -169,7 +169,7 @@ export default function BlueprintCard({
               style={{
                 backgroundColor: `${theme.colors.buttonBg2}90`
               }}
-              className="font-semibold py-2 px-3 rounded-lg transition flex items-center text-red-900 justify-center hover:opacity-50 disabled:opacity-50"
+              className="font-semibold py-2 px-3 rounded-lg transition flex items-center text-red-500 justify-center hover:opacity-50 hover:scale-105 disabled:opacity-50"
             >
               {deleting === blueprint.id ? (
                 <Loader className="w-4 h-4 animate-spin" />
