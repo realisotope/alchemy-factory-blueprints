@@ -4,7 +4,7 @@ import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { validateAndSanitizeTitle, validateAndSanitizeDescription, validateAndSanitizeChangelog, sanitizeTitleForFilename } from "../lib/sanitization";
 import { useTheme } from "../lib/ThemeContext";
 import { Upload, Loader, X } from "lucide-react";
-import { put, del as blobDelete } from "@vercel/blob";
+import { put } from "@vercel/blob";
 import imageCompression from "browser-image-compression";
 import JSZip from "jszip";
 
@@ -294,9 +294,10 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
         // Delete old image if it exists BEFORE uploading new one
         if (blueprint.image_url) {
           try {
-            // For Vercel Blob, use the full URL to delete
-            await blobDelete(blueprint.image_url, {
-              token: import.meta.env.VITE_BLOB_READ_WRITE_TOKEN,
+            await fetch("/api/delete-blob", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ url: blueprint.image_url }),
             });
           } catch (delError) {
             console.warn("Could not delete old image from blob storage:", delError);
