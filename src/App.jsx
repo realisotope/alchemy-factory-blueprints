@@ -225,6 +225,18 @@ export default function App() {
                     <li>Include information about production rates and efficiency.</li>
                   </ul>
                 </section>
+
+                <section>
+                  <h3 style={{ color: theme.colors.accentYellow }} className="text-xl font-bold mb-3">📰 Other Game Tools/Resources</h3>
+                  <p>Check out some other non-affiliated community resources for Alchemy Factory.</p>
+                  <ul className="list-disc list-inside space-y-2 ml-2">
+                    <li><a href="https://alchemy-factory-codex.com/" style={{ color: theme.colors.accentYellow }}>https://alchemy-factory-codex.com</a> (Wiki/Guide/Planner/Calculator)</li>
+                    <li><a href="https://joejoesgit.github.io/AlchemyFactoryCalculator/" style={{ color: theme.colors.accentYellow }}>https://joejoesgit.github.io/AlchemyFactoryCalculator</a> (Planner)</li>
+                    <li><a href="https://alchemyfactorytools.com/" style={{ color: theme.colors.accentYellow }}>https://alchemyfactorytools.com</a> (Planner)</li>
+                    <ul><li><a href="https://alchemy-save-parser.faulty.ws/saveParser" style={{ color: theme.colors.accentYellow }}>https://alchemy-save-parser.faulty.ws/saveParser</a> (Save/BP Parser)</li>
+                      <li>We currently uses this for parsing your blueprint/save data.</li></ul>
+                  </ul>
+                </section>
               </div>
             </div>
           </div>
