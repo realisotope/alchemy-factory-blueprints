@@ -2,11 +2,14 @@ import { useState, useEffect } from "react";
 import { supabase } from "./lib/supabase";
 import { isValidUUID } from "./lib/sanitization";
 import { Upload, X, BookOpen } from "lucide-react";
+import { useTheme } from "./lib/ThemeContext";
 import DiscordLogin from "./components/DiscordLogin";
 import UploadModal from "./components/UploadModal";
 import BlueprintGallery from "./components/BlueprintGallery";
+import ThemeToggle from "./components/ThemeToggle";
 
 export default function App() {
+  const { theme } = useTheme();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshGallery, setRefreshGallery] = useState(0);
@@ -59,10 +62,10 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#9c8368] flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: theme.colors.secondary }}>
         <div className="text-center">
           <div className="text-5xl mb-4">⚗️</div>
-          <p className="text-2xl text-amber-300 font-bold">Loading...</p>
+          <p className="text-2xl font-bold" style={{ color: theme.colors.accentYellow }}>Loading...</p>
         </div>
       </div>
     );
@@ -72,30 +75,41 @@ export default function App() {
     <div
       className="min-h-screen w-full relative flex flex-col"
       style={{
-        background: "#876e54",
+        backgroundColor: theme.colors.primary,
         backgroundImage: `
-        radial-gradient(circle, rgb(252, 211, 77) 1px, transparent 1px),
-        radial-gradient(circle, rgba(159, 133, 105, 0.4) 1px, transparent 1px),
-        radial-gradient(circle, rgba(135, 114, 90, 0.5) 1px, transparent 1px)
+        radial-gradient(circle, ${theme.gradients.dots[0]} 1px, transparent 1px),
+        radial-gradient(circle, ${theme.gradients.dots[1]} 1px, transparent 1px),
+        radial-gradient(circle, ${theme.gradients.dots[2]} 1px, transparent 1px)
       `,
         backgroundSize: "72px 72px, 72px 72px, 100% 100%",
       }}
     >
       <div className="relative z-10 flex flex-col flex-grow">
         {/* Header */}
-        <header className="bg-gradient-to-r from-[#a78158] via-[#9f7f5a] to-[#9b7956] text-white shadow-2x1 sticky top-0 z-50 border-b border-[#bba664]/50">
+        <header style={{
+          background: `linear-gradient(to right, ${theme.colors.headerGradientFrom}, ${theme.colors.headerGradientVia}, ${theme.colors.headerGradientTo})`,
+          borderBottomColor: theme.colors.headerBorder,
+        }} className="text-white shadow-2x1 sticky top-0 z-50 border-b" >
           <div className="max-w-7xl mx-auto px-4 py-6 flex items-center justify-between">
             <div className="flex items-center gap-3 min-w-0">
               <span className="text-4xl flex-shrink-0">⚗️</span>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-[#fcd34d] to-[#fde047] bg-clip-text text-transparent truncate">
+              <h1 style={{
+                backgroundImage: `linear-gradient(to right, ${theme.colors.accentYellow}, ${theme.colors.accentLighter})`,
+              }} className="text-3xl font-bold bg-clip-text text-transparent truncate">
                 Alchemy Factory Blueprints
               </h1>
             </div>
             <div className="hidden sm:flex flex-col sm:flex-row gap-2 sm:gap-3 items-end sm:items-center sm:justify-end flex-shrink-0 ml-4">
+              <ThemeToggle />
               <DiscordLogin user={user} onLogout={handleLogout} />
               <button
                 onClick={() => setIsHowToOpen(true)}
-                className="flex items-center gap-2 text-sm sm:text-base bg-gradient-to-r from-[#5b4a39]/50 to-[#59452e]/50 hover:from-[#dbb84a] hover:to-[#fbcd32] font-semibold py-2 px-3 sm:px-4 rounded-lg transition shadow-lg hover:shadow-xl whitespace-nowrap"
+                style={{
+                  backgroundColor: `${theme.colors.tertiary}80`,
+                  borderColor: theme.colors.headerBorder,
+                  color: theme.colors.textPrimary,
+                }}
+                className="flex items-center gap-2 text-sm sm:text-base border-2 font-semibold py-2 px-3 sm:px-4 rounded-lg transition shadow-lg hover:shadow-xl hover:scale-105 whitespace-nowrap"
                 title="How to use blueprints"
               >
                 <BookOpen className="w-4 h-4 flex-shrink-0" />
@@ -105,7 +119,11 @@ export default function App() {
               {user ? (
                 <button
                   onClick={() => setIsUploadModalOpen(true)}
-                  className="inline-flex items-center gap-2 text-sm sm:text-base bg-gradient-to-r from-[#dbb84a]/80 to-[#fbcd32]/70 hover:from-[#dbb84a] hover:to-[#fbcd32] hover:text-[#654e35] font-semibold py-2 px-4 sm:px-8 rounded-lg transition shadow-lg hover:shadow-xl hover:shadow-[#fbcd32]/30 whitespace-nowrap"
+                  style={{
+                    backgroundColor: theme.colors.buttonBgAlt,
+                    color: theme.colors.buttonText,
+                  }}
+                  className="inline-flex items-center gap-2 text-sm sm:text-base font-semibold py-2 px-4 sm:px-8 rounded-lg transition shadow-lg hover:shadow-xl hover:scale-105 whitespace-nowrap"
                 >
                   <Upload className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                   <span className="hidden sm:inline">Upload Blueprint</span>
@@ -123,7 +141,9 @@ export default function App() {
 
           {/* Gallery Section */}
           <section>
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-[#fcd34d] to-[#fde047] bg-clip-text text-transparent mb-3">
+            <h2 style={{
+              backgroundImage: `linear-gradient(to right, ${theme.colors.accentYellow}, ${theme.colors.accentLighter})`,
+            }} className="text-3xl font-bold bg-clip-text text-transparent mb-3">
               Blueprint Gallery
             </h2>
             <BlueprintGallery user={user} refreshTrigger={refreshGallery} initialBlueprintId={initialBlueprintId} />
@@ -141,10 +161,15 @@ export default function App() {
         {/* How to Use Modal */}
         {isHowToOpen && (
           <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setIsHowToOpen(false)}>
-            <div className="bg-gradient-to-b from-[#b99a77] to-[#876e54] rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-[#cfb153]" onClick={(e) => e.stopPropagation()}>
+            <div style={{
+              backgroundColor: theme.colors.elementBg,
+              borderColor: theme.colors.elementBorder,
+            }} className="rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2" onClick={(e) => e.stopPropagation()}>
               {/* Header */}
-              <div className="sticky top-0 z-10 bg-gradient-to-r from-[#a78158] via-[#9f7f5a] to-[#9b7956] text-white p-6 flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-amber-300 flex-1">How to Use Blueprints</h2>
+              <div style={{
+                background: `linear-gradient(to right, ${theme.colors.headerGradientFrom}, ${theme.colors.headerGradientVia}, ${theme.colors.headerGradientTo})`,
+              }} className="sticky top-0 z-10 text-white p-6 flex items-center justify-between">
+                <h2 style={{ color: theme.colors.accentYellow }} className="text-2xl font-bold flex-1">How to Use Blueprints</h2>
                 <button
                   onClick={() => setIsHowToOpen(false)}
                   className="ml-4 p-2 hover:bg-white/10 rounded-lg transition"
@@ -154,16 +179,16 @@ export default function App() {
               </div>
 
               {/* Content */}
-              <div className="p-6 space-y-6">
+              <div className="p-6 space-y-6" style={{ color: theme.colors.textPrimary }}>
                 <section>
-                  <h3 className="text-xl font-bold text-amber-300 mb-3">🔧 What are Blueprints?</h3>
+                  <h3 style={{ color: theme.colors.accentYellow }} className="text-xl font-bold mb-3">🔧 What are Blueprints?</h3>
                   <p>
                     Blueprints are saved factory designs that allow you to share complex production setups with other players. They contain information about machine placement, connections, and configurations.
                   </p>
                 </section>
 
                 <section>
-                  <h3 className="text-xl font-bold text-amber-300 mb-3">📥 Importing Blueprints</h3>
+                  <h3 style={{ color: theme.colors.accentYellow }} className="text-xl font-bold mb-3">📥 Importing Blueprints</h3>
                   <ol className="list-decimal list-inside space-y-2 ml-2">
                     <li>Download the blueprint file (.af) from this site.</li>
                     <i>(Some larger blueprints may be compressed into a zip file.)</i>
@@ -173,15 +198,17 @@ export default function App() {
                 </section>
 
                 <section>
-                  <h3 className="text-xl font-bold text-amber-300 mb-3">💾 File Storage</h3>
+                  <h3 style={{ color: theme.colors.accentYellow }} className="text-xl font-bold mb-3">💾 File Storage</h3>
                   <p className="mb-2">Blueprint files are typically stored in:</p>
-                  <code className="bg-[#6f5d45]/50 p-3 rounded-lg block text-sm overflow-x-auto">
+                  <code style={{
+                    backgroundColor: `${theme.colors.elementBgDark}80`,
+                  }} className="p-3 rounded-lg block text-sm overflow-x-auto">
                     C:\Users\YOURUSERNAME\AppData\Local\AlchemyFactory\Saved\Blueprints\
                   </code>
                 </section>
 
                 <section>
-                  <h3 className="text-xl font-bold text-amber-300 mb-3">📤 Exporting Your Blueprints</h3>
+                  <h3 style={{ color: theme.colors.accentYellow }} className="text-xl font-bold mb-3">📤 Exporting Your Blueprints</h3>
                   <ol className="list-decimal list-inside space-y-2 ml-2">
                     <li>In Alchemy Factory, select all the components you want to include in your blueprint.</li>
                     <li>Press <b>F</b> to confirm your selection and <b>H</b> to save your blueprint.</li>
@@ -190,7 +217,7 @@ export default function App() {
                 </section>
 
                 <section>
-                  <h3 className="text-xl font-bold text-amber-300 mb-3">❓ Tips & Tricks</h3>
+                  <h3 style={{ color: theme.colors.accentYellow }} className="text-xl font-bold mb-3">❓ Tips & Tricks</h3>
                   <ul className="list-disc list-inside space-y-2 ml-2">
                     <li>Name your blueprints clearly for easy identification.</li>
                     <li>Take a screenshot to use as a preview image.</li>
@@ -204,14 +231,18 @@ export default function App() {
         )}
 
         {/* Footer */}
-        <footer className="bg-gradient-to-r from-[#a78158] via-[#9f7f5a] to-[#9b7956] text-[#ffdca7] text-center py-4 border-t border-[#bba664]/50 mt-auto">
+        <footer style={{
+          background: `linear-gradient(to right, ${theme.colors.headerGradientFrom}, ${theme.colors.headerGradientVia}, ${theme.colors.headerGradientTo})`,
+          color: theme.colors.textPrimary,
+          borderTopColor: theme.colors.headerBorder,
+        }} className="text-center py-4 border-t mt-auto">
           <p>
             Upload and share your Alchemy Factory Blueprints - Not affiliated with Alchemy Factory.
           </p>
           <p>
             created with React, Vite, Vercel and Supabase
           </p>
-          <p>by <b>realisotope</b> - <b><a href="https://github.com/realisotope/alchemy-factory-blueprints">GitHub Source Code</a></b></p>
+          <p>by <b>realisotope</b> - <b><a href="https://github.com/realisotope/alchemy-factory-blueprints" style={{ color: theme.colors.accentYellow }}>GitHub Source Code</a></b></p>
         </footer>
       </div>
     </div>

@@ -17,15 +17,15 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 ::-webkit-scrollbar-track {
-  background: #9b7956;
+  background: #4b4b4b;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #bba664;
+  background: #686868;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #ecd65a;
+  background: #8b8b8b;
 }
 
 /* Fade-in animation for blueprint cards */

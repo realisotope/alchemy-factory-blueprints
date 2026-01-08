@@ -1,13 +1,16 @@
 import { X, Download, Heart, Calendar, User, Maximize2, Share2, Check, Edit2, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { sanitizeCreatorName } from "../lib/sanitization";
 import { updateBlueprintMetaTags, resetMetaTags } from "../lib/metaTags";
 import { getDetailViewUrl, getLightboxUrl } from "../lib/imageOptimization";
+import { useTheme } from "../lib/ThemeContext";
 import EditBlueprint from "./EditBlueprint";
 import BlueprintStats from "./BlueprintStats";
 
 export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange, onSearchByCreator, onBlueprintUpdate, onDownload, userLikes = new Set() }) {
+  const { theme } = useTheme();
   const [isLiked, setIsLiked] = useState(userLikes.has(blueprint?.id));
   const [likeCount, setLikeCount] = useState(blueprint?.likes ?? 0);
   const [downloadCount, setDownloadCount] = useState(blueprint?.downloads ?? 0);
@@ -114,11 +117,37 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onClick={onClose}>
-      <div ref={setScrollableRef} className="bg-gradient-to-b from-[#b99a77] to-[#876e54] border-2 border-[#cfb153] rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto relative" onClick={(e) => e.stopPropagation()}>
+    <AnimatePresence>
+      {isOpen && blueprint && (
+        <motion.div
+          className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          onClick={onClose}
+        >
+          <motion.div
+            ref={setScrollableRef}
+            style={{
+              backgroundColor: theme.colors.elementBg,
+              backgroundImage: `linear-gradient(to bottom, ${theme.colors.elementBg}, ${theme.colors.elementBgCard})`,
+              borderColor: theme.colors.elementBorder,
+            }}
+            className="border-2 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto relative"
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ duration: 0.3, type: "spring", stiffness: 300, damping: 30 }}
+            onClick={(e) => e.stopPropagation()}
+          >
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#a78158] via-[#9f7f5a] to-[#9b7956] text-white p-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-[#fcd34d] to-[#fde047] bg-clip-text text-transparent flex-1 truncate">{blueprint.title}</h2>
+        <div style={{
+          background: `linear-gradient(to right, ${theme.colors.headerGradientFrom}, ${theme.colors.headerGradientVia}, ${theme.colors.headerGradientTo})`,
+        }} className="sticky top-0 z-10 text-white p-6 flex items-center justify-between">
+          <h2 style={{
+            backgroundImage: `linear-gradient(to right, ${theme.colors.accentYellow}, ${theme.colors.accentLighter})`,
+          }} className="text-2xl font-bold bg-clip-text text-transparent flex-1 truncate">{blueprint.title}</h2>
           <button
             onClick={onClose}
             className="ml-4 p-2 hover:bg-white/10 rounded-lg transition"
@@ -135,7 +164,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
               <img
                 src={getDetailViewUrl(blueprint.image_url)}
                 alt={blueprint.title}
-                className="w-full h-48 sm:h-96 object-cover rounded-lg cursor-pointer transition hover:shadow-lg hover:shadow-[#6b5d45]/70"
+                className="w-full h-48 sm:h-96 object-cover rounded-lg cursor-pointer transition hover:shadow-lg hover:shadow-black/30"
                 onClick={() => setIsImageExpanded(true)}
                 loading="lazy"
               />
@@ -153,28 +182,37 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           <div className="flex flex-col lg:flex-row gap-2 items-stretch">
             {/* Stats Grid */}
             <div className="grid grid-cols-3 gap-2 lg:flex-1">
-              <div className="bg-[#8e704e] p-2 rounded-lg border-2 border-[#bba664] shadow-lg text-center">
-                <div className="text-base font-bold text-[#fcd34d]">{downloadCount}</div>
-                <div className="text-xs text-[#ffe797] flex items-center justify-center mt-0.5">
+              <div style={{
+                backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`,
+                borderColor: theme.colors.cardBorder,
+              }} className="p-2 rounded-lg border-2 shadow-lg text-center hover:shadow-xl transition" onMouseEnter={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}60, ${theme.colors.gradientTo}60)`} onMouseLeave={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`}>
+                <div style={{ color: theme.colors.accentYellow }} className="text-base font-bold">{downloadCount}</div>
+                <div style={{ color: theme.colors.textSecondary }} className="text-xs flex items-center justify-center mt-0.5">
                   <Download className="w-3 h-3 mr-0.5" />
                   Downloads
                 </div>
               </div>
-              <div className="bg-[#8e704e] p-2 rounded-lg border-2 border-[#bba664] shadow-lg text-center">
+              <div style={{
+                backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`,
+                borderColor: theme.colors.cardBorder,
+              }} className="p-2 rounded-lg border-2 shadow-lg text-center hover:shadow-xl transition" onMouseEnter={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}60, ${theme.colors.gradientTo}60)`} onMouseLeave={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`}>
                 <div className="text-base font-bold text-rose-400">{likeCount}</div>
-                <div className="text-xs text-[#ffe797] flex items-center justify-center mt-0.5">
+                <div style={{ color: theme.colors.textSecondary }} className="text-xs flex items-center justify-center mt-0.5">
                   <Heart className="w-3 h-3 mr-0.5" />
                   Likes
                 </div>
               </div>
-              <div className="bg-[#8e704e] p-2 rounded-lg border-2 border-[#bba664] shadow-lg text-center">
+              <div style={{
+                backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`,
+                borderColor: theme.colors.cardBorder,
+              }} className="p-2 rounded-lg border-2 shadow-lg text-center hover:shadow-xl transition" onMouseEnter={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}60, ${theme.colors.gradientTo}60)`} onMouseLeave={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`}>
                 <div className="text-base font-bold text-blue-300">
                   {new Date(blueprint.created_at).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
                   })}
                 </div>
-                <div className="text-xs text-[#ffe797] flex items-center justify-center mt-0.5">
+                <div style={{ color: theme.colors.textSecondary }} className="text-xs flex items-center justify-center mt-0.5">
                   <Calendar className="w-3 h-3 mr-0.5" />
                   Uploaded
                 </div>
@@ -182,14 +220,18 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
             </div>
 
             {/* Creator Info */}
-            <div className="bg-gradient-to-r from-[#634116]/30 to-[#9f722e]/30 p-2 rounded-lg border-2 border-[#bba664]/90 shadow-lg lg:flex-1">
+            <div style={{
+              backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`,
+              borderColor: theme.colors.cardBorder,
+            }} className="p-2 rounded-lg border-2 shadow-lg lg:flex-1 hover:shadow-xl transition" onMouseEnter={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}60, ${theme.colors.gradientTo}60)`} onMouseLeave={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`}>
               <div className="flex items-center gap-2 h-full">
-                <User className="w-4 h-4 text-[#fcd34d] flex-shrink-0" />
+                <User className="w-4 h-4 flex-shrink-0" style={{ color: theme.colors.accentYellow }} />
                 <div className="min-w-0">
-                  <p className="font-semibold text-xs text-[#ffdca7]">Creator</p>
+                  <p style={{ color: theme.colors.textPrimary }} className="font-semibold text-xs">Creator</p>
                   <button
                     onClick={handleCreatorClick}
-                    className="font-semibold text-[#fcd34d] hover:text-[#ffdca7]/80 hover:underline transition cursor-pointer text-sm"
+                    style={{ color: theme.colors.accentYellow }}
+                    className="font-semibold hover:underline transition cursor-pointer text-sm"
                   >
                     {sanitizeCreatorName(stripDiscordDiscriminator(blueprint.creator_name))}
                   </button>
@@ -201,8 +243,8 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           {/* Description */}
           {blueprint.description && (
             <div>
-              <h3 className="text-lg font-bold text-[#fcd34d] mb-2">Description</h3>
-              <p className="text-[#fbe5c2] leading-relaxed whitespace-pre-wrap break-words">
+              <h3 style={{ color: theme.colors.accentYellow }} className="text-lg font-bold mb-2">Description</h3>
+              <p style={{ color: theme.colors.textPrimary }} className="leading-relaxed whitespace-pre-wrap break-words">
                 {blueprint.description}
               </p>
             </div>
@@ -216,48 +258,64 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           />
 
           {/* Skills */}
-          {blueprint.skills && blueprint.skills.length > 0 && (
-            <div>
-              <h3 className="text-lg font-bold text-amber-300 mb-2">Required Skills</h3>
-              <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-11 gap-1">
-                {blueprint.skills.map((skill) => (
-                  <div
-                    key={skill.id}
-                    className="flex flex-col items-center text-center"
-                    title={`${skill.name}: Level ${skill.level}`}
-                  >
-                    <div className="rounded border border-[#816545] w-full aspect-square flex items-center justify-center overflow-hidden mb-1 opacity-80">
-                      {skill.icon ? (
-                        <img
-                          src={skill.icon}
-                          alt={skill.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-[#6b5d45] text-xs">No icon</span>
-                      )}
-                    </div>
-                    <div className="text-xs font-bold text-amber-300 leading-tight">
-                      Lvl {skill.level}
-                    </div>
-                    <div className="text-xs text-[#ffdca7] truncate max-w-full line-clamp-2 text-[10px]">
-                      {skill.name}
-                    </div>
+              {blueprint.skills && blueprint.skills.length > 0 && (
+                <div>
+                  <h3 style={{ color: theme.colors.accentYellow }} className="text-lg font-bold mb-2">Required Skills</h3>
+                  <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-11 gap-1">
+                    {blueprint.skills.map((skill) => (
+                      <div
+                        key={skill.id}
+                        className="flex flex-col items-center text-center"
+                        title={`${skill.name}: Level ${skill.level}`}
+                      >
+                        {/* SKILL ICON CONTAINER */}
+                        <div style={{ borderColor: theme.colors.cardBorder }} className="rounded border w-full aspect-square flex items-center justify-center overflow-hidden mb-1 relative">
+
+                          {skill.icon ? (
+                            <>
+                              <img
+                                src={skill.icon}
+                                alt={skill.name}
+                                className="w-full h-full object-cover relative z-0"
+                              />
+
+                              {/* TINT OVERLAY */}
+                              <div
+                                className="absolute inset-0 w-full h-full **mix-blend-color** z-10"
+                                style={{ backgroundColor: theme.colors.headerGradientFrom, opacity: 0.7 }}
+                              />
+                            </>
+                          ) : (
+                            <span className="text-[#6b5d45] text-xs">No icon</span>
+                          )}
+
+                        </div>
+                        <div style={{ color: theme.colors.accentYellow }} className="text-xs font-bold leading-tight">
+                          Lvl {skill.level}
+                        </div>
+                        <div style={{ color: theme.colors.textPrimary }} className="text-xs truncate max-w-full line-clamp-2 text-[10px]">
+                          {skill.name}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                </div>
+              )}
 
           {/* Tags */}
           {blueprint.tags && blueprint.tags.length > 0 && (
             <div>
-              <h3 className="text-lg font-bold text-amber-300 mb-3">Tags</h3>
+              <h3 style={{ color: theme.colors.accentYellow }} className="text-lg font-bold mb-3">Tags</h3>
               <div className="flex flex-wrap gap-2">
                 {blueprint.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="bg-[#6f5a43]/50 text-[#ffdca7] px-3 py-1 rounded-full text-sm font-medium border border-[#6b5d45]/30 shadow"
+                    style={{
+                      backgroundColor: `${theme.colors.cardBg}50`,
+                      color: theme.colors.textPrimary,
+                      borderColor: theme.colors.cardBorder,
+                    }}
+                    className="px-3 py-1 rounded-full text-sm font-medium border shadow"
                   >
                     #{tag}
                   </span>
@@ -277,7 +335,10 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           )} */}
 
           {/* Date Info */}
-          <div className="text-sm text-[#ffe1b2] pt-4 border-t border-[#d3b593] space-y-1">
+          <div style={{
+            color: theme.colors.textSecondary,
+            borderTopColor: theme.colors.cardBorder,
+          }} className="text-sm pt-4 border-t space-y-1">
             {blueprint.updated_at && blueprint.updated_at !== blueprint.created_at && (
               <div>
                 Updated on{" "}
@@ -304,7 +365,10 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
         </div>
 
         {/* Footer Actions */}
-        <div className="sticky bottom-0 bg-gradient-to-t from-[#a78158] via-[#9f7f5a] to-[#9b7956] p-3 sm:p-6 flex gap-2 sm:gap-3 border-t-2 border-[#87725a]/50 flex-wrap relative">
+        <div style={{
+          background: `linear-gradient(to top, ${theme.colors.headerGradientFrom}, ${theme.colors.headerGradientVia}, ${theme.colors.headerGradientTo})`,
+          borderTopColor: theme.colors.cardBorder,
+        }} className="sticky bottom-0 p-3 sm:p-6 flex gap-2 sm:gap-3 border-t-2 flex-wrap relative z-[10] text-white">
           {/* Scroll Indicator */}
           {showScrollIndicator && (
             <button
@@ -317,14 +381,17 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
               style={{ left: 'calc(50% - 18px)', top: '-22px', transform: 'translateX(-50%)' }}
               title="Scroll down"
             >
-              <div className="w-10 h-10 rounded-full border-2 border-[#bba664] flex items-center justify-center bg-[#a38654]/90">
-                <ChevronDown className="w-5 h-5 text-[#ffdca7]" />
+              <div style={{
+                borderColor: theme.colors.cardBorder,
+                backgroundColor: `${theme.colors.cardBg}90`,
+              }} className="w-10 h-10 rounded-full border-2 flex items-center justify-center">
+                <ChevronDown style={{ color: theme.colors.textPrimary }} className="w-5 h-5" />
               </div>
             </button>
           )}
           <button
             onClick={handleDownloadClick}
-            className="flex-1 min-w-0 bg-gradient-to-r from-[#5b4a39]/50 to-[#59452e]/50 hover:from-[#dbb84a] hover:to-[#fbcd32] text-[#ffdca7] hover:text-white py-2 sm:py-3 rounded-lg font-semibold transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
+            className="flex-1 min-w-0 bg-[#121212]/50 hover:bg-[#121212]/70 hover:text-green-500 py-2 sm:py-3 rounded-lg font-semibold transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
           >
             <Download className="w-4 h-4 sm:w-5 sm:h-5" />
             <span className="hidden sm:inline">Download</span>
@@ -334,8 +401,8 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
             onClick={handleLike}
             className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 rounded-lg font-semibold transition text-sm sm:text-base ${
               isLiked
-                ? "bg-[#c59c68] hover:bg-[#fbcd32] text-red"
-                : "bg-[#c59c68] hover:bg-[#fbcd32] text-[#ffdca7] hover:text-red-500"
+                ? "bg-[#121212]/30 text-red"
+                : "bg-[#121212]/50 hover:bg-[#121212]/70 hover:text-red-500"
             }`}
           >
             <Heart className={`w-4 h-4 sm:w-5 sm:h-5 hidden sm:inline ${isLiked ? "fill-current" : ""}`} />
@@ -346,8 +413,8 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
             onClick={handleShareBlueprint}
             className={`flex-1 min-w-0 py-2 sm:py-3 rounded-lg font-semibold transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base ${
               copyFeedback
-                ? "bg-[#af9170] text-[#ffdca7]"
-                : "bg-[#af9170] hover:bg-[#fbcd32] text-[#ffdca7] hover:text-blue-500"
+                ? "bg-[#121212]/30"
+                : "bg-[#121212]/50 hover:bg-[#121212]/70 hover:text-blue-500"
             }`}
             title="Copy blueprint link to clipboard"
           >
@@ -374,7 +441,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
             </button>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* Edit Blueprint Modal */}
       <EditBlueprint
@@ -419,6 +486,8 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           </div>
         </div>
       )}
-    </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

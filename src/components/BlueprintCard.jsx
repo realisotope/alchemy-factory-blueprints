@@ -1,0 +1,186 @@
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Download, Trash2, Loader, Heart, X } from "lucide-react";
+import { useTheme } from "../lib/ThemeContext";
+import { getThumbnailUrl } from "../lib/imageOptimization";
+import { stripDiscordDiscriminator } from "../lib/discordUtils";
+import { sanitizeCreatorName } from "../lib/sanitization";
+
+export default function BlueprintCard({
+  blueprint,
+  isLiked,
+  downloadingId,
+  deleting,
+  user,
+  userLikes,
+  onSelect,
+  onDownload,
+  onLike,
+  onDelete,
+}) {
+  const { theme } = useTheme();
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <motion.div
+      style={{
+        backgroundImage: `linear-gradient(to bottom-right, ${theme.colors.cardBg}99, ${theme.colors.elementBgDark}99)`,
+        borderColor: theme.colors.cardBorder,
+        boxShadow: isHovered 
+          ? `0 20px 25px -5px ${theme.colors.cardShadow}60`
+          : `0 10px 15px -3px ${theme.colors.cardShadow}40`
+      }}
+      className="fade-in-card rounded-xl overflow-hidden transition-all duration-200 border-2 rounded-lg cursor-pointer flex flex-col h-full group"
+      whileHover={{ y: -8, scale: 1.02, transition: { duration: 0.3, type: "spring", stiffness: 300, damping: 20 } }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={() => onSelect(blueprint)}
+    >
+      {/* Image */}
+      {blueprint.image_url ? (
+        <img
+          src={getThumbnailUrl(blueprint.image_url)}
+          alt={blueprint.title}
+          style={{ backgroundColor: theme.colors.accentLighter }}
+          className="w-full h-48 object-cover flex-shrink-0 transition-opacity duration-150 group-hover:opacity-90 opacity-80"
+          loading="lazy"
+        />
+      ) : (
+        <div style={{ backgroundImage: `linear-gradient(to bottom-right, ${theme.colors.accentLighter}, ${theme.colors.cardBg})` }} className="w-full h-48 flex items-center justify-center flex-shrink-0">
+          <span className="text-4xl">⚗️</span>
+        </div>
+      )}
+
+      {/* Gallery Content*/}
+      <div style={{
+        backgroundImage: `linear-gradient(to bottom, ${theme.colors.cardBg}, ${theme.colors.elementBgDark})`
+      }} className="p-4 space-y-2 flex-grow flex flex-col">
+        {/* Title and Description */}
+        <div>
+          <h3 style={{ color: theme.colors.accentYellow }} className="text-lg font-bold truncate group-hover:opacity-80 transition">
+            {blueprint.title}
+          </h3>
+
+          <p style={{ color: theme.colors.textSecondary }} className="text-sm line-clamp-3 mt-1">
+            {blueprint.description || "No description provided."}
+          </p>
+        </div>
+
+        <div className="flex-grow"></div>
+
+        {/* Tags */}
+        {blueprint.tags && blueprint.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {blueprint.tags.slice(0, 3).map((tag) => (
+              <span
+                key={tag}
+                style={{
+                  backgroundColor: `${theme.colors.cardBg}99`,
+                  color: theme.colors.textPrimary,
+                  borderColor: `${theme.colors.cardBorder}66`
+                }}
+                className="text-xs px-2.5 py-1 rounded-full border font-medium hover:opacity-80 transition"
+              >
+                {tag}
+              </span>
+            ))}
+            {blueprint.tags.length > 3 && (
+              <span style={{ color: theme.colors.textSecondary }} className="text-xs">
+                +{blueprint.tags.length - 3} more
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Stats */}
+        <div style={{
+          color: theme.colors.textSecondary,
+          borderColor: `${theme.colors.cardBorder}66`
+        }} className="flex gap-4 text-sm border-t pt-3 flex-wrap items-center">
+          <div className="flex items-center gap-1 hover:opacity-80 transition" style={{ color: theme.colors.textPrimary }}>
+            <Download className="w-4 h-4" />
+            <span>{blueprint.downloads || 0}</span>
+          </div>
+          <div className="flex items-center gap-1 hover:text-rose-400 transition">
+            <Heart className="w-4 h-4" />
+            <span>{blueprint.likes || 0}</span>
+          </div>
+          <div style={{ color: theme.colors.textSecondary }} className="text-xs ml-auto">
+            <p style={{ color: theme.colors.accentGold }} className="font-semibold hover:opacity-80 transition">
+              by{" "}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+                style={{ color: theme.colors.accentYellow }}
+                className="hover:opacity-80 hover:underline transition cursor-pointer"
+              >
+                {sanitizeCreatorName(stripDiscordDiscriminator(blueprint.creator_name))}
+              </button>
+            </p>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-2 mt-auto">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDownload(blueprint);
+            }}
+            disabled={downloadingId === blueprint.id}
+            style={{
+              backgroundColor: `${theme.colors.buttonBg2}80`,
+              color: theme.colors.textPrimary
+            }}
+            className="flex-1 font-semibold py-2 rounded-lg transition shadow-md hover:opacity-30 disabled:opacity-50 flex items-center justify-center text-sm"
+          >
+            {downloadingId === blueprint.id ? (
+              <Loader className="w-4 h-4 animate-spin" />
+            ) : (
+              <>
+                <Download className="w-4 h-4 mr-1" />
+                Download
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onLike(blueprint.id, isLiked);
+            }}
+            style={{
+              backgroundColor: isLiked ? theme.colors.buttonBg : `${theme.colors.cardBg}99`,
+              color: isLiked ? theme.colors.buttonText : theme.colors.textPrimary
+            }}
+            className="px-3 py-2 rounded-lg transition font-semibold flex items-center justify-center hover:opacity-80"
+          >
+            <Heart className={`w-4 h-4 ${isLiked ? "fill-current" : ""}`} />
+          </button>
+
+          {user && blueprint.user_id === user.id && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(blueprint);
+              }}
+              disabled={deleting === blueprint.id}
+              style={{
+                backgroundColor: `${theme.colors.cardBorder}99`,
+                color: theme.colors.textPrimary
+              }}
+              className="font-semibold py-2 px-3 rounded-lg transition flex items-center justify-center hover:opacity-80 disabled:opacity-50"
+            >
+              {deleting === blueprint.id ? (
+                <Loader className="w-4 h-4 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4" />
+              )}
+            </button>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
