@@ -50,6 +50,8 @@ const BlueprintStats = memo(function BlueprintStats({ materials = [], buildings 
                           src={material.icon}
                           alt={material.name}
                           className="w-full h-full object-cover"
+                          loading="lazy"
+                          decoding="async"
                         />
                       ) : (
                         <span style={{ color: theme.colors.textSecondary }} className="text-xs">No icon</span>
@@ -106,6 +108,8 @@ const BlueprintStats = memo(function BlueprintStats({ materials = [], buildings 
                           src={building.icon}
                           alt={building.name}
                           className="w-full h-full object-cover"
+                          loading="lazy"
+                          decoding="async"
                         />
                       ) : (
                         <span style={{ color: theme.colors.textSecondary }} className="text-xs">No icon</span>
