@@ -77,7 +77,7 @@
                                            "rotation":  0,
                                            "flipX":  false,
                                            "flipY":  false,
-                                           "name":  "blackboard"
+                                           "name":  "noticeboard"
                                        },
                                        {
                                            "id":  "4d58ad83-0b62-4d0e-b6e9-d6b6d9bbf70e",
@@ -99,7 +99,7 @@
                                            "rotation":  0,
                                            "flipX":  false,
                                            "flipY":  false,
-                                           "name":  "beam2"
+                                           "name":  "beam3"
                                        },
                                        {
                                            "id":  "f973394b-beb2-4aaf-8c41-5c9960352102",
@@ -297,7 +297,7 @@
                                            "rotation":  0,
                                            "flipX":  false,
                                            "flipY":  false,
-                                           "name":  "conveyerlift"
+                                           "name":  "conveyerlift_upwards"
                                        },
                                        {
                                            "id":  "596961e5-5ff8-47c4-b0fb-0c7016db304d",
@@ -385,7 +385,7 @@
                                            "rotation":  0,
                                            "flipX":  false,
                                            "flipY":  false,
-                                           "name":  "filtersplitter"
+                                           "name":  "filter_vert"
                                        },
                                        {
                                            "id":  "51dd7874-b1b6-45fa-b86e-3588167c1e60",
@@ -462,7 +462,7 @@
                                            "rotation":  0,
                                            "flipX":  false,
                                            "flipY":  false,
-                                           "name":  "frame"
+                                           "name":  "framesingle"
                                        },
                                        {
                                            "id":  "64ae4227-ab50-4951-a142-8078f669d821",
@@ -473,7 +473,7 @@
                                            "rotation":  0,
                                            "flipX":  false,
                                            "flipY":  false,
-                                           "name":  "labstands"
+                                           "name":  "ironstand"
                                        },
                                        {
                                            "id":  "8d9f087e-52a3-4878-9281-9f1e4cdc8e74",
@@ -660,7 +660,7 @@
                                            "rotation":  0,
                                            "flipX":  false,
                                            "flipY":  false,
-                                           "name":  "prioritysplitter"
+                                           "name":  "splitter_vert"
                                        },
                                        {
                                            "id":  "998ba33b-2e96-43b3-887c-d4347c21cfd1",
@@ -682,7 +682,7 @@
                                            "rotation":  0,
                                            "flipX":  false,
                                            "flipY":  false,
-                                           "name":  "portalbank"
+                                           "name":  "portal_bank"
                                        },
                                        {
                                            "id":  "7ec6596e-9137-4f2d-b0a6-f211d514d1a7",
@@ -693,7 +693,7 @@
                                            "rotation":  0,
                                            "flipX":  false,
                                            "flipY":  false,
-                                           "name":  "purchasingportal"
+                                           "name":  "portal_alchguild"
                                        },
                                        {
                                            "id":  "5af8ec1c-f13a-464d-a89b-ae7cbf81e121",
@@ -704,7 +704,7 @@
                                            "rotation":  0,
                                            "flipX":  false,
                                            "flipY":  false,
-                                           "name":  "prioritymerger"
+                                           "name":  "merger_vert"
                                        },
                                        {
                                            "id":  "cda96ba6-c5fa-4ce1-9ebd-9b4648024f4e",
@@ -869,7 +869,7 @@
                                            "rotation":  0,
                                            "flipX":  false,
                                            "flipY":  false,
-                                           "name":  "simplestall"
+                                           "name":  "relicstandsmall"
                                        },
                                        {
                                            "id":  "09e975c9-184f-423e-aaed-402a3a57e5cd",
@@ -880,7 +880,7 @@
                                            "rotation":  0,
                                            "flipX":  false,
                                            "flipY":  false,
-                                           "name":  "reinforcedplatform"
+                                           "name":  "smallplatform"
                                        },
                                        {
                                            "id":  "1dcece34-bae8-4feb-9b89-7f0bc862a790",
@@ -1166,7 +1166,7 @@
                                            "rotation":  0,
                                            "flipX":  false,
                                            "flipY":  false,
-                                           "name":  "advancedassembler"
+                                           "name":  "omni-machine"
                                        },
                                        {
                                            "id":  "e883ab07-1e6a-47bf-aa1f-3d9bbb5ad807",
