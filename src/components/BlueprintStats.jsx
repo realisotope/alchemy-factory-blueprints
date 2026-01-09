@@ -4,11 +4,8 @@ import { useTheme } from "../lib/ThemeContext";
 
 const BlueprintStats = memo(function BlueprintStats({ materials = [], buildings = [] }) {
   const { theme } = useTheme();
-  const [expandedSection, setExpandedSection] = useState(null);
-
-  const toggleSection = (section) => {
-    setExpandedSection(expandedSection === section ? null : section);
-  };
+  const [expandedMaterials, setExpandedMaterials] = useState(false);
+  const [expandedBuildings, setExpandedBuildings] = useState(false);
 
   if (!materials.length && !buildings.length) {
     return null;
@@ -20,7 +17,7 @@ const BlueprintStats = memo(function BlueprintStats({ materials = [], buildings 
       {materials.length > 0 && (
         <div style={{ borderColor: theme.colors.cardBorder }} className="border-2 rounded-lg overflow-hidden">
           <button
-            onClick={() => toggleSection("materials")}
+            onClick={() => setExpandedMaterials(!expandedMaterials)}
             style={{
               backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`,
             }}
@@ -30,11 +27,11 @@ const BlueprintStats = memo(function BlueprintStats({ materials = [], buildings 
             <ChevronDown
               style={{ color: theme.colors.textPrimary }}
               className={`w-5 h-5 transition-transform ${
-                expandedSection === "materials" ? "rotate-180" : ""
+                expandedMaterials ? "rotate-180" : ""
               }`}
             />
           </button>
-          {expandedSection === "materials" && (
+          {expandedMaterials && (
             <div style={{ backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)` }} className="p-4">
               <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-7 gap-2">
                 {materials.map((material) => (
@@ -76,7 +73,7 @@ const BlueprintStats = memo(function BlueprintStats({ materials = [], buildings 
       {buildings.length > 0 && (
         <div style={{ borderColor: theme.colors.cardBorder }} className="border-2 rounded-lg overflow-hidden">
           <button
-            onClick={() => toggleSection("buildings")}
+            onClick={() => setExpandedBuildings(!expandedBuildings)}
             style={{
               backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`,
             }}
@@ -86,11 +83,11 @@ const BlueprintStats = memo(function BlueprintStats({ materials = [], buildings 
             <ChevronDown
               style={{ color: theme.colors.textPrimary }}
               className={`w-5 h-5 transition-transform ${
-                expandedSection === "buildings" ? "rotate-180" : ""
+                expandedBuildings ? "rotate-180" : ""
               }`}
             />
           </button>
-          {expandedSection === "buildings" && (
+          {expandedBuildings && (
             <div style={{ backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)` }} className="p-4">
               <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-7 gap-2">
                 {buildings.map((building) => (
