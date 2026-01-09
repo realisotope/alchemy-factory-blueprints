@@ -19,6 +19,7 @@ export const MATERIAL_MAPPINGS = {
   Glass: { id: "glass", name: "Glass", icon: "/icons/materials/glass.png" },
   Limestone: { id: "limestone", name: "Limestone", icon: "/icons/materials/limestone.png" },
   PortalSigil: { id: "portal-sigil", name: "Portal Sigil", icon: "/icons/materials/portal-sigil.png" },
+  GloomFungus: { id: "gloomfungus", name: "Gloomfungus", icon: "/icons/materials/gloomfungus.png" },
   
   // Crafted Items
   Nails: { id: "iron-nails", name: "Nails", icon: "/icons/materials/iron-nails.png" },
@@ -48,7 +49,9 @@ export const BUILDING_MAPPINGS = {
   AdvancedAlembic: { id: "advancedalembic", name: "Advanced Alembic", icon: "/icons/buildings/advancedalembic.png" },
   AdvancedAthanor: { id: "advancedathanor", name: "Advanced Athanor", icon: "/icons/buildings/advancedathanor.png" },
   AdvancedBlender: { id: "advancedblender", name: "Advanced Blender", icon: "/icons/buildings/advancedblender.png" },
+  AdvancedShaper: { id: "advancedshaper", name: "Advanced Shaper", icon: "/icons/buildings/advancedshaper.png" },
   Alembic: { id: "alembic", name: "Alembic", icon: "/icons/buildings/alembic.png" },
+  AetherShaper: { id: "aethershaper", name: "Arcane Shaper", icon: "/icons/buildings/arcaneshaper.png" },
   Assembler: { id: "assembler", name: "Assembler", icon: "/icons/buildings/assembler.png" },
   Athanor: { id: "athanor", name: "Athanor", icon: "/icons/buildings/athanor.png" },
   AutoCheckout: { id: "autocheckout", name: "Auto Checkout", icon: "/icons/buildings/autocheckout.png" },
@@ -63,10 +66,12 @@ export const BUILDING_MAPPINGS = {
   BronzeBlock: { id: "bronzeblock", name: "Bronze Block", icon: "/icons/buildings/bronzeblock.png" },
   Candle: { id: "candle", name: "Candle", icon: "/icons/buildings/candle.png" },
   Cannon: { id: "cannon", name: "Cannon", icon: "/icons/buildings/cannon.png" },
+  catapult: { id: "catapult", name: "Catapult", icon: "/icons/buildings/catapult.png" },
   Cauldron: { id: "cauldron", name: "Cauldron", icon: "/icons/buildings/cauldron.png" },
   CheckoutTable: { id: "checkouttable", name: "Checkout Table", icon: "/icons/buildings/checkouttable.png" },
   ConveyerLift_Upwards: { id: "conveyerlift_upwards", name: "Conveyer Lift Upwards", icon: "/icons/buildings/conveyerlift.png" },
   ConveyorTunnel: { id: "conveyortunnel", name: "Conveyor Tunnel", icon: "/icons/buildings/conveyortunnel.png" },
+  CrossTunnel: { id: "crosstunnel", name: "Crossway Tunnel", icon: "/icons/buildings/crosstunnel.png" },
   CopperBlock: { id: "copperblock", name: "Copper Block", icon: "/icons/buildings/copperblock.png" },
   Crucible: { id: "crucible", name: "Crucible", icon: "/icons/buildings/crucible.png" },
   DrawBridge: { id: "drawbridge", name: "Draw Bridge", icon: "/icons/buildings/drawbridge.png" },
@@ -99,7 +104,7 @@ export const BUILDING_MAPPINGS = {
   RelicStandSmall: { id: "relicstandsmall", name: "Relic Stand Small", icon: "/icons/buildings/simplestall.png" },
   Shaper: { id: "shaper", name: "Shaper", icon: "/icons/buildings/shaper.png" },
   SmallContainer: { id: "smallcontainer", name: "Small Container", icon: "/icons/buildings/smallcontainer.png" },
-  SmallPlatform: { id: "smallplatform", name: "Small Platform", icon: "/icons/buildings/smallplatform.png" },
+  SmallPlatform: { id: "smallplatform", name: "Reinforced Platform", icon: "/icons/buildings/reinforcedplatform.png" },
   SphereFlask: { id: "sphereflask", name: "Sphere Flask", icon: "/icons/buildings/sphereflask.png" },
   Splitter_Vert: { id: "splitter_vert", name: "Priority Splitter", icon: "/icons/buildings/prioritysplitter.png" },
   StackableCrucible: { id: "stackablecrucible", name: "Stackable Crucible", icon: "/icons/buildings/stackablecrucible.png" },
@@ -115,7 +120,6 @@ export const BUILDING_MAPPINGS = {
   WoodCrate: { id: "woodcrate", name: "Wood Crate", icon: "/icons/buildings/woodcrate.png" },
   WoodTable: { id: "woodtable", name: "Wood Table", icon: "/icons/buildings/woodtable.png" },
   WorldTreeNursery: { id: "worldtreenursery", name: "World Tree Nursery", icon: "/icons/buildings/worldtreenursery.png" },
-  catapult: { id: "catapult", name: "Catapult", icon: "/icons/buildings/catapult.png" },
 };
 
 // Transform parsed materials data to our format
