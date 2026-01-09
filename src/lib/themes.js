@@ -71,34 +71,34 @@ export const darkTheme = {
     headerGradientFrom: "#1e3a8a",
     headerGradientVia: "#0c4a6e",
     headerGradientTo: "#164e63",
-    headerBorder: "#0ea5e9",
+    headerBorder: "#0074aa",
     
     // Accents
-    accentYellow: "#4cb7ffff",
+    accentYellow: "#008ae7",
     accentGold: "#4dcafcff",
     accentLighter: "#47d9fdff",
     
     // Text
-    textPrimary: "#e0e7ff",
-    textSecondary: "#cbd5e1",
+    textPrimary: "#669bdb",
+    textSecondary: "#669bdb",
     textDark: "#1e293b",
     
     // Backgrounds for elements
     elementBg: "#1f2d45",
     elementBgDark: "#121b31",
     elementBgCard: "#121b31",
-    elementBorder: "#0ea5e9",
+    elementBorder: "#003c5c",
     
     // Buttons
     buttonBg: "#0284c7",
     buttonBg2: "#003c5a",
-    buttonBgAlt: "#06b6d4",
+    buttonBgAlt: "#005f96",
     buttonHover: "#0284c7",
     buttonText: "#f0f9ff",
     
     // Cards
     cardBg: "#1e293b",
-    cardBorder: "#0369a1",
+    cardBorder: "#003c5c",
     cardHoverBorder: "#0ea5e9",
     cardShadow: "#0284c7",
     
