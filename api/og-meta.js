@@ -32,7 +32,7 @@ export default async function handler(req, res) {
     let ogType = 'website';
     let pageTitle = 'Alchemy Factory Blueprints | Share & Download .af Layouts';
 
-    // Fetch blueprint data if ID is provided
+    // Only fetch blueprint data if a valid ID is provided
     if (blueprintId) {
       try {
         const { data: blueprint, error } = await supabase
@@ -45,7 +45,7 @@ export default async function handler(req, res) {
           ogTitle = blueprint.title;
           ogDescription = blueprint.description || `Check out this Alchemy Factory blueprint: ${blueprint.title}`;
           ogImage = blueprint.image_url || `${baseUrl}/logo.jpg`;
-          ogUrl = `${baseUrl}?blueprintId=${blueprint.id}`;
+          ogUrl = `${baseUrl}/blueprint/${blueprint.id}`;
           ogType = 'article';
           pageTitle = `${blueprint.title} | Alchemy Factory Blueprints`;
         }
@@ -105,9 +105,10 @@ export default async function handler(req, res) {
   </body>
 </html>`;
 
-    // Set cache headers
+    // Set aggressive cache headers - cache for 24 hours on CDN, 7 days stale-while-revalidate
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
+    res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=604800');
+    res.setHeader('CDN-Cache-Control', 'max-age=86400');
 
     return res.status(200).send(html);
   } catch (error) {

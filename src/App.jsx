@@ -40,15 +40,21 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    // Check for blueprint ID in URL params
+    // Check for blueprint ID in URL params (legacy format)
     const params = new URLSearchParams(window.location.search);
-    const blueprintId = params.get("blueprintId");
+    const blueprintIdParam = params.get("blueprintId");
+
+    // Check for blueprint ID in path (new format: /blueprint/:id)
+    const pathMatch = window.location.pathname.match(/^\/blueprint\/([a-f0-9-]+)$/i);
+    const blueprintIdPath = pathMatch ? pathMatch[1] : null;
+
+    const blueprintId = blueprintIdPath || blueprintIdParam;
 
     // Validate UUID format to prevent injection attacks
     if (blueprintId && isValidUUID(blueprintId)) {
       setInitialBlueprintId(blueprintId);
-      // Remove the query param from URL
-      window.history.replaceState({}, document.title, window.location.pathname);
+      // Remove the query param from URL and update to clean path
+      window.history.replaceState({}, document.title, '/');
     }
   }, []);
 

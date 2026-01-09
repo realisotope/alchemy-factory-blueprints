@@ -93,7 +93,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
   };
 
   const handleShareBlueprint = () => {
-    const blueprintUrl = `${window.location.origin}?blueprintId=${blueprint.id}`;
+    const blueprintUrl = `${window.location.origin}/blueprint/${blueprint.id}`;
     navigator.clipboard.writeText(blueprintUrl).then(() => {
       setCopyFeedback(true);
       setTimeout(() => setCopyFeedback(false), 2000);
