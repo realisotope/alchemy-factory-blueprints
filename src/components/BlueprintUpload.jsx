@@ -10,6 +10,7 @@ import JSZip from "jszip";
 import { m } from "framer-motion";
 import { sendBlueprintToParser } from "../lib/blueprintParser";
 import { transformParsedMaterials, transformParsedBuildings } from "../lib/blueprintMappings";
+import { ClientRateLimiter, checkServerRateLimit } from "../lib/rateLimiter";
 
 // Constants for validation
 const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
@@ -212,6 +213,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
   const [error, setError] = useState(null);
   const [blueprintDragActive, setBlueprintDragActive] = useState(false);
   const [imageDragActive, setImageDragActive] = useState(false);
+  const [rateLimitInfo, setRateLimitInfo] = useState(null);
 
   const handleImageSelect = (e) => {
     const file = e.target.files?.[0];
@@ -345,6 +347,28 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Check rate limit first (before any validation)
+    const clientLimiter = new ClientRateLimiter(user.id, 'uploads');
+    const clientLimitStatus = clientLimiter.checkLimit();
+    
+    if (!clientLimitStatus.allowed) {
+      setError(clientLimiter.getLimitMessage());
+      setRateLimitInfo(clientLimitStatus);
+      return;
+    }
+    
+    // Also check server-side rate limit (per-hour limit)
+    const serverLimitStatus = await checkServerRateLimit(supabase, user.id, 'uploads');
+    if (!serverLimitStatus.allowed) {
+      const errorMsg = `Hourly limit exceeded. You've uploaded ${serverLimitStatus.attempts} blueprints in the last hour. Maximum is ${serverLimitStatus.maxAttempts} per hour.`;
+      setError(errorMsg);
+      setRateLimitInfo(serverLimitStatus);
+      return;
+    }
+
+    // Display rate limit info to user (how many uploads remaining)
+    setRateLimitInfo(serverLimitStatus);
     
     // Validate and sanitize title
     const titleValidation = validateAndSanitizeTitle(title);
@@ -512,6 +536,11 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       setImagePreview(null);
       setTags([]);
       setTagInput("");
+      setRateLimitInfo(null);
+      
+      // Record the upload attempt in client-side rate limiter
+      const clientLimiter = new ClientRateLimiter(user.id, 'uploads');
+      clientLimiter.recordAttempt();
 
       if (onUploadSuccess) {
         onUploadSuccess();
@@ -720,6 +749,13 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         {error && (
           <div style={{ backgroundColor: `${theme.colors.cardBg}33`, borderColor: theme.colors.cardBorder, color: '#fca5a5' }} className="p-4 border rounded-lg">
             {error}
+          </div>
+        )}
+
+        {/* Rate Limit Info */}
+        {rateLimitInfo && !error && (
+          <div style={{ backgroundColor: `${theme.colors.cardBg}33`, borderColor: theme.colors.cardBorder, color: theme.colors.textSecondary }} className="p-4 border rounded-lg text-sm">
+            <p>📊 Uploads remaining this hour: <span style={{ color: theme.colors.accentGold }} className="font-semibold">{rateLimitInfo.remaining}/{rateLimitInfo.maxAttempts}</span></p>
           </div>
         )}
 

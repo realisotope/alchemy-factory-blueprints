@@ -7,6 +7,7 @@ import { Upload, Loader, X } from "lucide-react";
 import { put } from "@vercel/blob";
 import imageCompression from "browser-image-compression";
 import JSZip from "jszip";
+import { ClientRateLimiter, checkServerRateLimit } from "../lib/rateLimiter";
 
 // Constants for validation
 const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB
@@ -116,6 +117,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [imageDragActive, setImageDragActive] = useState(false);
+  const [rateLimitInfo, setRateLimitInfo] = useState(null);
   const fileInputRef = useRef(null);
   const imageInputRef = useRef(null);
 
@@ -203,6 +205,28 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Check rate limit first (before any validation)
+    const clientLimiter = new ClientRateLimiter(user.id, 'edits');
+    const clientLimitStatus = clientLimiter.checkLimit();
+    
+    if (!clientLimitStatus.allowed) {
+      setError(clientLimiter.getLimitMessage());
+      setRateLimitInfo(clientLimitStatus);
+      return;
+    }
+    
+    // Also check server-side rate limit (per-hour limit)
+    const serverLimitStatus = await checkServerRateLimit(supabase, user.id, 'edits');
+    if (!serverLimitStatus.allowed) {
+      const errorMsg = `Hourly limit exceeded. You've edited ${serverLimitStatus.attempts} blueprints in the last hour. Maximum is ${serverLimitStatus.maxAttempts} per hour.`;
+      setError(errorMsg);
+      setRateLimitInfo(serverLimitStatus);
+      return;
+    }
+
+    // Display rate limit info to user (how many edits remaining)
+    setRateLimitInfo(serverLimitStatus);
     
     if (!title.trim()) {
       setError("Title is required");
@@ -340,6 +364,10 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
 
       if (dbError) throw dbError;
 
+      // Record the edit attempt in client-side rate limiter
+      const clientLimiter = new ClientRateLimiter(user.id, 'edits');
+      clientLimiter.recordAttempt();
+
       onUpdate?.();
       onClose();
     } catch (err) {
@@ -370,6 +398,13 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
           {error && (
             <div className="border rounded-lg text-sm px-4 py-3" style={{ backgroundColor: `${theme.colors.cardBg}33`, borderColor: theme.colors.cardBorder, color: '#fca5a5' }}>
               {error}
+            </div>
+          )}
+
+          {/* Rate Limit Info */}
+          {rateLimitInfo && !error && (
+            <div className="border rounded-lg text-sm px-4 py-3" style={{ backgroundColor: `${theme.colors.cardBg}33`, borderColor: theme.colors.cardBorder, color: theme.colors.textSecondary }}>
+              <p>📊 Edits remaining this hour: <span style={{ color: theme.colors.accentGold }} className="font-semibold">{rateLimitInfo.remaining}/{rateLimitInfo.maxAttempts}</span></p>
             </div>
           )}
 
