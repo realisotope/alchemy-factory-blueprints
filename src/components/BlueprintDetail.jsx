@@ -387,7 +387,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           <div style={{
             color: theme.colors.textSecondary,
             borderTopColor: theme.colors.cardBorder,
-          }} className="text-sm pt-4 border-t space-y-1">
+          }} className="text-sm pt-4 border-t space-y-2">
             {blueprint.updated_at && blueprint.updated_at !== blueprint.created_at && (
               <div>
                 Updated on{" "}
@@ -410,6 +410,11 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                 minute: "2-digit",
               })}
             </div>
+            {blueprint.filehash && (
+              <div className="text-xs px-2 py-2 rounded -mx-2" style={{color: theme.colors.textTertiary, backgroundColor: 'rgba(0, 0, 0, 0.1)'}}>
+                <div className="opacity-75"><span className="font-mono break-all">{blueprint.filehash}</span></div>
+              </div>
+            )}
           </div>
         </div>
 
