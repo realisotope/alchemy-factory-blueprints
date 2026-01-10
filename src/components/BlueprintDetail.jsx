@@ -15,6 +15,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
   const [likeCount, setLikeCount] = useState(blueprint?.likes ?? 0);
   const [downloadCount, setDownloadCount] = useState(blueprint?.downloads ?? 0);
   const [isImageExpanded, setIsImageExpanded] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [showScrollIndicator, setShowScrollIndicator] = useState(false);
@@ -150,7 +151,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
         {/* Content */}
         <div className="p-6 space-y-3">
           {/* Image */}
-          {blueprint.image_url && (
+          {blueprint.image_url && !imageError && (
             <div className="relative group">
               <img
                 src={getDetailViewUrl(blueprint.image_url)}
@@ -158,6 +159,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                 className="w-full h-48 sm:h-96 object-cover rounded-lg cursor-pointer transition hover:shadow-lg hover:shadow-black/30"
                 onClick={() => setIsImageExpanded(true)}
                 loading="lazy"
+                onError={() => setImageError(true)}
               />
               <button
                 onClick={() => setIsImageExpanded(true)}
@@ -518,6 +520,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                 alt={blueprint.title}
                 className="max-w-full max-h-full object-contain rounded-lg"
                 loading="lazy"
+                onError={() => setImageError(true)}
               />
               <button
                 onClick={() => setIsImageExpanded(false)}

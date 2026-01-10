@@ -20,6 +20,7 @@ export default function BlueprintCard({
 }) {
   const { theme } = useTheme();
   const [isHovered, setIsHovered] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   return (
     <motion.div
@@ -37,13 +38,14 @@ export default function BlueprintCard({
       onClick={() => onSelect(blueprint)}
     >
       {/* Image */}
-      {blueprint.image_url ? (
+      {blueprint.image_url && !imageError ? (
         <img
           src={getThumbnailUrl(blueprint.image_url)}
           alt={blueprint.title}
           style={{ backgroundColor: theme.colors.elementBg }}
           className="w-full h-48 object-cover flex-shrink-0 transition-opacity duration-150 group-hover:opacity-90 opacity-80"
           loading="lazy"
+          onError={() => setImageError(true)}
         />
       ) : (
         <div style={{ backgroundImage: `linear-gradient(to bottom-right, ${theme.colors.accentLighter}, ${theme.colors.cardBg})` }} className="w-full h-48 flex items-center justify-center flex-shrink-0">
