@@ -135,13 +135,13 @@ export const darkerTheme = {
     headerBorder: "#4F4332", // Header border
 
     // Accents
-    accentYellow: "#fcd34d",
-    accentGold: "#fbcd32",
+    accentYellow: "#c3980a",
+    accentGold: "#876c12",
     accentLighter: "#fde047",
 
     // Text
-    textPrimary: "#E8C89E",
-    textSecondary: "#C5A37A",
+    textPrimary: "#c5a37a",
+    textSecondary: "#d6a97e",
     textDark: "#876E54",
 
     // Backgrounds for elements
@@ -151,9 +151,9 @@ export const darkerTheme = {
     elementBorder: "#66573D", // Darker border
 
     // Buttons
-    buttonBg: "#dbb84a",
+    buttonBg: "#5f4d17",
     buttonBg2: "#4A3C31",
-    buttonBgAlt: "#fbcd32",
+    buttonBgAlt: "#876c12",
     buttonHover: "#DBB84A",
     buttonText: "#1E1A16",
 

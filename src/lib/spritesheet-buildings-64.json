@@ -1,1185 +1,655 @@
 {
-    "version":  2,
-    "columns":  4,
-    "negativeSpacingEnabled":  false,
-    "backgroundColor":  "transparent",
-    "manualCellSizeEnabled":  false,
-    "manualCellWidth":  64,
-    "manualCellHeight":  64,
-    "layers":  [
-                   {
-                       "id":  "f5fa12e4-aa8a-4e3b-8eff-bb95473350d4",
-                       "name":  "Base",
-                       "visible":  true,
-                       "locked":  false,
-                       "sprites":  [
-                                       {
-                                           "id":  "4c1759e5-4bb5-41eb-bb11-8ee5bc9f37e5",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "assembler"
-                                       },
-                                       {
-                                           "id":  "43c21380-9b91-474f-a7f8-bd00f2bb555f",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "advancedshaper"
-                                       },
-                                       {
-                                           "id":  "507a7370-f3e9-42a3-8c40-723dfe3b432e",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "alembic"
-                                       },
-                                       {
-                                           "id":  "285fb170-5236-43d2-97e7-df17ae4c7967",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "advancedblender"
-                                       },
-                                       {
-                                           "id":  "d29375d9-aff8-4416-972d-54e26db2aaac",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "autonursery"
-                                       },
-                                       {
-                                           "id":  "6da05374-9e40-46d0-95c1-f17bb66e1237",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "noticeboard"
-                                       },
-                                       {
-                                           "id":  "4d58ad83-0b62-4d0e-b6e9-d6b6d9bbf70e",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "arcaneshaper"
-                                       },
-                                       {
-                                           "id":  "cd50c4ca-5620-45ef-8fca-79c4503734c3",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "beam3"
-                                       },
-                                       {
-                                           "id":  "f973394b-beb2-4aaf-8c41-5c9960352102",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "athanor"
-                                       },
-                                       {
-                                           "id":  "afeb9e90-b92e-48cc-9a20-d4ee1af6e2c5",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "beltslopeup"
-                                       },
-                                       {
-                                           "id":  "88d8a33d-f29b-4baa-a499-809255d36553",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "blender"
-                                       },
-                                       {
-                                           "id":  "a575e8fb-21e3-43fb-afab-a55b060e5ab7",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "belt"
-                                       },
-                                       {
-                                           "id":  "d1b750b9-866a-4e38-84d4-8d01649122fd",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "beltinclinedup"
-                                       },
-                                       {
-                                           "id":  "1258af02-ca09-4c33-a4e5-0f52dd8e7d45",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "autocheckout"
-                                       },
-                                       {
-                                           "id":  "c4d0dc4d-8058-4fa0-8ecb-6026e1e8458a",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "arcaneprocessor"
-                                       },
-                                       {
-                                           "id":  "a6af2202-f957-424b-8cf8-492c56597669",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "blastfurnace"
-                                       },
-                                       {
-                                           "id":  "b85467de-1f82-49f9-ad93-7c2b90a4147d",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "catapult"
-                                       },
-                                       {
-                                           "id":  "625cda43-ffa4-4d1d-b0b5-7a70b2a0bc9a",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "candle"
-                                       },
-                                       {
-                                           "id":  "449e8fe6-3766-47fd-9c7a-fbf2a0476059",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "bronzeblock"
-                                       },
-                                       {
-                                           "id":  "d3da6d99-8a17-44c8-aa78-44d853030c15",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "bounceshroom"
-                                       },
-                                       {
-                                           "id":  "b7de2370-7bbe-40b9-b9e1-0dec4e460b83",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "cauldron"
-                                       },
-                                       {
-                                           "id":  "2d7a56f4-7d4a-4898-aafb-34b02b073e4a",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "checkouttable"
-                                       },
-                                       {
-                                           "id":  "4e22173c-ca5a-464a-9502-89b5b1c7646e",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "brickblock"
-                                       },
-                                       {
-                                           "id":  "c8ff5a95-5cd7-4f7c-9359-5d1114c24cea",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "candle_hanging"
-                                       },
-                                       {
-                                           "id":  "a7036fa8-7edf-4dcb-8f23-88ee2d37d1bc",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "cannon"
-                                       },
-                                       {
-                                           "id":  "089713f7-a83b-40db-8438-17a796ff42d9",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "conveyerlift_upwards"
-                                       },
-                                       {
-                                           "id":  "596961e5-5ff8-47c4-b0fb-0c7016db304d",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "crosstunnel"
-                                       },
-                                       {
-                                           "id":  "8925a407-fe79-4da1-8a65-a48eba8eddae",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "coinbalance"
-                                       },
-                                       {
-                                           "id":  "8feca66c-0792-4487-bd02-ecce4fc60c5d",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "conveyortunnel"
-                                       },
-                                       {
-                                           "id":  "c66cab6f-0575-4642-8b66-d45b82a66833",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "column"
-                                       },
-                                       {
-                                           "id":  "3e9e72cd-4572-4254-b388-457ad029d8f7",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "conicalflask"
-                                       },
-                                       {
-                                           "id":  "78baacc2-8483-472a-b5ee-8b8bad95e5ff",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "dispatchportal"
-                                       },
-                                       {
-                                           "id":  "faa571b1-330a-46be-af44-4f76d6dea99a",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "copperblock"
-                                       },
-                                       {
-                                           "id":  "ed6f0b1a-1817-4336-a905-39ab5412ec65",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "filter_vert"
-                                       },
-                                       {
-                                           "id":  "51dd7874-b1b6-45fa-b86e-3588167c1e60",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "crucible"
-                                       },
-                                       {
-                                           "id":  "d257959c-7ee5-4019-a4a8-48d921df5fc7",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "grinder"
-                                       },
-                                       {
-                                           "id":  "14d4df22-0721-408b-a2f5-82ff3403677f",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "ironblock"
-                                       },
-                                       {
-                                           "id":  "e29ff07c-84a2-4866-9747-d95609f409f4",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "drawbridge"
-                                       },
-                                       {
-                                           "id":  "1224e494-82b5-425b-ae76-69ce128a5ce1",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "junkbarrel"
-                                       },
-                                       {
-                                           "id":  "5e383181-6178-4f1a-9035-f09c9f0ba584",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "extractor"
-                                       },
-                                       {
-                                           "id":  "56a76ca2-864d-4300-ab94-9d4a6ac4ad18",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "framesingle"
-                                       },
-                                       {
-                                           "id":  "64ae4227-ab50-4951-a142-8078f669d821",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "ironstand"
-                                       },
-                                       {
-                                           "id":  "8d9f087e-52a3-4878-9281-9f1e4cdc8e74",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "hopper"
-                                       },
-                                       {
-                                           "id":  "e11134bf-9158-4428-99a9-ee67fb28a37d",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "largestand"
-                                       },
-                                       {
-                                           "id":  "67162001-4eb3-4f10-bde2-a1b6f40cee94",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "goldblock"
-                                       },
-                                       {
-                                           "id":  "4186f2dd-70c7-486d-baf1-83a9b020203d",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "ironsmelter"
-                                       },
-                                       {
-                                           "id":  "b96888b9-16a6-4827-b032-a23141a8d5e5",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "kiln"
-                                       },
-                                       {
-                                           "id":  "ec9c6bff-3d5a-4f4b-ba44-4643712f7d9a",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "knowledgealtar"
-                                       },
-                                       {
-                                           "id":  "22fb1754-cf8d-404a-92b0-b61602bc13f0",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "enhancedgrinder"
-                                       },
-                                       {
-                                           "id":  "5b9f26c3-d439-4c84-87f7-33d0670326f2",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "mediumstand"
-                                       },
-                                       {
-                                           "id":  "70eff2fa-e326-48d9-b732-6f8c132c003d",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "metalcontainer"
-                                       },
-                                       {
-                                           "id":  "85fcc9f2-a50d-4689-a0eb-f840d545fb9e",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "modularwall"
-                                       },
-                                       {
-                                           "id":  "ebd598d9-a370-4a63-8672-22fcae0816d0",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "jewelrystand"
-                                       },
-                                       {
-                                           "id":  "3a001e28-a6cd-4862-8e42-04f7d60bafb6",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "metalstand"
-                                       },
-                                       {
-                                           "id":  "25f6f625-988e-48fd-b959-66663b120b8b",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "modularfloor"
-                                       },
-                                       {
-                                           "id":  "6a759521-841d-44ae-a7e5-77102946dbd2",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "platformwood"
-                                       },
-                                       {
-                                           "id":  "e5ba7198-7e00-413f-9437-8a762e0a0286",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "pipe"
-                                       },
-                                       {
-                                           "id":  "3892cbeb-042a-4fdd-9668-8d6aa3582723",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "paradoxcrucible"
-                                       },
-                                       {
-                                           "id":  "fc80511c-eb70-44c9-a76a-16d599d5fda9",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "splitter_vert"
-                                       },
-                                       {
-                                           "id":  "998ba33b-2e96-43b3-887c-d4347c21cfd1",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "potionstand"
-                                       },
-                                       {
-                                           "id":  "e546f009-e8a6-491e-8198-9ad181d6c1ef",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "portal_bank"
-                                       },
-                                       {
-                                           "id":  "7ec6596e-9137-4f2d-b0a6-f211d514d1a7",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "portal_alchguild"
-                                       },
-                                       {
-                                           "id":  "5af8ec1c-f13a-464d-a89b-ae7cbf81e121",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "merger_vert"
-                                       },
-                                       {
-                                           "id":  "cda96ba6-c5fa-4ce1-9ebd-9b4648024f4e",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "processor"
-                                       },
-                                       {
-                                           "id":  "c9767f1a-0097-41d0-ada9-063e41996b46",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "raildown"
-                                       },
-                                       {
-                                           "id":  "efbdc008-e57d-4358-9480-4eda25d62392",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "railramp"
-                                       },
-                                       {
-                                           "id":  "8478bea1-8a26-4cf9-a545-69bc1fb1831f",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "railstation"
-                                       },
-                                       {
-                                           "id":  "22e22cd7-a13b-4880-ba67-65f06af8c295",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "railup"
-                                       },
-                                       {
-                                           "id":  "010c971d-30fd-419f-a53c-b7492794546d",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "railturn"
-                                       },
-                                       {
-                                           "id":  "d0d8b6fa-5abb-45e9-9301-196349e3dde0",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "railroad"
-                                       },
-                                       {
-                                           "id":  "7f64d879-3386-44c0-b2ca-83a4879f64a5",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "shaper"
-                                       },
-                                       {
-                                           "id":  "8281f2f3-9e9f-4b46-9be4-80f78691c490",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "refiner"
-                                       },
-                                       {
-                                           "id":  "8412e9af-067a-4b8e-a98b-cf34fada31eb",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "roofhalf"
-                                       },
-                                       {
-                                           "id":  "9f726ea8-b709-4838-b2c6-570f8cbfb73d",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "silverblock"
-                                       },
-                                       {
-                                           "id":  "215be68c-5c73-4410-9ada-2d23182af661",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "smallcontainer"
-                                       },
-                                       {
-                                           "id":  "8fe0e673-21ee-4492-b651-db7d35255bd4",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "sphereflask"
-                                       },
-                                       {
-                                           "id":  "89a654e6-2371-44f3-b7c8-59caf354d5f0",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "seedplot"
-                                       },
-                                       {
-                                           "id":  "f3502b80-3cfa-42e9-972b-cec857ae38d0",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "relicstandsmall"
-                                       },
-                                       {
-                                           "id":  "09e975c9-184f-423e-aaed-402a3a57e5cd",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "smallplatform"
-                                       },
-                                       {
-                                           "id":  "1dcece34-bae8-4feb-9b89-7f0bc862a790",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "stackablecrucible"
-                                       },
-                                       {
-                                           "id":  "5bd2e281-7e9f-426c-b74e-6df2a128722a",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "stairswood"
-                                       },
-                                       {
-                                           "id":  "340f81bb-ab26-4a96-8b3c-da18afc781f8",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "stairs2wood"
-                                       },
-                                       {
-                                           "id":  "3d5afc2a-d1f5-4fc6-823f-5065974ea04e",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "stoneblock"
-                                       },
-                                       {
-                                           "id":  "2e991345-dd4a-4994-9265-089fb2a32335",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "stonecrusher"
-                                       },
-                                       {
-                                           "id":  "600f980e-192c-4481-9859-49d10762ad21",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "stonestove"
-                                       },
-                                       {
-                                           "id":  "ac887728-f663-478b-872e-dd2e609d3dba",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "tablesaw"
-                                       },
-                                       {
-                                           "id":  "508d5174-4041-446e-8f42-8e8e69f33b5e",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "stonefurnace"
-                                       },
-                                       {
-                                           "id":  "21d99f89-9011-4ce3-b479-5bd9af633e16",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "thermalextractor"
-                                       },
-                                       {
-                                           "id":  "04353f50-74bf-4c76-8ea4-d9bc9c7b9e6a",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "trolley"
-                                       },
-                                       {
-                                           "id":  "3f80b903-51fe-440a-b0de-eef27654492c",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "verticalsplitter"
-                                       },
-                                       {
-                                           "id":  "81807312-8192-4a0c-90ba-2bb94d46fef2",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "stonewall"
-                                       },
-                                       {
-                                           "id":  "3534ba47-3c99-40b1-b5b0-9cb72a26f2f1",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "wallshelf"
-                                       },
-                                       {
-                                           "id":  "9aa41717-ed0b-4cb3-9814-4f5acff9472a",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "woodcontainer"
-                                       },
-                                       {
-                                           "id":  "9555c3f3-3670-4828-ad83-9d29282e311b",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "woodgrinder"
-                                       },
-                                       {
-                                           "id":  "8f014bbb-968b-4ea1-80f9-5c0b0c3072df",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "simplecrate"
-                                       },
-                                       {
-                                           "id":  "abb52bb2-f240-4ba9-85ff-336e7192b78c",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "woodrailing"
-                                       },
-                                       {
-                                           "id":  "63801ec7-3a13-4b63-9a5c-da8945c78574",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "woodbed"
-                                       },
-                                       {
-                                           "id":  "bb376fd3-83c3-4d81-b718-bb7787dbaab2",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "woodblock"
-                                       },
-                                       {
-                                           "id":  "f84998b6-eaf5-431a-888c-d5e35df404dc",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "smallbase"
-                                       },
-                                       {
-                                           "id":  "2c8abf01-84de-470b-955d-b43704aa7960",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "woodcrate"
-                                       },
-                                       {
-                                           "id":  "0f813f45-0177-4cc3-b86f-03798d546fb3",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "woodtable"
-                                       },
-                                       {
-                                           "id":  "d869bea4-7585-4bbd-ac06-7dedbd8b5e0b",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "workbench"
-                                       },
-                                       {
-                                           "id":  "b501435f-3e44-4419-b55c-2fb887014359",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "worldtreenursery"
-                                       },
-                                       {
-                                           "id":  "4520d447-1e7d-4287-b7fd-fd027ff7e9fd",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "advancedalembic"
-                                       },
-                                       {
-                                           "id":  "147179e8-ce64-4614-82b1-07e089ad9429",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "omni-machine"
-                                       },
-                                       {
-                                           "id":  "e883ab07-1e6a-47bf-aa1f-3d9bbb5ad807",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "advancedathanor"
-                                       }
-                                   ]
-                   }
-               ]
+  "version": 2,
+  "columns": 4,
+  "negativeSpacingEnabled": false,
+  "backgroundColor": "transparent",
+  "manualCellSizeEnabled": true,
+  "manualCellWidth": 60,
+  "manualCellHeight": 60,
+  "layers": [
+    {
+      "id": "3d2246df-b511-464f-a1bb-7707f832905a",
+      "name": "Base",
+      "visible": true,
+      "locked": false,
+      "sprites": [
+        {
+          "id": "f02dbe47-7466-4e43-aaad-e4dd558c62c9",
+          "width": 64,
+          "height": 64,
+          "name": "omni-machine"
+        },
+        {
+          "id": "18a346ee-2d12-4dc9-a7a4-e99e57d0a3c7",
+          "width": 64,
+          "height": 64,
+          "name": "advancedathanor"
+        },
+        {
+          "id": "abece3f3-7c16-4e9b-8e34-2766744fffca",
+          "width": 64,
+          "height": 64,
+          "name": "advancedshaper"
+        },
+        {
+          "id": "191aa3e2-26b4-4f76-a0b5-27a47d5f0cbc",
+          "width": 64,
+          "height": 64,
+          "name": "advancedblender"
+        },
+        {
+          "id": "9e9afa9d-066f-4cae-a71f-1ab17aeea63f",
+          "width": 64,
+          "height": 64,
+          "name": "alembic"
+        },
+        {
+          "id": "033d611f-95a0-4e69-a892-1fd364ee6e11",
+          "width": 64,
+          "height": 64,
+          "name": "arcaneprocessor"
+        },
+        {
+          "id": "632fa08b-fe77-4a00-9b92-9f1ee7f6f42a",
+          "width": 64,
+          "height": 64,
+          "name": "arcaneshaper"
+        },
+        {
+          "id": "e9e08384-4443-48bd-8d66-8f154fe33241",
+          "width": 64,
+          "height": 64,
+          "name": "assembler"
+        },
+        {
+          "id": "91194c47-5024-4ddb-89b7-08b9030adc5c",
+          "width": 64,
+          "height": 64,
+          "name": "athanor"
+        },
+        {
+          "id": "25370cc5-46c2-42a3-976c-82e4b1d91367",
+          "width": 64,
+          "height": 64,
+          "name": "autocheckout"
+        },
+        {
+          "id": "9914a216-4ef4-49be-a338-35e14c64d647",
+          "width": 64,
+          "height": 64,
+          "name": "autonursery"
+        },
+        {
+          "id": "55361b61-795e-4c3f-8118-ec3ff3fcb9dc",
+          "width": 64,
+          "height": 64,
+          "name": "belt"
+        },
+        {
+          "id": "b15fde84-cf56-4252-8bb7-dc3396db5edb",
+          "width": 64,
+          "height": 64,
+          "name": "beam3"
+        },
+        {
+          "id": "0c0d4f2a-dd3e-4e72-9938-6d77b46ef0ed",
+          "width": 64,
+          "height": 64,
+          "name": "beltinclinedup"
+        },
+        {
+          "id": "e0fd6989-6e4e-4252-acf4-99a71d1fd192",
+          "width": 64,
+          "height": 64,
+          "name": "beltslopeup"
+        },
+        {
+          "id": "b10733ed-b245-47f7-b03d-8083656aa8c1",
+          "width": 64,
+          "height": 64,
+          "name": "noticeboard"
+        },
+        {
+          "id": "f44accfa-1ba9-4205-a881-46d50b8cfc18",
+          "width": 64,
+          "height": 64,
+          "name": "blastfurnace"
+        },
+        {
+          "id": "c4ff9d4e-e082-48be-a8dc-e52b426074b4",
+          "width": 64,
+          "height": 64,
+          "name": "blender"
+        },
+        {
+          "id": "ec357dd8-a719-4c70-8d88-f67a90370518",
+          "width": 64,
+          "height": 64,
+          "name": "bounceshroom"
+        },
+        {
+          "id": "1c27997f-42b2-41b1-903e-67d4e7332054",
+          "width": 64,
+          "height": 64,
+          "name": "brickblock"
+        },
+        {
+          "id": "4be0db5e-e53a-4310-894c-457ff65f62d6",
+          "width": 64,
+          "height": 64,
+          "name": "bronzeblock"
+        },
+        {
+          "id": "a88777ca-315d-4815-aa38-997104282193",
+          "width": 64,
+          "height": 64,
+          "name": "candle_hanging"
+        },
+        {
+          "id": "cffa3827-4df5-44d4-95e7-354e746c9963",
+          "width": 64,
+          "height": 64,
+          "name": "candle"
+        },
+        {
+          "id": "b0f6e622-713f-4b49-ae11-f6985a979bc4",
+          "width": 64,
+          "height": 64,
+          "name": "cannon"
+        },
+        {
+          "id": "583d910e-9fa4-49d7-89ae-681b47ab87d1",
+          "width": 64,
+          "height": 64,
+          "name": "catapult"
+        },
+        {
+          "id": "ab03be32-d886-4956-ad2b-aa855ff68dca",
+          "width": 64,
+          "height": 64,
+          "name": "cauldron"
+        },
+        {
+          "id": "4ba8f453-9954-46ba-8b5d-214de482dfde",
+          "width": 64,
+          "height": 64,
+          "name": "coinbalance"
+        },
+        {
+          "id": "0c07a74f-0cc7-419c-b637-56706192ffcc",
+          "width": 64,
+          "height": 64,
+          "name": "checkouttable"
+        },
+        {
+          "id": "23e35a8c-fb5e-47f7-b63f-b4a34da98945",
+          "width": 64,
+          "height": 64,
+          "name": "column"
+        },
+        {
+          "id": "6c321a1a-daba-4369-8728-28dcf39b8822",
+          "width": 64,
+          "height": 64,
+          "name": "conicalflask"
+        },
+        {
+          "id": "5ce33eda-58b8-43ef-be9f-6a3ce94d3db8",
+          "width": 64,
+          "height": 64,
+          "name": "conveyerlift_upwards"
+        },
+        {
+          "id": "def828e9-9075-48ba-801d-49bb1ff8d7ff",
+          "width": 64,
+          "height": 64,
+          "name": "conveyortunnel"
+        },
+        {
+          "id": "67c0bd8d-8468-40c2-931d-553d200e7783",
+          "width": 64,
+          "height": 64,
+          "name": "copperblock"
+        },
+        {
+          "id": "a3bec254-b492-4ea1-b927-833ec44c0479",
+          "width": 64,
+          "height": 64,
+          "name": "crosstunnel"
+        },
+        {
+          "id": "2fdf5f97-05f5-4203-8961-45bf691e8d65",
+          "width": 64,
+          "height": 64,
+          "name": "crucible"
+        },
+        {
+          "id": "4f9682c9-c441-4add-a120-ab2a104bbb63",
+          "width": 64,
+          "height": 64,
+          "name": "dispatchportal"
+        },
+        {
+          "id": "d271eb4e-3b12-448d-af32-f0f5d44cdbed",
+          "width": 64,
+          "height": 64,
+          "name": "drawbridge"
+        },
+        {
+          "id": "b728e057-b9b5-4d82-8273-87afb72b1d22",
+          "width": 64,
+          "height": 64,
+          "name": "enhancedgrinder"
+        },
+        {
+          "id": "cd2a447a-29ef-401b-84ea-42ad006e8563",
+          "width": 64,
+          "height": 64,
+          "name": "extractor"
+        },
+        {
+          "id": "3c39e63b-74dc-4911-b532-36f1c454c467",
+          "width": 64,
+          "height": 64,
+          "name": "filter_vert"
+        },
+        {
+          "id": "240e7213-f243-4da3-9e08-ff75bfc7e143",
+          "width": 64,
+          "height": 64,
+          "name": "framesingle"
+        },
+        {
+          "id": "c6e79baa-df0e-4d32-b599-453826f43937",
+          "width": 64,
+          "height": 64,
+          "name": "goldblock"
+        },
+        {
+          "id": "50c86315-04e6-499d-be9a-a7421e3ea8cf",
+          "width": 64,
+          "height": 64,
+          "name": "grinder"
+        },
+        {
+          "id": "99674b7e-16a4-475e-983a-287cd037ec1a",
+          "width": 64,
+          "height": 64,
+          "name": "ironblock"
+        },
+        {
+          "id": "a49ee0f6-b8dd-4d4a-8634-7ffb4aea9806",
+          "width": 64,
+          "height": 64,
+          "name": "hopper"
+        },
+        {
+          "id": "9da636ad-04f4-44d4-a5e8-71904b9d8175",
+          "width": 64,
+          "height": 64,
+          "name": "ironsmelter"
+        },
+        {
+          "id": "8afb7d9f-4828-4ebd-b282-22c4ff56c645",
+          "width": 64,
+          "height": 64,
+          "name": "jewelrystand"
+        },
+        {
+          "id": "be11fa9d-b469-4400-b19f-2f6705eef0c5",
+          "width": 64,
+          "height": 64,
+          "name": "junkbarrel"
+        },
+        {
+          "id": "e518d52b-c86a-4530-a36b-1516042f1fec",
+          "width": 64,
+          "height": 64,
+          "name": "kiln"
+        },
+        {
+          "id": "d5497cf1-c51a-4ece-a641-a132f7f7b463",
+          "width": 64,
+          "height": 64,
+          "name": "knowledgealtar"
+        },
+        {
+          "id": "721fb6fc-9bd6-4021-aded-e4c69686a21b",
+          "width": 64,
+          "height": 64,
+          "name": "ironstand"
+        },
+        {
+          "id": "74184914-6fed-4a96-af27-85458379797a",
+          "width": 64,
+          "height": 64,
+          "name": "mediumstand"
+        },
+        {
+          "id": "1d7dbd59-d3ab-4f46-8a62-ce7c8bee4e6f",
+          "width": 64,
+          "height": 64,
+          "name": "largestand"
+        },
+        {
+          "id": "a85b12da-1478-4f40-ad9b-2d393b3ad205",
+          "width": 64,
+          "height": 64,
+          "name": "metalcontainer"
+        },
+        {
+          "id": "16e7f801-efea-4066-94a0-86bcec61601b",
+          "width": 64,
+          "height": 64,
+          "name": "metalstand"
+        },
+        {
+          "id": "b790f652-f920-409b-bdcc-1dc626603911",
+          "width": 64,
+          "height": 64,
+          "name": "modularwall"
+        },
+        {
+          "id": "ee445da7-725e-4447-bcf1-bb226a7718f3",
+          "width": 64,
+          "height": 64,
+          "name": "modularfloor"
+        },
+        {
+          "id": "0f871e5d-ff15-44e8-b659-20d45dc1e4cf",
+          "width": 64,
+          "height": 64,
+          "name": "paradoxcrucible"
+        },
+        {
+          "id": "8efd1110-119b-470a-a748-a798b6e45345",
+          "width": 64,
+          "height": 64,
+          "name": "platformwood"
+        },
+        {
+          "id": "2511c97e-a51c-4295-ae23-4d6253afad7e",
+          "width": 64,
+          "height": 64,
+          "name": "potionstand"
+        },
+        {
+          "id": "f340d1da-b0d2-4f00-a3f4-80f753df400e",
+          "width": 64,
+          "height": 64,
+          "name": "portal_bank"
+        },
+        {
+          "id": "b6400c89-40a1-4231-8867-c1e5c606c4ec",
+          "width": 64,
+          "height": 64,
+          "name": "pipe"
+        },
+        {
+          "id": "2e67658e-c59e-4309-992e-cc675a1c649a",
+          "width": 64,
+          "height": 64,
+          "name": "merger_vert"
+        },
+        {
+          "id": "b0b7793e-689b-4fb3-8726-528fc2403508",
+          "width": 64,
+          "height": 64,
+          "name": "splitter_vert"
+        },
+        {
+          "id": "702973d2-02b1-4afc-ac9b-0b0ec3ef1f8e",
+          "width": 64,
+          "height": 64,
+          "name": "processor"
+        },
+        {
+          "id": "b18e288b-538a-40f5-866c-816d2c764f02",
+          "width": 64,
+          "height": 64,
+          "name": "portal_alchguild"
+        },
+        {
+          "id": "82abe128-b80d-415a-871c-d1455c1a524c",
+          "width": 64,
+          "height": 64,
+          "name": "railramp"
+        },
+        {
+          "id": "8c1d99b3-5cac-491c-853c-da3eed0ece8f",
+          "width": 64,
+          "height": 64,
+          "name": "railstation"
+        },
+        {
+          "id": "6fa897ca-c50b-4106-aed1-cd2294a2c157",
+          "width": 64,
+          "height": 64,
+          "name": "raildown"
+        },
+        {
+          "id": "be4d2dec-5767-4916-8e3a-e9cae9ee69bb",
+          "width": 64,
+          "height": 64,
+          "name": "railroad"
+        },
+        {
+          "id": "d6275ec3-fde1-48df-824b-7f53a698a189",
+          "width": 64,
+          "height": 64,
+          "name": "railturn"
+        },
+        {
+          "id": "c7a34e48-9174-4108-a492-b1d97f6f4a63",
+          "width": 64,
+          "height": 64,
+          "name": "railup"
+        },
+        {
+          "id": "ba3cb051-73e3-4664-9621-abc2842835aa",
+          "width": 64,
+          "height": 64,
+          "name": "smallplatform"
+        },
+        {
+          "id": "37a41d62-737d-455b-8738-46ad7fd82964",
+          "width": 64,
+          "height": 64,
+          "name": "refiner"
+        },
+        {
+          "id": "999e2b8c-a765-4da0-8446-615ecb6a076a",
+          "width": 64,
+          "height": 64,
+          "name": "roofhalf"
+        },
+        {
+          "id": "7395857f-9ab0-4e6c-aa51-14ea4697b78b",
+          "width": 64,
+          "height": 64,
+          "name": "seedplot"
+        },
+        {
+          "id": "dc651621-0057-4520-86f5-da966bdbece5",
+          "width": 64,
+          "height": 64,
+          "name": "silverblock"
+        },
+        {
+          "id": "fdfdc842-7c11-4dfd-8154-10f1f28183dd",
+          "width": 64,
+          "height": 64,
+          "name": "shaper"
+        },
+        {
+          "id": "a6e385e5-5849-4822-9492-c9fd188654c5",
+          "width": 64,
+          "height": 64,
+          "name": "relicstandsmall"
+        },
+        {
+          "id": "3f4e1f7c-5014-4ea8-b1dd-cf44f8785a5b",
+          "width": 64,
+          "height": 64,
+          "name": "simplecrate"
+        },
+        {
+          "id": "b9ebe4a5-4982-47ac-9461-b27c1ce79509",
+          "width": 64,
+          "height": 64,
+          "name": "smallcontainer"
+        },
+        {
+          "id": "30450597-5734-43f6-9595-5232184a5566",
+          "width": 64,
+          "height": 64,
+          "name": "smallbase"
+        },
+        {
+          "id": "587e8d44-e7a0-4a50-b8ae-1d4b0e341e57",
+          "width": 64,
+          "height": 64,
+          "name": "sphereflask"
+        },
+        {
+          "id": "cc6c6e50-d040-439c-8f44-61b15965cd1e",
+          "width": 64,
+          "height": 64,
+          "name": "stackablecrucible"
+        },
+        {
+          "id": "e612f578-b70f-41bf-b027-4d4e5e9b3453",
+          "width": 64,
+          "height": 64,
+          "name": "stairs2wood"
+        },
+        {
+          "id": "f6ea8851-81bf-411b-9a27-c86c61b3c1a2",
+          "width": 64,
+          "height": 64,
+          "name": "stoneblock"
+        },
+        {
+          "id": "5d594b19-5afb-43e9-b655-17a9f034fce6",
+          "width": 64,
+          "height": 64,
+          "name": "stairswood"
+        },
+        {
+          "id": "0efe538a-537f-4a6d-8047-bdc4ab1f8103",
+          "width": 64,
+          "height": 64,
+          "name": "stonefurnace"
+        },
+        {
+          "id": "69ce55ef-8cef-487a-8de2-660a6aa1a697",
+          "width": 64,
+          "height": 64,
+          "name": "stonecrusher"
+        },
+        {
+          "id": "757d7b81-b33d-4148-9a76-211e41cf04b1",
+          "width": 64,
+          "height": 64,
+          "name": "stonestove"
+        },
+        {
+          "id": "790a3312-ffb1-4f3d-9966-4d364fdf2d6b",
+          "width": 64,
+          "height": 64,
+          "name": "tablesaw"
+        },
+        {
+          "id": "baed3902-18a3-4151-9884-601414ef307d",
+          "width": 64,
+          "height": 64,
+          "name": "thermalextractor"
+        },
+        {
+          "id": "6155c1ef-6e32-4b8d-a03f-b9a7a1c34a8c",
+          "width": 64,
+          "height": 64,
+          "name": "stonewall"
+        },
+        {
+          "id": "5077de54-5bfd-43c3-bbef-3d2ce8861773",
+          "width": 64,
+          "height": 64,
+          "name": "trolley"
+        },
+        {
+          "id": "ebece3cc-7308-4c2c-bbb5-af943085f3a3",
+          "width": 64,
+          "height": 64,
+          "name": "verticalsplitter"
+        },
+        {
+          "id": "e564e85c-92dc-4d09-a82e-b99a940a8210",
+          "width": 64,
+          "height": 64,
+          "name": "wallshelf"
+        },
+        {
+          "id": "b87d6d00-14a2-44ce-b847-32026bf21690",
+          "width": 64,
+          "height": 64,
+          "name": "woodbed"
+        },
+        {
+          "id": "bb06f3d3-c186-47e7-b5b1-ce5ef44a66c2",
+          "width": 64,
+          "height": 64,
+          "name": "woodcontainer"
+        },
+        {
+          "id": "12e56177-36ad-4547-9fc7-ac90a47e104e",
+          "width": 64,
+          "height": 64,
+          "name": "woodblock"
+        },
+        {
+          "id": "9bf09251-3783-4c2e-9b5d-3cae791fccd7",
+          "width": 64,
+          "height": 64,
+          "name": "woodcrate"
+        },
+        {
+          "id": "8779b392-812d-4616-adf1-5451eedc0dba",
+          "width": 64,
+          "height": 64,
+          "name": "woodgrinder"
+        },
+        {
+          "id": "a987cc93-b9aa-4ccb-bc88-a15665bf997a",
+          "width": 64,
+          "height": 64,
+          "name": "woodrailing"
+        },
+        {
+          "id": "0b16e5f2-c5fa-4d26-8614-b1ac8aa0fc96",
+          "width": 64,
+          "height": 64,
+          "name": "woodtable"
+        },
+        {
+          "id": "7cd82c88-701a-40e1-b67f-515db4651d6a",
+          "width": 64,
+          "height": 64,
+          "name": "workbench"
+        },
+        {
+          "id": "06687dd3-85f2-4e5a-86ef-e57e756958aa",
+          "width": 64,
+          "height": 64,
+          "name": "worldtreenursery"
+        },
+        {
+          "id": "0f1edf9b-c419-47e9-b728-901ae8f607b1",
+          "width": 64,
+          "height": 64,
+          "name": "advancedalembic"
+        }
+      ]
+    }
+  ]
 }

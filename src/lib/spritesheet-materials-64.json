@@ -1,338 +1,193 @@
 {
-    "version":  2,
-    "columns":  4,
-    "negativeSpacingEnabled":  false,
-    "backgroundColor":  "transparent",
-    "manualCellSizeEnabled":  false,
-    "manualCellWidth":  64,
-    "manualCellHeight":  64,
-    "layers":  [
-                   {
-                       "id":  "6151085a-30fe-42e4-abf1-72815113dd8a",
-                       "name":  "Base",
-                       "visible":  true,
-                       "locked":  false,
-                       "sprites":  [
-                                       {
-                                           "id":  "0c26fe9c-d4a5-4b9d-85d1-64c910c5aa1a",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "logs"
-                                       },
-                                       {
-                                           "id":  "7474a655-9703-440a-bfe6-731e2aa1ab82",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "plank"
-                                       },
-                                       {
-                                           "id":  "6f060996-a316-41a8-b6c5-e543a1cc542a",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "portal-sigil"
-                                       },
-                                       {
-                                           "id":  "903e5e95-5a2a-449f-8e65-46651ab72037",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "redcurrant-seeds"
-                                       },
-                                       {
-                                           "id":  "6d958ae9-4962-4f2a-8e75-3485560e127a",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "rotten-log"
-                                       },
-                                       {
-                                           "id":  "47a0914c-6982-4171-baa7-3ba2b1d0ec2f",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "sage-seeds"
-                                       },
-                                       {
-                                           "id":  "8e90efde-1f3f-4193-9052-1da7a8e2f0f8",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "silver-ingot"
-                                       },
-                                       {
-                                           "id":  "5492d9e1-684b-4b2a-ae87-453f22334968",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "steel-gear"
-                                       },
-                                       {
-                                           "id":  "35afaa35-86fc-4c54-aff7-f0664a7f266b",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "stone"
-                                       },
-                                       {
-                                           "id":  "cc0dfc2a-b4e7-408e-9b48-a9a9f354a39d",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "small-wooden-gear"
-                                       },
-                                       {
-                                           "id":  "8dde393c-77f9-4109-8f5b-7c71b5d1601d",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "steel-ingot"
-                                       },
-                                       {
-                                           "id":  "8b5d9306-b767-4af4-9be8-634f5318b142",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "world-tree-seeds"
-                                       },
-                                       {
-                                           "id":  "c2ba86ac-2862-47f4-9c62-244b4ee20ca5",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "brick"
-                                       },
-                                       {
-                                           "id":  "26cb1632-f9f0-43db-a7fc-6a82c6f42754",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "bronze-ingot"
-                                       },
-                                       {
-                                           "id":  "9898cc91-ca08-4fbf-8453-fe4b2e1ce6e7",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "bronze-rivet"
-                                       },
-                                       {
-                                           "id":  "fd445fd5-77a2-4976-b3ba-758064422812",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "chamomile-seeds"
-                                       },
-                                       {
-                                           "id":  "9593e02d-7c1d-46dd-9066-072600f1cb21",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "clay"
-                                       },
-                                       {
-                                           "id":  "900c27f8-4aef-49da-88c3-c1d2efd25f44",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "copper-bearing"
-                                       },
-                                       {
-                                           "id":  "2f1be88a-d41a-46c4-8a80-a50acd8e2ab7",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "copper-ingot"
-                                       },
-                                       {
-                                           "id":  "78e4b796-46fe-4d19-8b44-2e88b3b47b68",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "flax-seeds"
-                                       },
-                                       {
-                                           "id":  "6564f365-e3d1-4739-b0ee-c579539938f6",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "gentian-seeds"
-                                       },
-                                       {
-                                           "id":  "9365f64f-da74-498c-9503-e8da55266856",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "gloomfungus"
-                                       },
-                                       {
-                                           "id":  "609180eb-d0c4-4a4b-b10a-c89247851a83",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "glass"
-                                       },
-                                       {
-                                           "id":  "def1f0b5-8e88-452e-bfb5-ea9bb5e1114b",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "gold-ingot"
-                                       },
-                                       {
-                                           "id":  "56386778-05f7-4536-bd1a-a21555e3a316",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "iron-ingot"
-                                       },
-                                       {
-                                           "id":  "d48ada1a-8cfc-4da3-b30a-8a1a5e2e8dec",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "iron-nails"
-                                       },
-                                       {
-                                           "id":  "44721d57-e1c8-4023-99b3-182f5ecc23d5",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "large-wooden-gear"
-                                       },
-                                       {
-                                           "id":  "5ef76639-f874-40b7-80a2-939b40624216",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "lavender-seeds"
-                                       },
-                                       {
-                                           "id":  "d4967b35-5b91-4b55-b43a-e011bce6edec",
-                                           "width":  64,
-                                           "height":  64,
-                                           "x":  0,
-                                           "y":  0,
-                                           "rotation":  0,
-                                           "flipX":  false,
-                                           "flipY":  false,
-                                           "name":  "linen-rope"
-                                       }
-                                   ]
-                   }
-               ]
+  "version": 2,
+  "columns": 4,
+  "negativeSpacingEnabled": false,
+  "backgroundColor": "transparent",
+  "manualCellSizeEnabled": true,
+  "manualCellWidth": 60,
+  "manualCellHeight": 60,
+  "layers": [
+    {
+      "id": "1db48c40-fb89-48cf-8df1-469cf2ba75a2",
+      "name": "Base",
+      "visible": true,
+      "locked": false,
+      "sprites": [
+        {
+          "id": "96342b42-0e47-4ece-9e5b-021622f08170",
+          "width": 64,
+          "height": 64,
+          "name": "brick"
+        },
+        {
+          "id": "47ba10e8-76eb-4ac7-934f-d89f584bb899",
+          "width": 64,
+          "height": 64,
+          "name": "bronze-ingot"
+        },
+        {
+          "id": "c92ed9c8-d97d-4470-962c-6ecaba32853b",
+          "width": 64,
+          "height": 64,
+          "name": "bronze-rivet"
+        },
+        {
+          "id": "8a8cf51d-ddcb-4261-8853-c1d2ca5891fd",
+          "width": 64,
+          "height": 64,
+          "name": "chamomile-seeds"
+        },
+        {
+          "id": "f74d2b57-b202-493b-88b1-d29c52f3c409",
+          "width": 64,
+          "height": 64,
+          "name": "clay"
+        },
+        {
+          "id": "925cf133-201a-419a-baa5-03d645788db2",
+          "width": 64,
+          "height": 64,
+          "name": "copper-bearing"
+        },
+        {
+          "id": "d2c18da6-34b7-402c-8938-f0bec21fd6d6",
+          "width": 64,
+          "height": 64,
+          "name": "copper-ingot"
+        },
+        {
+          "id": "0a0cb2bd-2423-4596-afde-617c3de49e1c",
+          "width": 64,
+          "height": 64,
+          "name": "gentian-seeds"
+        },
+        {
+          "id": "46396547-8110-49c9-bd84-6348ca13c217",
+          "width": 64,
+          "height": 64,
+          "name": "flax-seeds"
+        },
+        {
+          "id": "2fe90c54-c33f-4f6e-be2d-fa3caf6006d8",
+          "width": 64,
+          "height": 64,
+          "name": "glass"
+        },
+        {
+          "id": "5394a12b-d2bf-4d3d-8fda-96b964033b5f",
+          "width": 64,
+          "height": 64,
+          "name": "gloomfungus"
+        },
+        {
+          "id": "290b7be1-2e11-426c-8d0b-7a7533b4159b",
+          "width": 64,
+          "height": 64,
+          "name": "gold-ingot"
+        },
+        {
+          "id": "0d8a0457-d558-439b-93b7-4a653370df58",
+          "width": 64,
+          "height": 64,
+          "name": "large-wooden-gear"
+        },
+        {
+          "id": "509cfda8-ec1b-483c-adb9-2807401ee497",
+          "width": 64,
+          "height": 64,
+          "name": "iron-ingot"
+        },
+        {
+          "id": "1bfe490b-4260-4f79-a0db-f4e9e51100cb",
+          "width": 64,
+          "height": 64,
+          "name": "iron-nails"
+        },
+        {
+          "id": "d75e712b-4343-4b7c-99bb-85fe77c44cdf",
+          "width": 64,
+          "height": 64,
+          "name": "lavender-seeds"
+        },
+        {
+          "id": "b2e2d1d5-33cb-4cb9-9f5f-611107f8feaf",
+          "width": 64,
+          "height": 64,
+          "name": "logs"
+        },
+        {
+          "id": "7cdf2e3e-7e54-4900-bf54-51b8ce97289b",
+          "width": 64,
+          "height": 64,
+          "name": "linen-rope"
+        },
+        {
+          "id": "45bdc2ad-5f40-4b32-a0e9-7eb5d4244850",
+          "width": 64,
+          "height": 64,
+          "name": "plank"
+        },
+        {
+          "id": "2702af78-c8f4-4339-9ebc-88abd9849e61",
+          "width": 64,
+          "height": 64,
+          "name": "redcurrant-seeds"
+        },
+        {
+          "id": "35ac43b1-a29b-45f2-8446-e17f32135b15",
+          "width": 64,
+          "height": 64,
+          "name": "rotten-log"
+        },
+        {
+          "id": "f74792a4-3eee-48c7-a89c-8f8bb7b229e4",
+          "width": 64,
+          "height": 64,
+          "name": "portal-sigil"
+        },
+        {
+          "id": "cb4a8555-5b64-41ad-99b4-776191d37dfd",
+          "width": 64,
+          "height": 64,
+          "name": "sage-seeds"
+        },
+        {
+          "id": "03c1fc23-5b02-4bea-b101-284f806b312a",
+          "width": 64,
+          "height": 64,
+          "name": "steel-gear"
+        },
+        {
+          "id": "d2a82b52-1839-45d9-b71c-be16e967f8e8",
+          "width": 64,
+          "height": 64,
+          "name": "silver-ingot"
+        },
+        {
+          "id": "499c2553-e285-4a30-9a2c-e6c519abe86a",
+          "width": 64,
+          "height": 64,
+          "name": "small-wooden-gear"
+        },
+        {
+          "id": "bcdda551-a420-4fde-aead-4ac1fc082ec0",
+          "width": 64,
+          "height": 64,
+          "name": "steel-ingot"
+        },
+        {
+          "id": "af2d85dd-6f34-4935-a4b9-532998d43b75",
+          "width": 64,
+          "height": 64,
+          "name": "stone"
+        },
+        {
+          "id": "6046dccf-93e0-4ba1-b283-05416bbaf37d",
+          "width": 64,
+          "height": 64,
+          "name": "world-tree-seeds"
+        }
+      ]
+    }
+  ]
 }
