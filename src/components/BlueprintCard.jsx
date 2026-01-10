@@ -48,7 +48,7 @@ export default function BlueprintCard({
           onError={() => setImageError(true)}
         />
       ) : (
-        <div style={{ backgroundImage: `linear-gradient(to bottom-right, ${theme.colors.accentLighter}, ${theme.colors.cardBg})` }} className="w-full h-48 flex items-center justify-center flex-shrink-0">
+        <div style={{ backgroundImage: `linear-gradient(to bottom-right, ${theme.colors.accentLighter}, ${theme.colors.cardBg})`, backgroundColor: theme.colors.cardBg }} className="w-full h-48 flex items-center justify-center flex-shrink-0">
           <span className="text-4xl">⚗️</span>
         </div>
       )}
