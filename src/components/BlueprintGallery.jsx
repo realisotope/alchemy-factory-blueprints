@@ -582,7 +582,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
             ← Previous
           </button>
 
-          <div className="flex gap-1 flex-wrap justify-center">
+          <div className="flex gap-1 justify-center flex-nowrap overflow-x-auto">
             {(() => {
               const maxPagesToShow = 5;
               const pages = [];
@@ -597,9 +597,6 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
               // Always show first page
               if (startPage > 1) {
                 pages.push(1);
-                if (startPage > 2) {
-                  pages.push('...');
-                }
               }
               
               // Show range around current page
@@ -609,25 +606,19 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
               
               // Always show last page
               if (endPage < totalPages) {
-                if (endPage < totalPages - 1) {
-                  pages.push('...');
-                }
                 pages.push(totalPages);
               }
               
               return pages.map((page) => (
                 <button
                   key={page}
-                  onClick={() => typeof page === 'number' && setCurrentPage(page)}
-                  disabled={page === '...'}
+                  onClick={() => setCurrentPage(page)}
                   style={{
                     backgroundColor: page === currentPage ? theme.colors.buttonBg : `${theme.colors.cardBg}33`,
                     borderColor: page === currentPage ? theme.colors.accentYellow : theme.colors.cardBorder,
                     color: page === currentPage ? theme.colors.buttonText : theme.colors.textPrimary
                   }}
-                  className={`px-3 py-2 rounded-lg font-medium transition ${
-                    page === '...' ? "border-transparent text-opacity-50 cursor-default" : "border"
-                  }`}
+                  className="px-3 py-2 rounded-lg border font-medium hover:opacity-80 transition flex-shrink-0"
                 >
                   {page}
                 </button>
