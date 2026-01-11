@@ -8,8 +8,12 @@
   },
   "rewrites": [
     {
-      "source": "/blueprint/:id",
-      "destination": "/api/og-meta?blueprintId=:id"
+      "source": "/blueprint/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
+      "destination": "/api/og-meta?blueprintId=$1"
+    },
+    {
+      "source": "/blueprint/:slug",
+      "destination": "/index.html"
     }
   ],
   "headers": [
