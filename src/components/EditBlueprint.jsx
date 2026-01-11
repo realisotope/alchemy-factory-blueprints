@@ -6,6 +6,7 @@ import { validateDescriptionUrls } from "../lib/urlProcessor";
 import { useTheme } from "../lib/ThemeContext";
 import { Upload, Loader, X } from "lucide-react";
 import { put } from "@vercel/blob";
+import { uploadToCloudinary } from "../lib/cloudinary";
 import imageCompression from "browser-image-compression";
 import JSZip from "jszip";
 import { ClientRateLimiter, checkServerRateLimit } from "../lib/rateLimiter";
@@ -344,11 +345,8 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
           };
           const compressedFile = await imageCompression(imageFile, options);
           
-          const blobResult = await put(`blueprint-images/${user.id}/${Date.now()}_${imageFile.name}`, compressedFile, {
-            access: "public",
-            token: import.meta.env.VITE_BLOB_READ_WRITE_TOKEN,
-          });
-          imageUrl = blobResult.url;
+          // Upload to Cloudinary
+          imageUrl = await uploadToCloudinary(compressedFile, user.id);
         } catch (imageError) {
           throw new Error(`Image upload failed: ${imageError.message}`);
         }
