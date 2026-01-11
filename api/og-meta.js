@@ -18,6 +18,11 @@ function escapeHtml(text) {
   return text.replace(/[&<>"']/g, char => map[char]);
 }
 
+// Helper to check if string is a UUID
+function isUUID(str) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+}
+
 export default async function handler(req, res) {
   try {
     const { blueprintId } = req.query;
@@ -32,14 +37,21 @@ export default async function handler(req, res) {
     let ogType = 'website';
     let pageTitle = 'Alchemy Factory Blueprints | Share & Download .af Layouts';
 
-    // Only fetch blueprint data if a valid ID is provided
+    // Only fetch blueprint data if a valid ID or slug is provided
     if (blueprintId) {
       try {
-        const { data: blueprint, error } = await supabase
+        // Query by UUID or slug
+        let query = supabase
           .from('blueprints')
-          .select('id, title, description, image_url, slug')
-          .eq('id', blueprintId)
-          .single();
+          .select('id, title, description, image_url, slug');
+        
+        if (isUUID(blueprintId)) {
+          query = query.eq('id', blueprintId);
+        } else {
+          query = query.eq('slug', blueprintId);
+        }
+        
+        const { data: blueprint, error } = await query.single();
 
         if (blueprint && !error) {
           ogTitle = blueprint.title;
