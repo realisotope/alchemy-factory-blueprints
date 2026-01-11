@@ -81,7 +81,7 @@ export default function BlueprintCard({
                   color: theme.colors.textPrimary,
                   borderColor: `${theme.colors.cardBorder}66`
                 }}
-                className="text-xs px-2.5 py-1 rounded-full border font-medium hover:opacity-80 transition"
+                className="text-xs px-2.5 py-1 rounded-xl border font-medium hover:opacity-80 transition"
               >
                 {tag}
               </span>

@@ -46,7 +46,6 @@ const BlueprintStats = memo(function BlueprintStats({ materials = [], buildings 
                         borderColor: theme.colors.cardBorder,
                       }}
                       className="rounded-lg border-2 shadow-lg p-2 text-center transition hover:shadow-lg"
-                      title={material.name}
                     >
                       <div className="aspect-square rounded flex items-center justify-center overflow-hidden">
                         {sprite ? (
@@ -109,7 +108,6 @@ const BlueprintStats = memo(function BlueprintStats({ materials = [], buildings 
                         borderColor: theme.colors.cardBorder,
                       }}
                       className="rounded-lg border-2 p-2 text-center transition hover:shadow-lg"
-                      title={building.name}
                     >
                       <div className="aspect-square rounded flex items-center justify-center mb-1 overflow-hidden">
                         {sprite ? (
