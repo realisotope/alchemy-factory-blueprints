@@ -5,6 +5,7 @@ import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { sanitizeCreatorName } from "../lib/sanitization";
 import { updateBlueprintMetaTags, resetMetaTags } from "../lib/metaTags";
 import { getDetailViewUrl, getLightboxUrl } from "../lib/imageOptimization";
+import { parseUrlsInText } from "../lib/urlProcessor";
 import { useTheme } from "../lib/ThemeContext";
 import EditBlueprint from "./EditBlueprint";
 import BlueprintStats from "./BlueprintStats";
@@ -94,7 +95,9 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
   };
 
   const handleShareBlueprint = () => {
-    const blueprintUrl = `${window.location.origin}/blueprint/${blueprint.id}`;
+    // Use slug if available (human-readable URL), fall back to UUID
+    const blueprintIdentifier = blueprint.slug || blueprint.id;
+    const blueprintUrl = `${window.location.origin}/blueprint/${blueprintIdentifier}`;
     navigator.clipboard.writeText(blueprintUrl).then(() => {
       setCopyFeedback(true);
       setTimeout(() => setCopyFeedback(false), 2000);
@@ -238,7 +241,27 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
             <div>
               <h3 style={{ color: theme.colors.accentYellow }} className="text-lg font-bold mb-2">Description</h3>
               <p style={{ color: theme.colors.textPrimary }} className="leading-relaxed whitespace-pre-wrap break-words">
-                {blueprint.description}
+                {parseUrlsInText(blueprint.description).map((part, idx) => {
+                  if (typeof part === 'string') {
+                    return <span key={idx}>{part}</span>;
+                  }
+                  if (part.type === 'link') {
+                    return (
+                      <a
+                        key={idx}
+                        href={part.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: theme.colors.accentGold }}
+                        className="hover:underline transition"
+                        title={part.url}
+                      >
+                        {part.text}
+                      </a>
+                    );
+                  }
+                  return null;
+                })}
               </p>
             </div>
           )}

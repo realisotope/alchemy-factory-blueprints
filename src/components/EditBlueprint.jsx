@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { validateAndSanitizeTitle, validateAndSanitizeDescription, validateAndSanitizeChangelog, sanitizeTitleForFilename } from "../lib/sanitization";
+import { validateDescriptionUrls } from "../lib/urlProcessor";
 import { useTheme } from "../lib/ThemeContext";
 import { Upload, Loader, X } from "lucide-react";
 import { put } from "@vercel/blob";
@@ -252,6 +253,11 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
         throw new Error(descriptionValidation.error);
       }
 
+      // Validate URLs in description
+      const urlValidation = validateDescriptionUrls(description);
+      if (!urlValidation.valid) {
+        throw new Error(urlValidation.error);
+      }
       const changelogValidation = validateAndSanitizeChangelog(changelog);
       if (!changelogValidation.valid) {
         throw new Error(changelogValidation.error);

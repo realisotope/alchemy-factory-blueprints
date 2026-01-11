@@ -2,6 +2,8 @@ import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { validateAndSanitizeTitle, validateAndSanitizeDescription, sanitizeTitleForFilename } from "../lib/sanitization";
+import { validateDescriptionUrls } from "../lib/urlProcessor";
+import { generateSlug } from "../lib/slugUtils";
 import { useTheme } from "../lib/ThemeContext";
 import { Upload, Loader, X } from "lucide-react";
 import { put } from "@vercel/blob";
@@ -384,6 +386,13 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       return;
     }
     
+    // Validate URLs in description
+    const urlValidation = validateDescriptionUrls(description);
+    if (!urlValidation.valid) {
+      setError(urlValidation.error);
+      return;
+    }
+    
     if (!blueprintFile) {
       setError("Blueprint file is required");
       return;
@@ -470,12 +479,15 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       }
 
       // Insert blueprint record into database using sanitized data
+      const slug = generateSlug(titleValidation.sanitized);
+      
       const { data: insertedBlueprint, error: dbError } = await supabase
         .from("blueprints")
         .insert([
           {
             title: titleValidation.sanitized,
             description: descriptionValidation.sanitized || null,
+            slug: slug,
             user_id: user.id,
             creator_name: stripDiscordDiscriminator(user.user_metadata?.name) || "Anonymous",
             file_url: fileUrl,

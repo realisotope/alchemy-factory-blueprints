@@ -37,7 +37,7 @@ export default async function handler(req, res) {
       try {
         const { data: blueprint, error } = await supabase
           .from('blueprints')
-          .select('id, title, description, image_url')
+          .select('id, title, description, image_url, slug')
           .eq('id', blueprintId)
           .single();
 
@@ -45,7 +45,9 @@ export default async function handler(req, res) {
           ogTitle = blueprint.title;
           ogDescription = blueprint.description || `Check out this Alchemy Factory blueprint: ${blueprint.title}`;
           ogImage = blueprint.image_url || `${baseUrl}/logo.jpg`;
-          ogUrl = `${baseUrl}/blueprint/${blueprint.id}`;
+          // Use slug if available (human-readable), fall back to UUID
+          const blueprintUrl = blueprint.slug ? `${baseUrl}/blueprint/${blueprint.slug}` : `${baseUrl}/blueprint/${blueprint.id}`;
+          ogUrl = blueprintUrl;
           ogType = 'article';
           pageTitle = `${blueprint.title} | Alchemy Factory Blueprints`;
         }

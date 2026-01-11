@@ -53,7 +53,8 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
   // Handle initial blueprint ID from URL - only apply once
   useEffect(() => {
     if (initialBlueprintId && blueprints.length > 0 && !initialBlueprintAppliedRef.current) {
-      const blueprint = blueprints.find((bp) => bp.id === initialBlueprintId);
+      // Try to find by ID first, then by slug
+      const blueprint = blueprints.find((bp) => bp.id === initialBlueprintId || bp.slug === initialBlueprintId);
       if (blueprint) {
         setSelectedBlueprint(blueprint);
         initialBlueprintAppliedRef.current = true;

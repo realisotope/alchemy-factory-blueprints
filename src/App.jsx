@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "./lib/supabase";
 import { isValidUUID } from "./lib/sanitization";
+import { isUUID } from "./lib/slugUtils";
 import { Upload, X, BookOpen } from "lucide-react";
 import { useTheme } from "./lib/ThemeContext";
 import DiscordLogin from "./components/DiscordLogin";
@@ -44,16 +45,15 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     const blueprintIdParam = params.get("blueprintId");
 
-    // Check for blueprint ID in path (new format: /blueprint/:id)
-    const pathMatch = window.location.pathname.match(/^\/blueprint\/([a-f0-9-]+)$/i);
-    const blueprintIdPath = pathMatch ? pathMatch[1] : null;
+    // Check for blueprint ID or slug in path
+    const pathMatch = window.location.pathname.match(/^\/blueprint\/([a-z0-9-]+)$/i);
+    const blueprintIdentifier = pathMatch ? pathMatch[1] : null;
 
-    const blueprintId = blueprintIdPath || blueprintIdParam;
+    const identifier = blueprintIdentifier || blueprintIdParam;
 
-    // Validate UUID format to prevent injection attacks
-    if (blueprintId && isValidUUID(blueprintId)) {
-      setInitialBlueprintId(blueprintId);
-      // Remove the query param from URL and update to clean path
+    // Accept both UUID format and slug format
+    if (identifier && (isValidUUID(identifier) || identifier.includes('-'))) {
+      setInitialBlueprintId(identifier);
       window.history.replaceState({}, document.title, '/');
     }
   }, []);
