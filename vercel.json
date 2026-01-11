@@ -12,7 +12,7 @@
       "destination": "/api/og-meta?blueprintId=:id"
     },
     {
-      "source": "/(.*)",
+      "source": "/(?!assets|api).*",
       "destination": "/index.html"
     }
   ],
