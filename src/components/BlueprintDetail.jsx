@@ -387,9 +387,9 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                       color: theme.colors.textPrimary,
                       borderColor: theme.colors.cardBorder,
                     }}
-                    className="px-3 py-1 rounded-full text-sm font-medium border shadow"
+                    className="px-3 py-1 rounded-lg text-sm font-medium border shadow"
                   >
-                    #{tag}
+                    {tag}
                   </span>
                 ))}
               </div>
@@ -434,8 +434,8 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
               })}
             </div>
             {blueprint.filehash && (
-              <div className="text-xs px-2 py-2 rounded -mx-2" style={{color: theme.colors.textTertiary, backgroundColor: 'rgba(0, 0, 0, 0.1)'}}>
-                <div className="opacity-75"><span className="font-mono break-all">{blueprint.filehash}</span></div>
+              <div className="text-xs px-2 py-1 rounded-md -mx-2" style={{color: theme.colors.textTertiary, backgroundColor: 'rgba(0, 0, 0, 0.1)'}}>
+                <div className="opacity-75" style={{ fontStyle: 'italic' }}>Blueprint File Hash: <span className="font-mono break-all pl-1">{blueprint.filehash}</span></div>
               </div>
             )}
           </div>
@@ -456,7 +456,6 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
               }}
               className="absolute animate-bounce hover:opacity-80 transition cursor-pointer"
               style={{ left: 'calc(50% - 18px)', top: '-22px', transform: 'translateX(-50%)' }}
-              title="Scroll down"
             >
               <div style={{
                 borderColor: theme.colors.cardBorder,
@@ -493,7 +492,6 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                 ? "bg-[#121212]/30"
                 : "bg-[#121212]/50 hover:bg-[#121212]/70 hover:text-blue-500"
             }`}
-            title="Copy blueprint link to clipboard"
           >
             {copyFeedback ? (
               <>
@@ -511,7 +509,6 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
             <button
               onClick={() => setIsEditOpen(true)}
               className="px-2 sm:px-4 py-2 sm:py-3 rounded-lg font-semibold transition flex items-center justify-center gap-1 sm:gap-2 bg-[#121212]/50 hover:bg-[#121212]/70 hover:text-red-500 hover:text-red-500 text-sm sm:text-base"
-              title="Edit this blueprint"
             >
               <Edit2 className="w-4 h-4 sm:w-5 sm:h-5" />
               <span className="hidden sm:inline">Edit</span>
