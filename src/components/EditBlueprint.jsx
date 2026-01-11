@@ -5,8 +5,8 @@ import { validateAndSanitizeTitle, validateAndSanitizeDescription, validateAndSa
 import { validateDescriptionUrls } from "../lib/urlProcessor";
 import { useTheme } from "../lib/ThemeContext";
 import { Upload, Loader, X } from "lucide-react";
-import { put } from "@vercel/blob";
 import { uploadToCloudinary } from "../lib/cloudinary";
+import { deleteCloudinaryImage } from "../lib/cloudinaryDelete";
 import imageCompression from "browser-image-compression";
 import JSZip from "jszip";
 import { ClientRateLimiter, checkServerRateLimit } from "../lib/rateLimiter";
@@ -322,17 +322,9 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
 
       // Upload new image if provided
       if (imageFile) {
-        // Delete old image if it exists BEFORE uploading new one
+        // Delete old Cloudinary image if it exists BEFORE uploading new one
         if (blueprint.image_url) {
-          try {
-            await fetch("/api/delete-blob", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ url: blueprint.image_url }),
-            });
-          } catch (delError) {
-            console.warn("Could not delete old image from blob storage:", delError);
-          }
+          await deleteCloudinaryImage(blueprint.image_url);
         }
 
         // Upload new image

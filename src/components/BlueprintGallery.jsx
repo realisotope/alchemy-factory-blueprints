@@ -7,6 +7,7 @@ import { sanitizeCreatorName } from "../lib/sanitization";
 import { getThumbnailUrl } from "../lib/imageOptimization";
 import { transformParsedMaterials, transformParsedBuildings } from "../lib/blueprintMappings";
 import { useTheme } from "../lib/ThemeContext";
+import { deleteCloudinaryImage } from "../lib/cloudinaryDelete";
 import BlueprintDetail from "./BlueprintDetail";
 import BlueprintCard from "./BlueprintCard";
 
@@ -314,14 +315,15 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
 
     setDeleting(blueprint.id);
     try {
+      // Delete Cloudinary image if it exists
+      if (blueprint.image_url) {
+        await deleteCloudinaryImage(blueprint.image_url);
+      }
+
       // Delete from storage
       if (blueprint.file_url) {
         const filePath = blueprint.file_url.split("/").pop();
         await supabase.storage.from("blueprints").remove([filePath]);
-      }
-      if (blueprint.image_url) {
-        const imagePath = blueprint.image_url.split("/").pop();
-        await supabase.storage.from("blueprint-images").remove([imagePath]);
       }
 
       // Delete from database - RLS policy will verify user_id
@@ -329,7 +331,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         .from("blueprints")
         .delete()
         .eq("id", blueprint.id)
-        .eq("user_id", user.id); // Double-check: Only delete if user_id matches
+        .eq("user_id", user.id);
 
       if (error) throw error;
 
