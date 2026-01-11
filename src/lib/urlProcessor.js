@@ -104,8 +104,8 @@ export function parseUrlsInText(text) {
 }
 
 function shortenUrl(url) {
-  if (url.length <= 50) return url;
-  return url.substring(0, 47) + '...';
+  if (url.length <= 60) return url;
+  return url.substring(0, 57) + '...';
 }
 
 export function addAllowedDomains(domains) {
