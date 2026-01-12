@@ -10,6 +10,7 @@ import { deleteCloudinaryImage } from "../lib/cloudinaryDelete";
 import imageCompression from "browser-image-compression";
 import JSZip from "jszip";
 import { ClientRateLimiter, checkServerRateLimit } from "../lib/rateLimiter";
+import { sendBlueprintToParser } from "../lib/blueprintParser";
 
 // Constants for validation
 const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB
@@ -384,6 +385,41 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
         .eq("id", blueprint.id);
 
       if (dbError) throw dbError;
+
+      // If a new blueprint file was uploaded, send it to the parser to update materials/buildings
+      if (blueprintFile) {
+        try {
+          console.log("Sending updated blueprint to parser...");
+          const parserResponse = await sendBlueprintToParser(blueprintFile, blueprint.id);
+
+          if (parserResponse.duplicate && parserResponse.parsed) {
+            // If already parsed, update the blueprint immediately with parsed data
+            console.log("Blueprint already parsed, updating database...");
+            await supabase
+              .from("blueprints")
+              .update({
+                parsed: parserResponse.parsed,
+                filehash: parserResponse.fileHash,
+                materials: parserResponse.parsed.Materials || {},
+                buildings: parserResponse.parsed.Buildings || {},
+                skills: parserResponse.parsed.SupplyItems || {},
+              })
+              .eq("id", blueprint.id);
+
+            console.log("Blueprint updated with new parsed data");
+          } else if (parserResponse.queued) {
+            // Store the fileHash for webhook callback
+            console.log("Blueprint queued for parsing, fileHash:", parserResponse.fileHash);
+            await supabase
+              .from("blueprints")
+              .update({ filehash: parserResponse.fileHash })
+              .eq("id", blueprint.id);
+          }
+        } catch (parserError) {
+          // Parser error is non-blocking - blueprint edit is already complete
+          console.error("Parser API error (non-blocking):", parserError);
+        }
+      }
 
       // Record the edit attempt in client-side rate limiter
       const clientLimiter = new ClientRateLimiter(user.id, 'edits');
