@@ -150,7 +150,7 @@ const BlueprintStats = memo(function BlueprintStats({
       {/* Content */}
       {isExpanded && (
         <div style={{ backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)` }} className="p-3">
-          <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-7 gap-2">
+          <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-7 gap-1.5">
             {activeTab === "materials" ? (
               materials.map((material) => {
                 const sprite = getMaterialSprite(material.id);
@@ -161,9 +161,9 @@ const BlueprintStats = memo(function BlueprintStats({
                       backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`,
                       borderColor: theme.colors.cardBorder,
                     }}
-                    className="rounded-lg border-2 shadow-lg p-2 text-center transition hover:shadow-lg"
+                    className="rounded-lg border-2 shadow-lg p-1 text-center transition hover:shadow-lg flex flex-col items-center justify-center"
                   >
-                    <div className="aspect-square rounded flex items-center justify-center overflow-hidden">
+                    <div className="rounded flex items-center justify-center overflow-hidden w-16 h-16 mx-auto">
                       {sprite ? (
                         <Sprite sprite={sprite} alt={material.name} className="w-full h-full" />
                       ) : material.icon ? (
@@ -178,10 +178,10 @@ const BlueprintStats = memo(function BlueprintStats({
                         <span style={{ color: theme.colors.textSecondary }} className="text-xs">No icon</span>
                       )}
                     </div>
-                    <div className="text-sm font-bold" style={{ color: theme.colors.accentYellow }}>
+                    <div className="font-bold -mt-0.5" style={{ color: theme.colors.accentYellow }}>
                       {material.quantity}
                     </div>
-                    <div style={{ color: theme.colors.textSecondary }} className="text-xs truncate">
+                    <div style={{ color: theme.colors.textSecondary }} className="text-xs truncate leading-none w-full px-0.5 -mt-0.5">
                       {material.name}
                     </div>
                   </div>
@@ -197,9 +197,9 @@ const BlueprintStats = memo(function BlueprintStats({
                       backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`,
                       borderColor: theme.colors.cardBorder,
                     }}
-                    className="rounded-lg border-2 p-2 text-center transition hover:shadow-lg"
+                    className="rounded-lg border-2 p-1 text-center transition hover:shadow-lg flex flex-col items-center justify-center"
                   >
-                    <div className="aspect-square rounded flex items-center justify-center mb-1 overflow-hidden">
+                    <div className="rounded flex items-center justify-center overflow-hidden w-16 h-16 mx-auto">
                       {sprite ? (
                         <Sprite sprite={sprite} alt={building.name} className="w-full h-full" />
                       ) : building.icon ? (
@@ -214,10 +214,10 @@ const BlueprintStats = memo(function BlueprintStats({
                         <span style={{ color: theme.colors.textSecondary }} className="text-xs">No icon</span>
                       )}
                     </div>
-                    <div style={{ color: theme.colors.accentYellow }} className="text-sm font-bold">
+                    <div style={{ color: theme.colors.accentYellow }} className="font-bold -mt-0.5">
                       {building.quantity}
                     </div>
-                    <div style={{ color: theme.colors.textSecondary }} className="text-xs truncate">
+                    <div style={{ color: theme.colors.textSecondary }} className="text-xs truncate leading-none w-full px-0.5 -mt-0.5">
                       {building.name}
                     </div>
                   </div>

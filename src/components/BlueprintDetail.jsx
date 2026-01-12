@@ -199,11 +199,11 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
               backgroundImage: `linear-gradient(to bottom, ${theme.colors.elementBg}, ${theme.colors.elementBgCard})`,
               borderColor: theme.colors.elementBorder,
             }}
-            className="border-2 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto relative"
+            className="border-2 rounded-lg max-w-[50rem] w-full max-h-[90vh] overflow-y-auto relative"
             key={blueprint?.id}
-            initial={{ opacity: 0, x: navigationDirection * 100 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: navigationDirection * -100 }}
+            initial={navigationDirection === 0 ? { opacity: 0, y: 100 } : { opacity: 0, x: navigationDirection * 100 }}
+            animate={{ opacity: 1, x: 0, y: 0 }}
+            exit={navigationDirection === 0 ? { opacity: 0, y: 100 } : { opacity: 0, x: navigationDirection * -100 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -316,13 +316,13 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           )}
 
           {/* Stats and Creator Row */}
-          <div className="flex flex-wrap lg:flex-nowrap items-center overflow-x-auto w-full justify-between">
+          <div className="flex flex-nowrap gap-2 items-center w-full overflow-hidden">
             {/* Downloads */}
             <div style={{
               backgroundColor: theme.colors.cardBg,
               borderColor: theme.colors.cardBorder,
               backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)`,
-            }} className="px-3 py-2 rounded-lg border-2 flex items-center gap-1.5 transition cursor-pointer"
+            }} className="px-3.5 py-2 rounded-md border-2 flex items-center gap-1.5 transition flex-shrink-0"
             onMouseEnter={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`}
             onMouseLeave={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)`}>
               <Download className="w-4 h-4" style={{ color: theme.colors.accentYellow }} />
@@ -335,7 +335,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
               backgroundColor: theme.colors.cardBg,
               borderColor: theme.colors.cardBorder,
               backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)`,
-            }} className="px-3 py-2 rounded-lg border-2 flex items-center gap-1.5 transition cursor-pointer"
+            }} className="px-3.5 py-2 rounded-md border-2 flex items-center gap-1.5 transition flex-shrink-0"
             onMouseEnter={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`}
             onMouseLeave={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)`}>
               <Heart className="w-4 h-4" style={{ color: '#f87171' }} />
@@ -348,7 +348,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
               backgroundColor: theme.colors.cardBg,
               borderColor: theme.colors.cardBorder,
               backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)`,
-            }} className="px-3 py-2 rounded-lg border-2 flex items-center gap-1.5 transition cursor-pointer"
+            }} className="px-3.5 py-2 rounded-md border-2 flex items-center gap-1.5 transition flex-shrink-0"
             onMouseEnter={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`}
             onMouseLeave={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)`}>
               <Calendar className="w-4 h-4" style={{ color: '#60a5fa' }} />
@@ -366,7 +366,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
               backgroundColor: theme.colors.cardBg,
               borderColor: theme.colors.cardBorder,
               backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)`,
-            }} className="px-3 py-2 rounded-lg border-2 flex items-center gap-1.5 transition cursor-pointer"
+            }} className="px-3.5 py-2 rounded-md border-2 flex items-center gap-1.5 transition flex-shrink-0"
             onMouseEnter={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`}
             onMouseLeave={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)`}>
               <Calendar className="w-4 h-4" style={{ color: '#34d399' }} />
@@ -384,15 +384,16 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
               backgroundColor: theme.colors.cardBg,
               borderColor: theme.colors.cardBorder,
               backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)`,
-            }} className="px-2 py-2 rounded-lg border-2 flex items-center gap-1.5 min-w-0 transition cursor-pointer"
+            }} className="px-3.5 py-2 rounded-md border-2 flex items-center gap-1.5 min-w-0 transition flex-shrink"
             onMouseEnter={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`}
             onMouseLeave={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)`}>
               <User className="w-4 h-4 flex-shrink-0" style={{ color: theme.colors.accentYellow }} />
-              <span style={{ color: theme.colors.textSecondary }} className="text-xs hidden sm:inline flex-shrink-0">Created by</span>
+              <span style={{ color: theme.colors.textSecondary }} className="text-xs hidden md:inline flex-shrink-0">Created by</span>
               <button
                 onClick={handleCreatorClick}
                 style={{ color: theme.colors.accentYellow }}
-                className="font-semibold hover:underline transition cursor-pointer text-sm truncate"
+                className="font-semibold hover:underline transition cursor-pointer text-sm truncate max-w-[100px]"
+                title={sanitizeCreatorName(stripDiscordDiscriminator(blueprint.creator_name))}
               >
                 {sanitizeCreatorName(stripDiscordDiscriminator(blueprint.creator_name))}
               </button>
@@ -544,7 +545,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
               })}
             </div>
             {blueprint.filehash && (
-              <div className="text-xs px-2 py-1 rounded-md -mx-2" style={{color: theme.colors.textTertiary, backgroundColor: 'rgba(0, 0, 0, 0.1)'}}>
+              <div className="text-xs px-2 py-1 rounded-md -mx-1" style={{color: theme.colors.textTertiary, backgroundColor: 'rgba(0, 0, 0, 0.1)'}}>
                 <div className="opacity-75" style={{ fontStyle: 'italic' }}>Blueprint File Hash: <span className="font-mono break-all pl-1">{blueprint.filehash}</span></div>
               </div>
             )}

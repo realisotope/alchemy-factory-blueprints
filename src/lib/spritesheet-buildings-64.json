@@ -4,8 +4,8 @@
   "negativeSpacingEnabled": false,
   "backgroundColor": "transparent",
   "manualCellSizeEnabled": true,
-  "manualCellWidth": 60,
-  "manualCellHeight": 60,
+  "manualCellWidth": 64,
+  "manualCellHeight": 64,
   "layers": [
     {
       "id": "3d2246df-b511-464f-a1bb-7707f832905a",
