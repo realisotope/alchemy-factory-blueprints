@@ -1,32 +1,31 @@
 /**
- * Sanitize user input to prevent XSS attacks
- * @param {string} input - The input string to sanitize
- * @returns {string} - Sanitized string with HTML entities escaped
+ * Escape HTML entities to prevent XSS attacks
+ * Pure text escaping approach - no HTML allowed, all special chars are escaped
+ * Works both client-side and server-side (no DOM dependencies)
+ * 
+ * @param {string} input - The input string to escape
+ * @returns {string} - HTML-safe string with all special characters escaped
  */
-export function sanitizeInput(input) {
-  if (!input) return input;
+export function escapeHtml(input) {
+  if (!input || typeof input !== 'string') return input;
   
-  const div = document.createElement('div');
-  div.textContent = input;
-  return div.innerHTML;
+  return input
+    .replace(/&/g, '&amp;') // fir
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
 }
 
-/**
- * Validate UUID format
- * @param {string} uuid
- * @returns {boolean} - True if valid UUID format
- */
+// Validate UUID format
 export function isValidUUID(uuid) {
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   return uuidRegex.test(uuid);
 }
 
-/**
- * Validate and sanitize title input
- * @param {string} title
- * @param {number} maxLength
- * @returns {object} - { valid: boolean, error?: string, sanitized?: string }
- */
+// Validate and sanitize title input
+// Returns RAW text for database storage - escape only when displaying to user
 export function validateAndSanitizeTitle(title, maxLength = 60) {
   if (!title || typeof title !== 'string') {
     return { valid: false, error: 'Title is required' };
@@ -42,20 +41,12 @@ export function validateAndSanitizeTitle(title, maxLength = 60) {
     return { valid: false, error: `Title must be under ${maxLength} characters` };
   }
   
-  // Looking for script tags, event handlers, and dangerous protocols
-  if (/<\s*script|javascript:|on\w+\s*=|<\s*iframe|<\s*object|<\s*embed|<\s*form|<\s*img\s+src|data:text\/html/i.test(trimmed)) {
-    return { valid: false, error: 'Title contains forbidden content' };
-  }
-  
-  return { valid: true, sanitized: sanitizeInput(trimmed) };
+  // Return raw text for database storage
+  // The text will be escaped with escapeHtml() only when displaying
+  return { valid: true, sanitized: trimmed };
 }
 
-/**
- * Validate and sanitize description input
- * @param {string} description
- * @param {number} maxLength
- * @returns {object} - { valid: boolean, error?: string, sanitized?: string }
- */
+// Validate and sanitize description input
 export function validateAndSanitizeDescription(description, maxLength = 1400) {
   if (!description) {
     return { valid: true, sanitized: '' };
@@ -71,30 +62,17 @@ export function validateAndSanitizeDescription(description, maxLength = 1400) {
     return { valid: false, error: `Description must be under ${maxLength} characters` };
   }
   
-  // Looking for script tags, event handlers, and dangerous protocols
-  if (/<\s*script|javascript:|on\w+\s*=|<\s*iframe|<\s*object|<\s*embed|<\s*form|<\s*img\s+src|data:text\/html/i.test(trimmed)) {
-    return { valid: false, error: 'Description contains forbidden content' };
-  }
-  
-  return { valid: true, sanitized: sanitizeInput(trimmed) };
+  return { valid: true, sanitized: trimmed };
 }
 
-/**
- * Sanitize creator name to prevent injection attacks
- * @param {string} creatorName
- * @returns {string} - Sanitized creator name
- */
+// Sanitize creator name
 export function sanitizeCreatorName(creatorName) {
   if (!creatorName || typeof creatorName !== 'string') return '';
-  return sanitizeInput(creatorName.trim());
+  
+  return creatorName.trim();
 }
 
-/**
- * Validate and sanitize changelog input
- * @param {string} changelog
- * @param {number} maxLength
- * @returns {object} - { valid: boolean, error?: string, sanitized?: string }
- */
+// Validate and sanitize changelog input [! NO LONGER NEEDED !]
 export function validateAndSanitizeChangelog(changelog, maxLength = 200) {
   if (!changelog) {
     return { valid: true, sanitized: null };
@@ -113,24 +91,26 @@ export function validateAndSanitizeChangelog(changelog, maxLength = 200) {
   if (trimmed.length > maxLength) {
     return { valid: false, error: `Changelog must be under ${maxLength} characters` };
   }
-  
-  // Looking for script tags, event handlers, and dangerous protocols
-  if (/<\s*script|javascript:|on\w+\s*=|<\s*iframe|<\s*object|<\s*embed|<\s*form|<\s*img\s+src|data:text\/html/i.test(trimmed)) {
-    return { valid: false, error: 'Changelog contains forbidden content' };
-  }
-  
-  return { valid: true, sanitized: sanitizeInput(trimmed) };
+
+  return { valid: true, sanitized: trimmed };
 }
 
 /**
  * Sanitize title for use as a filename
+ * Allows letters, numbers, hyphens, and underscores for readability
+ * Converts spaces to dashes
  * @param {string} title
- * @returns {string} - Safe filename string
+ * @returns {string} - Safe, readable filename string
  */
 export function sanitizeTitleForFilename(title) {
   if (!title || typeof title !== 'string') return 'blueprint';
   
-  const sanitized = title.replace(/[^a-zA-Z0-9]/g, '');
+  const sanitized = title
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-zA-Z0-9\-_]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
   
   return sanitized || 'blueprint';
 }
