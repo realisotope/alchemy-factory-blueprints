@@ -114,11 +114,15 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
   const [tagInput, setTagInput] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [blueprintFile, setBlueprintFile] = useState(null);
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(blueprint?.image_url || null);
+  const [imageFiles, setImageFiles] = useState([null, null, null]);
+  const [imagePreviews, setImagePreviews] = useState([
+    blueprint?.image_url || null,
+    blueprint?.image_url_2 || null,
+    blueprint?.image_url_3 || null
+  ]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [imageDragActive, setImageDragActive] = useState(false);
+  const [imageDragActive, setImageDragActive] = useState([false, false, false]);
   const [rateLimitInfo, setRateLimitInfo] = useState(null);
   const fileInputRef = useRef(null);
   const imageInputRef = useRef(null);
@@ -157,49 +161,59 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
     }
   };
 
-  const handleImageSelect = async (e) => {
+  const handleImageSelect = async (e, index) => {
     const file = e.target.files?.[0];
     if (file) {
       const validation = await validateImageFile(file);
       if (!validation.valid) {
         setError(validation.error);
-        setImageFile(null);
-        setImagePreview(blueprint?.image_url);
       } else {
-        setImageFile(file);
-        setImagePreview(URL.createObjectURL(file));
+        const newFiles = [...imageFiles];
+        const newPreviews = [...imagePreviews];
+        newFiles[index] = file;
+        newPreviews[index] = URL.createObjectURL(file);
+        setImageFiles(newFiles);
+        setImagePreviews(newPreviews);
         setError(null);
       }
     }
   };
 
-  const handleImageDragEnter = (e) => {
+  const handleImageDragEnter = (e, index) => {
     e.preventDefault();
     e.stopPropagation();
-    setImageDragActive(true);
+    const newDragStates = [...imageDragActive];
+    newDragStates[index] = true;
+    setImageDragActive(newDragStates);
   };
 
-  const handleImageDragLeave = (e) => {
+  const handleImageDragLeave = (e, index) => {
     e.preventDefault();
     e.stopPropagation();
-    setImageDragActive(false);
+    const newDragStates = [...imageDragActive];
+    newDragStates[index] = false;
+    setImageDragActive(newDragStates);
   };
 
-  const handleImageDrop = async (e) => {
+  const handleImageDrop = async (e, index) => {
     e.preventDefault();
     e.stopPropagation();
-    setImageDragActive(false);
+    const newDragStates = [...imageDragActive];
+    newDragStates[index] = false;
+    setImageDragActive(newDragStates);
 
     const file = e.dataTransfer.files?.[0];
     if (file) {
       const validation = await validateImageFile(file);
       if (!validation.valid) {
         setError(validation.error);
-        setImageFile(null);
-        setImagePreview(blueprint?.image_url);
       } else {
-        setImageFile(file);
-        setImagePreview(URL.createObjectURL(file));
+        const newFiles = [...imageFiles];
+        const newPreviews = [...imagePreviews];
+        newFiles[index] = file;
+        newPreviews[index] = URL.createObjectURL(file);
+        setImageFiles(newFiles);
+        setImagePreviews(newPreviews);
         setError(null);
       }
     }
@@ -319,28 +333,37 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
       }
 
       let imageUrl = blueprint.image_url;
+      let imageUrl2 = blueprint.image_url_2;
+      let imageUrl3 = blueprint.image_url_3;
 
-      // Upload new image if provided
-      if (imageFile) {
-        // Delete old Cloudinary image if it exists BEFORE uploading new one
-        if (blueprint.image_url) {
-          await deleteCloudinaryImage(blueprint.image_url);
-        }
+      // Upload new images if provided (up to 3)
+      for (let i = 0; i < 3; i++) {
+        const imageFile = imageFiles[i];
+        const existingUrl = [blueprint.image_url, blueprint.image_url_2, blueprint.image_url_3][i];
+        
+        if (imageFile) {
+          // Delete old image if replacing
+          if (existingUrl) {
+            await deleteCloudinaryImage(existingUrl);
+          }
 
-        // Upload new image
-        try {
-          const options = {
-            maxSizeMB: 0.3,
-            maxWidthOrHeight: 2000,
-            useWebWorker: true,
-            quality: 0.75,
-          };
-          const compressedFile = await imageCompression(imageFile, options);
-          
-          // Upload to Cloudinary
-          imageUrl = await uploadToCloudinary(compressedFile, user.id);
-        } catch (imageError) {
-          throw new Error(`Image upload failed: ${imageError.message}`);
+          // Upload new image
+          try {
+            const options = {
+              maxSizeMB: 0.3,
+              maxWidthOrHeight: 2000,
+              useWebWorker: true,
+              quality: 0.75,
+            };
+            const compressedFile = await imageCompression(imageFile, options);
+            const uploadedUrl = await uploadToCloudinary(compressedFile, user.id);
+            
+            if (i === 0) imageUrl = uploadedUrl;
+            else if (i === 1) imageUrl2 = uploadedUrl;
+            else if (i === 2) imageUrl3 = uploadedUrl;
+          } catch (imageError) {
+            throw new Error(`Image ${i + 1} upload failed: ${imageError.message}`);
+          }
         }
       }
 
@@ -352,6 +375,8 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
           description: descriptionValidation.sanitized || null,
           file_url: fileUrl,
           image_url: imageUrl,
+          image_url_2: imageUrl2,
+          image_url_3: imageUrl3,
           tags: tags.length > 0 ? tags : null,
           changelog: changelogValidation.sanitized,
           updated_at: new Date().toISOString(),
@@ -478,50 +503,76 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
             />
           </div>
 
-          {/* Image */}
+          {/* Images - 3 slots */}
           <div>
-            <label className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
-              Preview Image (optional)
+            <label className="block text-sm font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
+              Preview Images (PNG/JPG) - Up to 3
             </label>
-            <div
-              onDragEnter={handleImageDragEnter}
-              onDragLeave={handleImageDragLeave}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={handleImageDrop}
-              className={`border-2 border-dashed rounded-lg p-6 text-center transition cursor-pointer hover:opacity-60 ${isLoading ? "opacity-50" : ""}`}
-              style={{
-                borderColor: imageDragActive ? theme.colors.cardBorder : `${theme.colors.accentYellow}`,
-                backgroundColor: imageDragActive ? `${theme.colors.cardBorder}20` : `${theme.colors.cardBorder}20`
-              }}
-              onClick={() => imageInputRef.current?.click()}
-            >
-              {imagePreview && !imageFile ? (
-                <>
-                  <img
-                    src={imagePreview}
-                    alt="Current preview"
-                    className="w-24 h-24 object-cover rounded-lg mx-auto mb-2"
-                  />
-                  <p className="text-sm" style={{ color: theme.colors.textPrimary }}>Click to change image</p>
-                </>
-              ) : (
-                <>
-                  <Upload className="w-8 h-8 mx-auto mb-2" style={{ color: theme.colors.textPrimary }} />
-                  <p className="font-medium" style={{ color: theme.colors.textPrimary }}>
-                    {imageFile ? `✓ ${imageFile.name}` : "Drag image here or click to select"}
-                  </p>
-                  <p className="text-xs" style={{ color: theme.colors.textSecondary }}>PNG, JPEG, or WebP • Max 5MB</p>
-                </>
-              )}
+            <div className="grid grid-cols-3 gap-3">
+              {[0, 1, 2].map((index) => (
+                <div key={index} className="space-y-2">
+                  {imagePreviews[index] && (
+                    <div className="relative">
+                      <img
+                        src={imagePreviews[index]}
+                        alt={`Preview ${index + 1}`}
+                        style={{ borderColor: theme.colors.cardBorder }}
+                        className="w-full h-32 object-cover rounded-lg border"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newFiles = [...imageFiles];
+                          const newPreviews = [...imagePreviews];
+                          newFiles[index] = null;
+                          newPreviews[index] = null;
+                          setImageFiles(newFiles);
+                          setImagePreviews(newPreviews);
+                        }}
+                        className="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full p-1"
+                        disabled={isLoading}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                  <div
+                    className="relative"
+                    onDragEnter={(e) => handleImageDragEnter(e, index)}
+                    onDragLeave={(e) => handleImageDragLeave(e, index)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => handleImageDrop(e, index)}
+                  >
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageSelect(e, index)}
+                      className="hidden"
+                      id={`image-input-${index}`}
+                      disabled={isLoading}
+                    />
+                    <label
+                      htmlFor={`image-input-${index}`}
+                      style={{
+                        borderColor: imageDragActive[index] ? theme.colors.cardBorder : `${theme.colors.accentYellow}`,
+                        backgroundColor: imageDragActive[index] ? `${theme.colors.cardBorder}20` : `${theme.colors.cardBorder}20`,
+                        color: theme.colors.textPrimary
+                      }}
+                      className="flex flex-col items-center justify-center w-full px-2 py-4 border-2 border-dashed rounded-lg cursor-pointer transition hover:opacity-60 text-xs text-center"
+                    >
+                      <Upload className="w-4 h-4 mb-1" style={{ color: theme.colors.accentYellow }} />
+                      <span>
+                        {imageFiles[index]
+                          ? imageFiles[index].name.substring(0, 15) + '...'
+                          : imageDragActive[index]
+                          ? "Drop here"
+                          : `Image ${index + 1}`}
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              ))}
             </div>
-            <input
-              ref={imageInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageSelect}
-              className="hidden"
-              disabled={isLoading}
-            />
           </div>
 
           {/* Tags */}

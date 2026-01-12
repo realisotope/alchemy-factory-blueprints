@@ -30,7 +30,6 @@ export async function deleteCloudinaryImage(imageUrl) {
     console.log('Cloudinary image deleted:', imageUrl);
     return true;
   } catch (error) {
-    console.error('Error calling delete API:', error);
     return false;
   }
 }

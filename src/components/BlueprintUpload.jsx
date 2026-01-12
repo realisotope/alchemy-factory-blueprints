@@ -207,29 +207,37 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [blueprintFile, setBlueprintFile] = useState(null);
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [imageFiles, setImageFiles] = useState([null, null, null]); // Support 3 images
+  const [imagePreviews, setImagePreviews] = useState([null, null, null]);
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [blueprintDragActive, setBlueprintDragActive] = useState(false);
-  const [imageDragActive, setImageDragActive] = useState(false);
+  const [imageDragActive, setImageDragActive] = useState([false, false, false]);
   const [rateLimitInfo, setRateLimitInfo] = useState(null);
 
-  const handleImageSelect = (e) => {
+  const handleImageSelect = (e, index) => {
     const file = e.target.files?.[0];
     if (file) {
       // Validate image before processing
       validateImageFile(file).then((validation) => {
         if (!validation.valid) {
           setError(validation.error);
-          setImageFile(null);
-          setImagePreview(null);
+          const newFiles = [...imageFiles];
+          const newPreviews = [...imagePreviews];
+          newFiles[index] = null;
+          newPreviews[index] = null;
+          setImageFiles(newFiles);
+          setImagePreviews(newPreviews);
         } else {
-          setImageFile(file);
-          setImagePreview(URL.createObjectURL(file));
+          const newFiles = [...imageFiles];
+          const newPreviews = [...imagePreviews];
+          newFiles[index] = file;
+          newPreviews[index] = URL.createObjectURL(file);
+          setImageFiles(newFiles);
+          setImagePreviews(newPreviews);
           setError(null);
         }
       });
@@ -280,20 +288,26 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
     }
   };
 
-  const handleImageDrag = (e) => {
+  const handleImageDrag = (e, index) => {
     e.preventDefault();
     e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") {
-      setImageDragActive(true);
+      const newDragStates = [...imageDragActive];
+      newDragStates[index] = true;
+      setImageDragActive(newDragStates);
     } else if (e.type === "dragleave") {
-      setImageDragActive(false);
+      const newDragStates = [...imageDragActive];
+      newDragStates[index] = false;
+      setImageDragActive(newDragStates);
     }
   };
 
-  const handleImageDrop = async (e) => {
+  const handleImageDrop = async (e, index) => {
     e.preventDefault();
     e.stopPropagation();
-    setImageDragActive(false);
+    const newDragStates = [...imageDragActive];
+    newDragStates[index] = false;
+    setImageDragActive(newDragStates);
 
     const file = e.dataTransfer.files?.[0];
     if (file) {
@@ -301,11 +315,19 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       const validation = await validateImageFile(file);
       if (!validation.valid) {
         setError(validation.error);
-        setImageFile(null);
-        setImagePreview(null);
+        const newFiles = [...imageFiles];
+        const newPreviews = [...imagePreviews];
+        newFiles[index] = null;
+        newPreviews[index] = null;
+        setImageFiles(newFiles);
+        setImagePreviews(newPreviews);
       } else {
-        setImageFile(file);
-        setImagePreview(URL.createObjectURL(file));
+        const newFiles = [...imageFiles];
+        const newPreviews = [...imagePreviews];
+        newFiles[index] = file;
+        newPreviews[index] = URL.createObjectURL(file);
+        setImageFiles(newFiles);
+        setImagePreviews(newPreviews);
         setError(null);
       }
     }
@@ -456,9 +478,13 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       }
 
       let imageUrl = null;
+      let imageUrl2 = null;
+      let imageUrl3 = null;
 
-      // Upload image if provided (using Vercel Blob for automatic optimization)
-      if (imageFile) {
+      // Upload images if provided (up to 3)
+      const imageUploadPromises = imageFiles.map(async (imageFile, index) => {
+        if (!imageFile) return null;
+        
         try {
           // Compress image
           const options = {
@@ -470,11 +496,16 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
           const compressedFile = await imageCompression(imageFile, options);
           
           // Upload to Cloudinary
-          imageUrl = await uploadToCloudinary(compressedFile, user.id);
+          return await uploadToCloudinary(compressedFile, user.id);
         } catch (imageError) {
-          throw new Error(`Image upload failed: ${imageError.message}`);
+          throw new Error(`Image ${index + 1} upload failed: ${imageError.message}`);
         }
-      }
+      });
+
+      const uploadedUrls = await Promise.all(imageUploadPromises);
+      imageUrl = uploadedUrls[0];
+      imageUrl2 = uploadedUrls[1];
+      imageUrl3 = uploadedUrls[2];
 
       // Insert blueprint record into database using sanitized data
       const slug = generateSlug(titleValidation.sanitized);
@@ -490,6 +521,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
             creator_name: stripDiscordDiscriminator(user.user_metadata?.name) || "Anonymous",
             file_url: fileUrl,
             image_url: imageUrl,
+            image_url_2: imageUrl2,
+            image_url_3: imageUrl3,
             tags: tags.length > 0 ? tags : null,
             downloads: 0,
             likes: 0,
@@ -542,8 +575,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       setTitle("");
       setDescription("");
       setBlueprintFile(null);
-      setImageFile(null);
-      setImagePreview(null);
+      setImageFiles([null, null, null]);
+      setImagePreviews([null, null, null]);
       setTags([]);
       setTagInput("");
       setRateLimitInfo(null);
@@ -705,53 +738,73 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
           </div>
         </div>
 
-        {/* Image Upload */}
+        {/* Image Upload - 3 slots */}
         <div>
-          <label style={{ color: theme.colors.textPrimary }} className="block text-s font-medium mb-2">
-            Preview Image (PNG/JPG)
+          <label style={{ color: theme.colors.textPrimary }} className="block text-sm font-medium mb-2">
+            Preview Images (PNG/JPG) - Up to 3
           </label>
-          <div className="space-y-3">
-            {imagePreview && (
-              <img
-                src={imagePreview}
-                alt="Preview"
-                style={{ borderColor: theme.colors.cardBorder }}
-                className="w-full h-48 object-cover rounded-lg border"
-              />
-            )}
-            <div
-              className="relative"
-              onDragEnter={handleImageDrag}
-              onDragLeave={handleImageDrag}
-              onDragOver={handleImageDrag}
-              onDrop={handleImageDrop}
-            >
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageSelect}
-                className="hidden"
-                id="image-input"
-              />
-              <label
-                htmlFor="image-input"
-                style={{
-                  borderColor: imageDragActive ? theme.colors.cardBorder : `${theme.colors.accentYellow}`,
-                  backgroundColor: imageDragActive ? `${theme.colors.cardBorder}20` : `${theme.colors.cardBorder}20`,
-                  color: theme.colors.textPrimary
-                }}
-                className="flex items-center justify-center w-full px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition hover:opacity-60"
-              >
-                <Upload className="w-5 h-5 mr-2" style={{ color: theme.colors.accentYellow }} />
-                <span>
-                  {imageFile
-                    ? imageFile.name
-                    : imageDragActive
-                    ? "Drop your image here"
-                    : "Click to select or drag & drop image"}
-                </span>
-              </label>
-            </div>
+          <div className="grid grid-cols-3 gap-3">
+            {[0, 1, 2].map((index) => (
+              <div key={index} className="space-y-2">
+                {imagePreviews[index] && (
+                  <div className="relative">
+                    <img
+                      src={imagePreviews[index]}
+                      alt={`Preview ${index + 1}`}
+                      style={{ borderColor: theme.colors.cardBorder }}
+                      className="w-full h-32 object-cover rounded-lg border"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newFiles = [...imageFiles];
+                        const newPreviews = [...imagePreviews];
+                        newFiles[index] = null;
+                        newPreviews[index] = null;
+                        setImageFiles(newFiles);
+                        setImagePreviews(newPreviews);
+                      }}
+                      className="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full p-1"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+                <div
+                  className="relative"
+                  onDragEnter={(e) => handleImageDrag(e, index)}
+                  onDragLeave={(e) => handleImageDrag(e, index)}
+                  onDragOver={(e) => handleImageDrag(e, index)}
+                  onDrop={(e) => handleImageDrop(e, index)}
+                >
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleImageSelect(e, index)}
+                    className="hidden"
+                    id={`image-input-${index}`}
+                  />
+                  <label
+                    htmlFor={`image-input-${index}`}
+                    style={{
+                      borderColor: imageDragActive[index] ? theme.colors.cardBorder : `${theme.colors.accentYellow}`,
+                      backgroundColor: imageDragActive[index] ? `${theme.colors.cardBorder}20` : `${theme.colors.cardBorder}20`,
+                      color: theme.colors.textPrimary
+                    }}
+                    className="flex flex-col items-center justify-center w-full px-2 py-4 border-2 border-dashed rounded-lg cursor-pointer transition hover:opacity-60 text-xs text-center"
+                  >
+                    <Upload className="w-4 h-4 mb-1" style={{ color: theme.colors.accentYellow }} />
+                    <span>
+                      {imageFiles[index]
+                        ? imageFiles[index].name.substring(0, 15) + '...'
+                        : imageDragActive[index]
+                        ? "Drop here"
+                        : `Image ${index + 1}`}
+                    </span>
+                  </label>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 

@@ -1,4 +1,4 @@
-import { X, Download, Heart, Calendar, User, Maximize2, Share2, Check, Edit2, ChevronDown } from "lucide-react";
+import { X, Download, Heart, Calendar, User, Maximize2, Share2, Check, Edit2, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
@@ -21,12 +21,22 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [showScrollIndicator, setShowScrollIndicator] = useState(false);
   const [scrollableRef, setScrollableRef] = useState(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Get available images
+  const availableImages = [
+    blueprint?.image_url,
+    blueprint?.image_url_2,
+    blueprint?.image_url_3
+  ].filter(Boolean);
+
+  const hasMultipleImages = availableImages.length > 1;
 
   useEffect(() => {
-    console.log(`BlueprintDetail mounted/updated for ${blueprint?.id}: likes=${blueprint?.likes}, downloads=${blueprint?.downloads}`);
     setLikeCount(blueprint?.likes ?? 0);
     setDownloadCount(blueprint?.downloads ?? 0);
     setIsLiked(userLikes.has(blueprint?.id));
+    setCurrentImageIndex(0);
   }, [blueprint?.id, blueprint?.likes, blueprint?.downloads, userLikes]);
 
   // Update meta tags when blueprint is opened/closed
@@ -42,17 +52,29 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
     };
   }, [isOpen, blueprint]);
 
-  // Handle Escape key to close expanded image
+  // Handle keyboard navigation for images
   useEffect(() => {
-    const handleEscapeKey = (e) => {
-      if (e.key === "Escape" && isImageExpanded) {
+    const handleKeyDown = (e) => {
+      if (isImageExpanded && e.key === "Escape") {
         setIsImageExpanded(false);
+        return;
+      }
+      
+      // Arrow key navigation works in both modal and lightbox
+      if (isOpen && !isEditOpen && hasMultipleImages) {
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          setCurrentImageIndex((prev) => (prev === 0 ? availableImages.length - 1 : prev - 1));
+        } else if (e.key === "ArrowRight") {
+          e.preventDefault();
+          setCurrentImageIndex((prev) => (prev === availableImages.length - 1 ? 0 : prev + 1));
+        }
       }
     };
 
-    window.addEventListener("keydown", handleEscapeKey);
-    return () => window.removeEventListener("keydown", handleEscapeKey);
-  }, [isImageExpanded]);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isImageExpanded, isOpen, isEditOpen, hasMultipleImages, availableImages.length]);
 
   // Check for scrollable content
   useEffect(() => {
@@ -153,11 +175,11 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
 
         {/* Content */}
         <div className="p-6 space-y-3">
-          {/* Image */}
-          {blueprint.image_url && !imageError && (
+          {/* Image Carousel */}
+          {availableImages.length > 0 && !imageError && (
             <div className="relative group">
               <img
-                src={getDetailViewUrl(blueprint.image_url)}
+                src={getDetailViewUrl(availableImages[currentImageIndex])}
                 alt={blueprint.title}
                 className="w-full h-48 sm:h-96 object-cover rounded-lg cursor-pointer transition hover:shadow-lg hover:shadow-black/30"
                 onClick={() => setIsImageExpanded(true)}
@@ -171,6 +193,57 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
               >
                 <Maximize2 className="w-5 h-5" />
               </button>
+
+              {/* Image Navigation */}
+              {hasMultipleImages && (
+                <>
+                  {/* Navigation Arrows */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIndex((prev) => (prev === 0 ? availableImages.length - 1 : prev - 1));
+                    }}
+                    style={{
+                      backgroundColor: `${theme.colors.cardBg}DD`,
+                      borderColor: theme.colors.cardBorder
+                    }}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full border shadow-lg transition-all hover:scale-110 z-10"
+                  >
+                    <ChevronLeft className="w-6 h-6" style={{ color: theme.colors.textPrimary }} />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIndex((prev) => (prev === availableImages.length - 1 ? 0 : prev + 1));
+                    }}
+                    style={{
+                      backgroundColor: `${theme.colors.cardBg}DD`,
+                      borderColor: theme.colors.cardBorder
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full border shadow-lg transition-all hover:scale-110 z-10"
+                  >
+                    <ChevronRight className="w-6 h-6" style={{ color: theme.colors.textPrimary }} />
+                  </button>
+
+                  {/* Image Indicators */}
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                    {availableImages.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentImageIndex(index);
+                        }}
+                        style={{
+                          backgroundColor: index === currentImageIndex ? theme.colors.accentYellow : `${theme.colors.cardBg}CC`,
+                          borderColor: theme.colors.cardBorder
+                        }}
+                        className="w-2.5 h-2.5 rounded-full border transition-all hover:scale-125 shadow-lg"
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           )}
 
@@ -530,7 +603,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
       />
 
       {/* Image Lightbox */}
-      {isImageExpanded && blueprint.image_url && (
+      {isImageExpanded && availableImages.length > 0 && (
         <div 
           className="fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-4 backdrop-blur-sm"
           onClick={() => setIsImageExpanded(false)}
@@ -541,7 +614,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           >
             <div className="relative">
               <img
-                src={getLightboxUrl(blueprint.image_url)}
+                src={getLightboxUrl(availableImages[currentImageIndex])}
                 alt={blueprint.title}
                 className="max-w-full max-h-full object-contain rounded-lg"
                 loading="lazy"
@@ -554,9 +627,38 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
               >
                 <X className="w-6 h-6" />
               </button>
+
+              {/* Lightbox Navigation */}
+              {hasMultipleImages && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIndex((prev) => (prev === 0 ? availableImages.length - 1 : prev - 1));
+                    }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 hover:bg-black/80 text-white transition-all hover:scale-110"
+                  >
+                    <ChevronLeft className="w-8 h-8" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIndex((prev) => (prev === availableImages.length - 1 ? 0 : prev + 1));
+                    }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 hover:bg-black/80 text-white transition-all hover:scale-110"
+                  >
+                    <ChevronRight className="w-8 h-8" />
+                  </button>
+
+                  {/* Image Counter */}
+                  <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-4 py-2 rounded-full text-sm font-medium">
+                    {currentImageIndex + 1} / {availableImages.length}
+                  </div>
+                </>
+              )}
             </div>
             <p className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-[#bba664] text-sm">
-              Click to close or press Escape
+              {hasMultipleImages ? "Use arrow keys or click arrows to navigate • " : ""}Click to close or press Escape
             </p>
           </div>
         </div>

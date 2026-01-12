@@ -116,7 +116,6 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         };
       });
       
-      console.log("Fetched blueprints with parsed data:", processedData);
       setBlueprints(processedData);
     } catch (err) {
       console.error("Error fetching blueprints:", err);
@@ -134,7 +133,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
     try {
       if (currentlyLiked) {
         // Remove like
-        console.log(`Removing like for ${blueprintId}`);
+
         const { error } = await supabase
           .from("blueprint_likes")
           .delete()
@@ -149,7 +148,6 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         });
       } else {
         // Add like
-        console.log(`Adding like for ${blueprintId}`);
         const { error } = await supabase.from("blueprint_likes").insert([
           {
             blueprint_id: blueprintId,
@@ -192,8 +190,6 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         skills: updatedBlueprint?.skills ?? selectedBlueprint?.skills ?? []
       };
       
-      console.log(`Refetched blueprint ${blueprintId}: likes=${normalizedBp.likes}`);
-      
       // Update blueprints array - preserve materials/buildings/skills from existing data
       setBlueprints((prev) =>
         prev.map((bp) =>
@@ -208,7 +204,6 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
       
       // Update selected blueprint
       if (selectedBlueprint?.id === blueprintId) {
-        console.log(`Updated selected blueprint with refetched data: likes=${normalizedBp.likes}`);
         setSelectedBlueprint((prev) => 
           prev ? { ...prev, likes: normalizedBp.likes } : null
         );
@@ -260,8 +255,6 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         skills: updatedBlueprint?.skills ?? selectedBlueprint?.skills ?? []
       };
       
-      console.log(`Refetched blueprint ${blueprint.id}: downloads=${normalizedBp.downloads}`);
-      
       // Update blueprints array - preserve materials/buildings/skills from existing data
       setBlueprints((prev) =>
         prev.map((bp) =>
@@ -276,7 +269,6 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
       
       // Update selected blueprint if it's the one being downloaded
       if (selectedBlueprint?.id === blueprint.id) {
-        console.log(`Updated selected blueprint with refetched data: downloads=${normalizedBp.downloads}`);
         setSelectedBlueprint((prev) => 
           prev ? { ...prev, downloads: normalizedBp.downloads } : null
         );
@@ -315,9 +307,15 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
 
     setDeleting(blueprint.id);
     try {
-      // Delete Cloudinary image if it exists
+      // Delete all Cloudinary images if they exist
       if (blueprint.image_url) {
         await deleteCloudinaryImage(blueprint.image_url);
+      }
+      if (blueprint.image_url_2) {
+        await deleteCloudinaryImage(blueprint.image_url_2);
+      }
+      if (blueprint.image_url_3) {
+        await deleteCloudinaryImage(blueprint.image_url_3);
       }
 
       // Delete from storage
