@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Download, Trash2, Loader, Heart, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useTheme } from "../lib/ThemeContext";
 import { getThumbnailUrl } from "../lib/imageOptimization";
@@ -58,16 +58,33 @@ export default function BlueprintCard({
       onClick={() => onSelect(blueprint)}
     >
       {/* Image */}
-      <div className="relative">
+      <div className="relative overflow-hidden group/image">
         {availableImages.length > 0 && !imageError ? (
-          <img
-            src={getThumbnailUrl(availableImages[currentImageIndex])}
-            alt={blueprint.title}
-            style={{ backgroundColor: theme.colors.elementBg }}
-            className="w-full h-48 object-cover flex-shrink-0 transition-opacity duration-150 group-hover:opacity-90 opacity-80"
-            loading="lazy"
-            onError={() => setImageError(true)}
-          />
+          <>
+            <AnimatePresence mode="wait">
+              <motion.img
+                key={currentImageIndex}
+                src={getThumbnailUrl(availableImages[currentImageIndex])}
+                alt={blueprint.title}
+                style={{ backgroundColor: theme.colors.elementBg }}
+                className="w-full h-48 object-cover flex-shrink-0"
+                loading="lazy"
+                onError={() => setImageError(true)}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              />
+            </AnimatePresence>
+            {/* Tint Overlay */}
+            <div 
+              className="absolute inset-0 w-full h-full pointer-events-none transition-opacity duration-200"
+              style={{ 
+                backgroundColor: theme.colors.elementBgDark,
+                opacity: isHovered ? 0 : 0.2
+              }}
+            />
+          </>
         ) : (
           <div style={{ backgroundImage: `linear-gradient(to bottom-right, ${theme.colors.accentLighter}, ${theme.colors.cardBg})`, backgroundColor: theme.colors.cardBg }} className="w-full h-48 flex items-center justify-center flex-shrink-0">
             <span className="text-4xl">⚗️</span>

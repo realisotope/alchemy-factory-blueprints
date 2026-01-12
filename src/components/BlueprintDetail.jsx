@@ -22,6 +22,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
   const [showScrollIndicator, setShowScrollIndicator] = useState(false);
   const [scrollableRef, setScrollableRef] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isImageHovered, setIsImageHovered] = useState(false);
 
   // Get available images
   const availableImages = [
@@ -177,14 +178,33 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
         <div className="p-6 space-y-3">
           {/* Image Carousel */}
           {availableImages.length > 0 && !imageError && (
-            <div className="relative group">
-              <img
-                src={getDetailViewUrl(availableImages[currentImageIndex])}
-                alt={blueprint.title}
-                className="w-full h-48 sm:h-96 object-cover rounded-lg cursor-pointer transition hover:shadow-lg hover:shadow-black/30"
-                onClick={() => setIsImageExpanded(true)}
-                loading="lazy"
-                onError={() => setImageError(true)}
+            <div 
+              className="relative group overflow-hidden rounded-lg"
+              onMouseEnter={() => setIsImageHovered(true)}
+              onMouseLeave={() => setIsImageHovered(false)}
+            >
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={currentImageIndex}
+                  src={getDetailViewUrl(availableImages[currentImageIndex])}
+                  alt={blueprint.title}
+                  className="w-full h-48 sm:h-96 object-cover cursor-pointer"
+                  onClick={() => setIsImageExpanded(true)}
+                  loading="lazy"
+                  onError={() => setImageError(true)}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.15, ease: "easeInOut" }}
+                />
+              </AnimatePresence>
+              {/* Tint Overlay */}
+              <div 
+                className="absolute inset-0 w-full h-full pointer-events-none transition-opacity duration-200"
+                style={{ 
+                  backgroundColor: theme.colors.elementBgDark,
+                  opacity: isImageHovered ? 0 : 0.15
+                }}
               />
               <button
                 onClick={() => setIsImageExpanded(true)}
@@ -613,13 +633,20 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
             onClick={(e) => e.stopPropagation()}
           >
             <div className="relative">
-              <img
-                src={getLightboxUrl(availableImages[currentImageIndex])}
-                alt={blueprint.title}
-                className="max-w-full max-h-full object-contain rounded-lg"
-                loading="lazy"
-                onError={() => setImageError(true)}
-              />
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={currentImageIndex}
+                  src={getLightboxUrl(availableImages[currentImageIndex])}
+                  alt={blueprint.title}
+                  className="max-w-full max-h-full object-contain rounded-lg"
+                  loading="lazy"
+                  onError={() => setImageError(true)}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.15, ease: "easeInOut" }}
+                />
+              </AnimatePresence>
               <button
                 onClick={() => setIsImageExpanded(false)}
                 className="absolute -top-12 right-0 p-2 hover:bg-white/10 rounded-lg transition text-white"
