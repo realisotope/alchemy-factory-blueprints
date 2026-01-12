@@ -124,15 +124,15 @@ export const darkerTheme = {
   name: "darker",
   colors: {
     // Primary backgrounds
-    primary: "#1E1A16", // Main page background
-    secondary: "#2A231C", // Main container background
-    tertiary: "#362B22", // Element background
+    primary: "#1E1A16",
+    secondary: "#2A231C",
+    tertiary: "#362B22",
 
     // Header
-    headerGradientFrom: "#3C2F24", // Header top
-    headerGradientVia: "#32271D", // Header middle
-    headerGradientTo: "#2C231A", // Header bottom
-    headerBorder: "#4F4332", // Header border
+    headerGradientFrom: "#3C2F24",
+    headerGradientVia: "#32271D",
+    headerGradientTo: "#2C231A",
+    headerBorder: "#4F4332",
 
     // Accents
     accentYellow: "#c3980a",
@@ -145,10 +145,10 @@ export const darkerTheme = {
     textDark: "#876E54",
 
     // Backgrounds for elements
-    elementBg: "#3D3128", // Container for elements
-    elementBgDark: "#30261E", // Darker container
-    elementBgCard: "#30261E", // Background for Card Detail view
-    elementBorder: "#66573D", // Darker border
+    elementBg: "#3D3128",
+    elementBgDark: "#30261E",
+    elementBgCard: "#30261E",
+    elementBorder: "#66573D",
 
     // Buttons
     buttonBg: "#5f4d17",
@@ -184,51 +184,60 @@ export const darkerTheme = {
 export const darkNightTheme = {
   name: "darknight",
   colors: {
-    primary: "#0A0A0A",
-    secondary: "#121212",
-    tertiary: "#1E1E1E",
+    // Primary backgrounds
+    primary: "#0a0a0a",            // Main page background
+    secondary: "#141414",          // Main container background
+    tertiary: "#1a1a1a",           // Element background
 
-    headerGradientFrom: "#222222",
-    headerGradientVia: "#1E1E1E",
-    headerGradientTo: "#121212",
-    headerBorder: "#303030",
+    // Header
+    headerGradientFrom: "#1f1f1f",
+    headerGradientVia: "#1a1a1a",
+    headerGradientTo: "#141414",
+    headerBorder: "#2d2d2d",
 
-    accentYellow: "#E0E0E0",
-    accentGold: "#FFFFFF",
-    accentLighter: "#999999",
+    // Accents
+    accentYellow: "#636363",      // Primary accent
+    accentGold: "#333333",        // Secondary accent
+    accentLighter: "#8a8a8a",     // Tertiary accent
 
-    textPrimary: "#F0F0F0",
-    textSecondary: "#A0A0A0",
-    textDark: "#0A0A0A",
+    // Text
+    textPrimary: "#adadad",       // Primary text
+    textSecondary: "#a0a0a0",     // Secondary text
+    textTertiary: "#7a7a7a",      // Tertiary text
+    textDark: "#0a0a0a",          // Dark text
 
-    elementBg: "#222222",
-    elementBgDark: "#121212",
-    elementBgCard: "#1E1E1E",
-    elementBorder: "#303030",
+    // Backgrounds for elements
+    elementBg: "#1f1f1f",         // Container for elements
+    elementBgDark: "#141414",     // Darker container
+    elementBgCard: "#1a1a1a",     // Background for Card Detail view
+    elementBorder: "#2d2d2d",     // Borders
 
-    buttonBg: "#303030",
-    buttonBg2: "#404040",
-    buttonBgAlt: "#FFFFFF",
-    buttonHover: "#404040",
-    buttonText: "#F0F0F0",
+    // Buttons
+    buttonBg: "#2d2d2d",          // Default button background
+    buttonBg2: "#3a3a3a",         // Alternative button background
+    buttonBgAlt: "#4a4a4a",       // Light button background
+    buttonHover: "#3f3f3f",       // Button hover state
+    buttonText: "#a5a5a5",        // Button text
+    // Cards
+    cardBg: "#1a1a1a",            // Card background
+    cardBorder: "#2d2d2d",        // Card border
+    cardHoverBorder: "#5a5a5a",   // Card hover border
+    cardShadow: "#000000",        // Card shadow
 
-    cardBg: "#1E1E1E",
-    cardBorder: "#303030",
-    cardHoverBorder: "#FFFFFF",
-    cardShadow: "#474747",
+    // Gradients for stat/info boxes
+    gradientFrom: "#1a1a1a",
+    gradientTo: "#242424",
 
-    gradientFrom: "#1E1E1E",
-    gradientTo: "#252525",
-
-    scrollbarTrack: "#121212",
-    scrollbarThumb: "#404040",
-    scrollbarThumbHover: "#505050",
+    // Scrollbar
+    scrollbarTrack: "#141414",
+    scrollbarThumb: "#3a3a3a",
+    scrollbarThumbHover: "#4a4a4a",
   },
   gradients: {
     dots: [
-      "rgb(255, 255, 255)",
-      "rgba(60, 60, 60, 0.4)",
-      "rgba(30, 30, 30, 0.5)",
+      "rgba(158, 158, 158, 0.4)",
+      "rgba(80, 80, 80, 0.3)",
+      "rgba(40, 40, 40, 0.4)",
     ],
   },
 };

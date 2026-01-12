@@ -439,7 +439,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., Advanced Smeltery Setup"
-              style={{ borderColor: theme.colors.cardBorder, backgroundColor: `${theme.colors.cardBg}33`, color: theme.colors.textPrimary }}
+              style={{ borderColor: theme.colors.cardBorder, backgroundColor: `${theme.colors.cardBg}33`, color: `${theme.colors.textPrimary}80` }}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 placeholder-opacity-50"
               disabled={isLoading}
             />
@@ -455,7 +455,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe your blueprint..."
               rows={4}
-              style={{ borderColor: theme.colors.cardBorder, backgroundColor: `${theme.colors.cardBg}33`, color: theme.colors.textPrimary }}
+              style={{ borderColor: theme.colors.cardBorder, backgroundColor: `${theme.colors.cardBg}33`, color: `${theme.colors.textPrimary}80` }}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 placeholder-opacity-50"
               disabled={isLoading}
             />

@@ -47,7 +47,7 @@ const AVAILABLE_TAGS = [
 // Validate .af file by checking extension and file structure
 const validateAfFile = async (file) => {
   const fileName = file.name.toLowerCase();
-  
+
   // Check extension - must end with .af
   if (!fileName.endsWith(".af")) {
     return { valid: false, error: "File must have .af extension" };
@@ -63,7 +63,7 @@ const validateAfFile = async (file) => {
     ".pdf", ".docx", ".doc", ".xls", ".xlsx", ".ppt", ".pptx", ".zip", ".rar",
     ".7z", ".tar", ".gz", ".jar", ".class", ".pyc", ".pyo"
   ];
-  
+
   for (const ext of dangerousExtensions) {
     if (nameWithoutExt.endsWith(ext)) {
       return { valid: false, error: `Files with ${ext} extensions disguised as .af are not allowed` };
@@ -80,78 +80,78 @@ const validateAfFile = async (file) => {
     // Read first 512 bytes to check for various file signatures
     const buffer = await file.slice(0, 512).arrayBuffer();
     const view = new Uint8Array(buffer);
-    
+
     if (view.length >= 2) {
       // MZ header (Windows PE executable: .exe, .dll, .scr, etc.)
       if (view[0] === 0x4d && view[1] === 0x5a) {
         return { valid: false, error: "Executable files (.exe, .dll, etc.) are not allowed" };
       }
-      
+
       // Shebang (Unix/Linux scripts)
       if (view[0] === 0x23 && view[1] === 0x21) {
         return { valid: false, error: "Script files are not allowed" };
       }
-      
+
       // ELF header (Linux/Unix executables)
       if (view[0] === 0x7f && view[1] === 0x45 && view[2] === 0x4c && view[3] === 0x46) {
         return { valid: false, error: "Executable files are not allowed" };
       }
-      
+
       // Mach-O header (macOS executables)
-      if ((view[0] === 0xfe && view[1] === 0xed && view[2] === 0xfa) || 
-          (view[0] === 0xca && view[1] === 0xfe && view[2] === 0xba && view[3] === 0xbe)) {
+      if ((view[0] === 0xfe && view[1] === 0xed && view[2] === 0xfa) ||
+        (view[0] === 0xca && view[1] === 0xfe && view[2] === 0xba && view[3] === 0xbe)) {
         return { valid: false, error: "Executable files are not allowed" };
       }
     }
-    
+
     if (view.length >= 4) {
       // ZIP header (0x504b0304, 0x504b0506, 0x504b0708)
       if (view[0] === 0x50 && view[1] === 0x4b) {
         return { valid: false, error: "Archive files must be saved as .af files" };
       }
-      
+
       // RAR header (0x526172)
       if (view[0] === 0x52 && view[1] === 0x61 && view[2] === 0x72) {
         return { valid: false, error: "Archive files (RAR) are not allowed" };
       }
-      
+
       // 7z header (37 7A BC AF 27 1C)
       if (view[0] === 0x37 && view[1] === 0x7a && view[2] === 0xbc && view[3] === 0xaf) {
         return { valid: false, error: "Archive files (7z) are not allowed" };
       }
-      
+
       // PDF header (%PDF)
       if (view[0] === 0x25 && view[1] === 0x50 && view[2] === 0x44 && view[3] === 0x46) {
         return { valid: false, error: "PDF files are not allowed" };
       }
-      
+
       // Office Open XML files (DOCX, XLSX, PPTX - all are ZIP files)
       if (view[0] === 0x50 && view[1] === 0x4b) {
         return { valid: false, error: "Office documents and archives are not allowed" };
       }
-      
+
       // RTF header ({\rtf)
       if (view[0] === 0x7b && view[1] === 0x5c && view[2] === 0x72 && view[3] === 0x74) {
         return { valid: false, error: "Rich text files are not allowed" };
       }
-      
+
       // Java class file (CAFEBABE)
       if (view[0] === 0xca && view[1] === 0xfe && view[2] === 0xba && view[3] === 0xbe) {
         return { valid: false, error: "Executable files are not allowed" };
       }
-      
+
       // gzip header (1f 8b)
       if (view[0] === 0x1f && view[1] === 0x8b) {
         return { valid: false, error: "Compressed archive files are not allowed" };
       }
-      
+
       // tar header (ustar at offset 257)
-      if (view.length >= 262 && view[257] === 0x75 && view[258] === 0x73 && 
-          view[259] === 0x74 && view[260] === 0x61 && view[261] === 0x72) {
+      if (view.length >= 262 && view[257] === 0x75 && view[258] === 0x73 &&
+        view[259] === 0x74 && view[260] === 0x61 && view[261] === 0x72) {
         return { valid: false, error: "Archive files (tar) are not allowed" };
       }
     }
-    
+
     // Check for NUL bytes at the start, which might indicate binary executables
     if (view[0] === 0x00 && view[1] === 0x00 && view[2] === 0x00) {
       return { valid: false, error: "Suspicious binary format detected. Please ensure this is a valid .af file" };
@@ -168,17 +168,17 @@ const validateAfFile = async (file) => {
 const validateImageFile = async (file) => {
   // Check MIME type
   if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-    return { 
-      valid: false, 
-      error: `Invalid image type. Allowed: JPEG, PNG, WebP. Got: ${file.type}` 
+    return {
+      valid: false,
+      error: `Invalid image type. Allowed: JPEG, PNG, WebP. Got: ${file.type}`
     };
   }
 
   // Check file size
   if (file.size > MAX_IMAGE_SIZE) {
-    return { 
-      valid: false, 
-      error: `Image must be smaller than 5MB. Current: ${(file.size / 1024 / 1024).toFixed(2)}MB` 
+    return {
+      valid: false,
+      error: `Image must be smaller than 5MB. Current: ${(file.size / 1024 / 1024).toFixed(2)}MB`
     };
   }
 
@@ -338,12 +338,12 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       setError("Maximum of 3 tags allowed");
       return;
     }
-    
+
     if (!tagInput || !AVAILABLE_TAGS.includes(tagInput)) {
       setError("Please select a valid tag from the list");
       return;
     }
-    
+
     if (!tags.includes(tagInput)) {
       setTags([...tags, tagInput]);
       setTagInput("");
@@ -357,7 +357,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       setError("Maximum of 3 tags allowed");
       return;
     }
-    
+
     if (!tags.includes(tag)) {
       setTags([...tags, tag]);
       setTagInput("");
@@ -372,17 +372,17 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Check rate limit first (before any validation)
     const clientLimiter = new ClientRateLimiter(user.id, 'uploads');
     const clientLimitStatus = clientLimiter.checkLimit();
-    
+
     if (!clientLimitStatus.allowed) {
       setError(clientLimiter.getLimitMessage());
       setRateLimitInfo(clientLimitStatus);
       return;
     }
-    
+
     // Also check server-side rate limit (per-hour limit)
     const serverLimitStatus = await checkServerRateLimit(supabase, user.id, 'uploads');
     if (!serverLimitStatus.allowed) {
@@ -394,28 +394,28 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
 
     // Display rate limit info to user (how many uploads remaining)
     setRateLimitInfo(serverLimitStatus);
-    
+
     // Validate and sanitize title
     const titleValidation = validateAndSanitizeTitle(title);
     if (!titleValidation.valid) {
       setError(titleValidation.error);
       return;
     }
-    
+
     // Validate and sanitize description
     const descriptionValidation = validateAndSanitizeDescription(description);
     if (!descriptionValidation.valid) {
       setError(descriptionValidation.error);
       return;
     }
-    
+
     // Validate URLs in description
     const urlValidation = validateDescriptionUrls(description);
     if (!urlValidation.valid) {
       setError(urlValidation.error);
       return;
     }
-    
+
     if (!blueprintFile) {
       setError("Blueprint file is required");
       return;
@@ -440,7 +440,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         // Create zip file containing the blueprint file with compression
         const zip = new JSZip();
         zip.file(afFileName, blueprintFile, { compression: "DEFLATE" });
-        const zipBlob = await zip.generateAsync({ 
+        const zipBlob = await zip.generateAsync({
           type: "blob",
           compression: "DEFLATE",
           compressionOptions: { level: 9 }
@@ -484,7 +484,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       // Upload images if provided (up to 3)
       const imageUploadPromises = imageFiles.map(async (imageFile, index) => {
         if (!imageFile) return null;
-        
+
         try {
           // Compress image
           const options = {
@@ -494,7 +494,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
             quality: 0.55,
           };
           const compressedFile = await imageCompression(imageFile, options);
-          
+
           // Upload to Cloudinary
           return await uploadToCloudinary(compressedFile, user.id);
         } catch (imageError) {
@@ -509,7 +509,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
 
       // Insert blueprint record into database using sanitized data
       const slug = generateSlug(titleValidation.sanitized);
-      
+
       const { data: insertedBlueprint, error: dbError } = await supabase
         .from("blueprints")
         .insert([
@@ -538,13 +538,13 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         try {
           console.log("Sending blueprint to parser...");
           const parserResponse = await sendBlueprintToParser(blueprintFile, insertedBlueprint.id);
-          
+
           if (parserResponse.duplicate && parserResponse.parsed) {
             // If already parsed, update the blueprint immediately with parsed data
             console.log("Blueprint already parsed, updating database...");
             const materials = transformParsedMaterials(parserResponse.parsed.Materials);
             const buildings = transformParsedBuildings(parserResponse.parsed.Buildings);
-            
+
             await supabase
               .from("blueprints")
               .update({
@@ -555,7 +555,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
                 skills: parserResponse.parsed.SupplyItems || {},
               })
               .eq("id", insertedBlueprint.id);
-            
+
             console.log("Blueprint updated with parsed data");
           } else if (parserResponse.queued) {
             // Store the fileHash for webhook callback
@@ -580,7 +580,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       setTags([]);
       setTagInput("");
       setRateLimitInfo(null);
-      
+
       // Record the upload attempt in client-side rate limiter
       const clientLimiter = new ClientRateLimiter(user.id, 'uploads');
       clientLimiter.recordAttempt();
@@ -610,10 +610,20 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g., Efficient Iron Production Setup"
-            style={{ borderColor: theme.colors.cardBorder, backgroundColor: `${theme.colors.cardBg}33`, color: theme.colors.textPrimary }}
+            placeholder="e.g., Blast Potion 18/min"
+            style={{
+              borderColor: theme.colors.cardBorder,
+              backgroundColor: `${theme.colors.cardBg}33`,
+              color: theme.colors.textPrimary,
+            }}
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 placeholder-opacity-50"
           />
+          <style jsx>{`
+    input::placeholder {
+      color: ${theme.colors.textPrimary};
+      opacity: 0.5;
+    }
+  `}</style>
         </div>
 
         {/* Description */}
@@ -621,14 +631,32 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
           <label style={{ color: theme.colors.textPrimary }} className="block text-l font-medium mb-2">
             Description
           </label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Describe your blueprint, its purpose, and any special features..."
-            rows="4"
-            style={{ borderColor: theme.colors.cardBorder, backgroundColor: `${theme.colors.cardBg}33`, color: theme.colors.textPrimary }}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 placeholder-opacity-50"
-          />
+          <div className="relative">
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows="4"
+              style={{
+                borderColor: theme.colors.cardBorder,
+                backgroundColor: `${theme.colors.cardBg}33`,
+                color: theme.colors.textPrimary,
+                padding: '12px 4px',
+              }}
+              className="w-full border rounded-lg focus:outline-none focus:ring-2 placeholder-opacity-50"
+            />
+            <div
+              className="absolute top-0 left-0 p-2 pointer-events-none"
+              style={{
+                color: `${theme.colors.textPrimary}80`,
+                opacity: description ? 0 : 1,
+                lineHeight: '1.8em',
+                whiteSpace: 'pre-wrap',
+                fontSize: '1em'
+              }}
+            >
+              Describe your blueprint, its purpose, and any special features...{"\n"}You can include links to your blueprint plan or youtube video demonstration.{"\n"}You can include multiple images to demonstrate any complex builds.
+            </div>
+          </div>
         </div>
 
         {/* Tags */}
@@ -650,7 +678,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
                   </span>
                   <span className={`transition transform ${dropdownOpen ? "rotate-180" : ""}`}>▼</span>
                 </button>
-                
+
                 {dropdownOpen && (
                   <div style={{ borderColor: theme.colors.cardBorder, backgroundColor: theme.colors.elementBg }} className="absolute top-full left-0 right-0 mt-1 border rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
                     {AVAILABLE_TAGS.filter(tag => !tags.includes(tag)).map((tag) => (
@@ -731,8 +759,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
                 {blueprintFile
                   ? blueprintFile.name
                   : blueprintDragActive
-                  ? "Drop your .af file here"
-                  : "Click to select or drag & drop .af file"}
+                    ? "Drop your .af file here"
+                    : "Click to select or drag & drop .af file"}
               </span>
             </label>
           </div>
@@ -798,8 +826,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
                       {imageFiles[index]
                         ? imageFiles[index].name.substring(0, 15) + '...'
                         : imageDragActive[index]
-                        ? "Drop here"
-                        : `Image ${index + 1}`}
+                          ? "Drop here"
+                          : `Image ${index + 1}`}
                     </span>
                   </label>
                 </div>

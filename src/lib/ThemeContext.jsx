@@ -25,13 +25,15 @@ export function ThemeProvider({ children }) {
 
   const toggleTheme = () => {
     const newThemeName = 
-  themeName === "light" ? "darker" :
-  themeName === "darker" ? "dark" :
-  "light";
+      themeName === "light" ? "darker" :
+      themeName === "darker" ? "dark" :
+      themeName === "dark" ? "darknight" :
+      "light";
+      
     const newTheme = THEMES[newThemeName];
     setThemeName(newThemeName);
     setTheme(newTheme);
-  };
+};
 
   const switchToTheme = (newThemeName) => {
     if (THEMES[newThemeName]) {

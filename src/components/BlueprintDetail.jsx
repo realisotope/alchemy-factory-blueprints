@@ -23,6 +23,10 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
   const [scrollableRef, setScrollableRef] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isImageHovered, setIsImageHovered] = useState(false);
+  const [isDownloadHovered, setIsDownloadHovered] = useState(false);
+  const [isLikeHovered, setIsLikeHovered] = useState(false);
+  const [isShareHovered, setIsShareHovered] = useState(false);
+  const [isEditHovered, setIsEditHovered] = useState(false);
 
   // Get available images
   const availableImages = [
@@ -538,6 +542,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
         <div style={{
           background: `linear-gradient(to top, ${theme.colors.headerGradientFrom}, ${theme.colors.headerGradientVia}, ${theme.colors.headerGradientTo})`,
           borderTopColor: theme.colors.cardBorder,
+          color: `${theme.colors.textPrimary}90`,
         }} className="sticky bottom-0 p-3 sm:p-6 flex gap-2 sm:gap-3 border-t-2 flex-wrap relative z-[10] text-white">
           {/* Scroll Indicator */}
           {showScrollIndicator && (
@@ -560,7 +565,14 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           )}
           <button
             onClick={handleDownloadClick}
-            className="flex-1 min-w-0 bg-[#121212]/50 hover:bg-[#121212]/70 hover:text-green-500 py-2 sm:py-3 rounded-lg font-semibold transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
+            onMouseEnter={() => setIsDownloadHovered(true)}
+            onMouseLeave={() => setIsDownloadHovered(false)}
+            style={{
+              backgroundColor: `${theme.colors.tertiary}80`,
+              borderColor: theme.colors.headerBorder,
+              color: isDownloadHovered ? "#22c55e" : theme.colors.textPrimary,
+            }}
+            className="flex-1 min-w-0 border-2 hover:scale-105 py-2 sm:py-3 rounded-lg font-semibold transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
           >
             <Download className="w-4 h-4 sm:w-5 sm:h-5" />
             <span className="hidden sm:inline">Download</span>
@@ -568,11 +580,14 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           </button>
           <button
             onClick={handleLike}
-            className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 rounded-lg font-semibold transition text-sm sm:text-base ${
-              isLiked
-                ? "bg-[#121212]/30 text-red"
-                : "bg-[#121212]/50 hover:bg-[#121212]/70 hover:text-red-500"
-            }`}
+            onMouseEnter={() => setIsLikeHovered(true)}
+            onMouseLeave={() => setIsLikeHovered(false)}
+            style={{
+              backgroundColor: `${theme.colors.tertiary}80`,
+              borderColor: theme.colors.headerBorder,
+              color: isLikeHovered ? "#ef4444" : (isLiked ? "#ef4444" : theme.colors.textPrimary),
+            }}
+            className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 rounded-lg font-semibold transition text-sm sm:text-base border-2 hover:scale-105`}
           >
             <Heart className={`w-4 h-4 sm:w-5 sm:h-5 hidden sm:inline ${isLiked ? "fill-current" : ""}`} />
             <span className="hidden sm:inline">{isLiked ? "Liked" : "Like"}</span>
@@ -580,11 +595,14 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           </button>
           <button
             onClick={handleShareBlueprint}
-            className={`flex-1 min-w-0 py-2 sm:py-3 rounded-lg font-semibold transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base ${
-              copyFeedback
-                ? "bg-[#121212]/30"
-                : "bg-[#121212]/50 hover:bg-[#121212]/70 hover:text-blue-500"
-            }`}
+            onMouseEnter={() => setIsShareHovered(true)}
+            onMouseLeave={() => setIsShareHovered(false)}
+            style={{
+              backgroundColor: `${theme.colors.tertiary}80`,
+              borderColor: theme.colors.headerBorder,
+              color: isShareHovered ? "#3b82f6" : theme.colors.textPrimary,
+            }}
+            className={`flex-1 min-w-0 py-2 sm:py-3 rounded-lg font-semibold transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base border-2 hover:scale-105`}
           >
             {copyFeedback ? (
               <>
@@ -601,7 +619,14 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           {user && user.id === blueprint.user_id && (
             <button
               onClick={() => setIsEditOpen(true)}
-              className="px-2 sm:px-4 py-2 sm:py-3 rounded-lg font-semibold transition flex items-center justify-center gap-1 sm:gap-2 bg-[#121212]/50 hover:bg-[#121212]/70 hover:text-red-500 hover:text-red-500 text-sm sm:text-base"
+              onMouseEnter={() => setIsEditHovered(true)}
+              onMouseLeave={() => setIsEditHovered(false)}
+              style={{
+                backgroundColor: `${theme.colors.tertiary}80`,
+                borderColor: theme.colors.headerBorder,
+                color: isEditHovered ? "#ef4444" : theme.colors.textPrimary,
+              }}
+              className="px-2 sm:px-4 py-2 sm:py-3 rounded-lg font-semibold transition flex items-center justify-center gap-1 sm:gap-2 border-2 hover:scale-105 text-sm sm:text-base"
             >
               <Edit2 className="w-4 h-4 sm:w-5 sm:h-5" />
               <span className="hidden sm:inline">Edit</span>
