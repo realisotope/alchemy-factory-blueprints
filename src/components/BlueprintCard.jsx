@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Download, Trash2, Loader, Heart, X } from "lucide-react";
+import { Download, Trash2, Loader, Heart, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useTheme } from "../lib/ThemeContext";
 import { getThumbnailUrl } from "../lib/imageOptimization";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
@@ -21,6 +21,26 @@ export default function BlueprintCard({
   const { theme } = useTheme();
   const [isHovered, setIsHovered] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Get available images
+  const availableImages = [
+    blueprint.image_url,
+    blueprint.image_url_2,
+    blueprint.image_url_3
+  ].filter(Boolean);
+
+  const hasMultipleImages = availableImages.length > 1;
+
+  const handlePrevImage = (e) => {
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev === 0 ? availableImages.length - 1 : prev - 1));
+  };
+
+  const handleNextImage = (e) => {
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev === availableImages.length - 1 ? 0 : prev + 1));
+  };
 
   return (
     <motion.div
@@ -38,20 +58,67 @@ export default function BlueprintCard({
       onClick={() => onSelect(blueprint)}
     >
       {/* Image */}
-      {blueprint.image_url && !imageError ? (
-        <img
-          src={getThumbnailUrl(blueprint.image_url)}
-          alt={blueprint.title}
-          style={{ backgroundColor: theme.colors.elementBg }}
-          className="w-full h-48 object-cover flex-shrink-0 transition-opacity duration-150 group-hover:opacity-90 opacity-80"
-          loading="lazy"
-          onError={() => setImageError(true)}
-        />
-      ) : (
-        <div style={{ backgroundImage: `linear-gradient(to bottom-right, ${theme.colors.accentLighter}, ${theme.colors.cardBg})`, backgroundColor: theme.colors.cardBg }} className="w-full h-48 flex items-center justify-center flex-shrink-0">
-          <span className="text-4xl">⚗️</span>
-        </div>
-      )}
+      <div className="relative">
+        {availableImages.length > 0 && !imageError ? (
+          <img
+            src={getThumbnailUrl(availableImages[currentImageIndex])}
+            alt={blueprint.title}
+            style={{ backgroundColor: theme.colors.elementBg }}
+            className="w-full h-48 object-cover flex-shrink-0 transition-opacity duration-150 group-hover:opacity-90 opacity-80"
+            loading="lazy"
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <div style={{ backgroundImage: `linear-gradient(to bottom-right, ${theme.colors.accentLighter}, ${theme.colors.cardBg})`, backgroundColor: theme.colors.cardBg }} className="w-full h-48 flex items-center justify-center flex-shrink-0">
+            <span className="text-4xl">⚗️</span>
+          </div>
+        )}
+
+        {/* Image Navigation */}
+        {hasMultipleImages && !imageError && (
+          <>
+            {/* Navigation Arrows */}
+            <button
+              onClick={handlePrevImage}
+              style={{
+                backgroundColor: `${theme.colors.cardBg}CC`,
+                borderColor: theme.colors.cardBorder
+              }}
+              className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full border opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110"
+            >
+              <ChevronLeft className="w-4 h-4" style={{ color: theme.colors.textPrimary }} />
+            </button>
+            <button
+              onClick={handleNextImage}
+              style={{
+                backgroundColor: `${theme.colors.cardBg}CC`,
+                borderColor: theme.colors.cardBorder
+              }}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full border opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110"
+            >
+              <ChevronRight className="w-4 h-4" style={{ color: theme.colors.textPrimary }} />
+            </button>
+
+            {/* Image Indicators */}
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+              {availableImages.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentImageIndex(index);
+                  }}
+                  style={{
+                    backgroundColor: index === currentImageIndex ? theme.colors.accentYellow : `${theme.colors.cardBg}AA`,
+                    borderColor: theme.colors.cardBorder
+                  }}
+                  className="w-2 h-2 rounded-full border transition-all hover:scale-125"
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
 
       {/* Gallery Content*/}
       <div style={{
