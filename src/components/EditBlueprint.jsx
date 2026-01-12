@@ -401,7 +401,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
 
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto" style={{ backgroundColor: `${theme.colors.elementBg}`, borderColor: theme.colors.cardBorder, borderWidth: '2px' }} onClick={(e) => e.stopPropagation()}>
+      <div className="rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto" style={{ backgroundImage: `linear-gradient(to bottom, ${theme.colors.elementBg}, ${theme.colors.elementBgCard})`, borderColor: theme.colors.cardBorder, borderWidth: '2px' }} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="sticky top-0 text-white p-6 flex items-center justify-between" style={{ backgroundImage: `linear-gradient(to right, ${theme.colors.headerGradientFrom}, ${theme.colors.headerGradientVia}, ${theme.colors.headerGradientTo})` }}>
           <h2 className="text-2xl font-bold" style={{ color: theme.colors.accentYellow }}>Edit Blueprint</h2>

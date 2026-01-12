@@ -10,6 +10,7 @@ const ALLOWED_URL_DOMAINS = [
   'alchemy-factory-codex.com',
   'joejoesgit.github.io',
   'alchemyfactorytools.com',
+  'alchemy-factory-blueprints.vercel.app',
 ];
 
 export function isAllowedUrl(url) {
@@ -57,7 +58,7 @@ export function validateDescriptionUrls(text) {
         } catch (e) {
           return u;
         }
-      }).join(', ')}. Allowed domains: YouTube, GitHub, Twitter/X, Reddit, Discord, Twitch`,
+      }).join(', ')}. Allowed domains: YouTube, Discord, Alchemy Factory Codex, JoeJoesGit, AlchemyFactoryTools.`,
       invalidUrls
     };
   }
