@@ -15,7 +15,7 @@ export default function Tooltip({ children, title, position = 'top' }) {
   useEffect(() => {
     if (isVisible && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
-      const offset = 10;
+      const offset = -2;
       const padding = 8;
       
       let top = 0;
@@ -77,17 +77,17 @@ export default function Tooltip({ children, title, position = 'top' }) {
   };
 
   const arrowStyles = {
-    top: 'top-full left-1/2 -translate-x-1/2 border-t-4 border-x-4 border-x-transparent',
-    bottom: 'bottom-full left-1/2 -translate-x-1/2 border-b-4 border-x-4 border-x-transparent',
-    left: 'left-full top-1/2 -translate-y-1/2 border-l-4 border-y-4 border-y-transparent',
-    right: 'right-full top-1/2 -translate-y-1/2 border-r-4 border-y-4 border-y-transparent',
-  };
+    top: 'top-full left-1/2 -translate-x-1/2 border-t-8 border-x-8 border-x-transparent',
+    bottom: 'bottom-full left-1/2 -translate-x-1/2 border-b-8 border-x-8 border-x-transparent',
+    left: 'left-full top-1/2 -translate-y-1/2 border-l-8 border-y-8 border-y-transparent',
+    right: 'right-full top-1/2 -translate-y-1/2 border-r-8 border-y-8 border-y-transparent',
+};
 
   const arrowBorderColor = {
-    top: { borderTopColor: theme.colors.cardBg },
-    bottom: { borderBottomColor: theme.colors.cardBg },
-    left: { borderLeftColor: theme.colors.cardBg },
-    right: { borderRightColor: theme.colors.cardBg },
+    top: { borderTopColor: theme.colors.cardBorder },
+    bottom: { borderBottomColor: theme.colors.cardBorder },
+    left: { borderLeftColor: theme.colors.cardBorder },
+    right: { borderRightColor: theme.colors.cardBorder },
   };
 
   return (
