@@ -10,7 +10,7 @@ import { useTheme } from "../lib/ThemeContext";
 import EditBlueprint from "./EditBlueprint";
 import BlueprintStats from "./BlueprintStats";
 
-export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange, onSearchByCreator, onBlueprintUpdate, onDownload, userLikes = new Set() }) {
+export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange, onSearchByCreator, onBlueprintUpdate, onDownload, userLikes = new Set(), blueprints = [], currentBlueprintIndex = -1, onNavigate }) {
   const { theme } = useTheme();
   const [isLiked, setIsLiked] = useState(userLikes.has(blueprint?.id));
   const [likeCount, setLikeCount] = useState(blueprint?.likes ?? 0);
@@ -27,6 +27,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
   const [isLikeHovered, setIsLikeHovered] = useState(false);
   const [isShareHovered, setIsShareHovered] = useState(false);
   const [isEditHovered, setIsEditHovered] = useState(false);
+  const [navigationDirection, setNavigationDirection] = useState(0);
 
   // Get available images
   const availableImages = [
@@ -57,7 +58,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
     };
   }, [isOpen, blueprint]);
 
-  // Handle keyboard navigation for images
+  // Handle keyboard navigation for images and blueprints
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (isImageExpanded && e.key === "Escape") {
@@ -65,21 +66,34 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
         return;
       }
       
-      // Arrow key navigation works in both modal and lightbox
+      // Arrow key navigation for images (if multiple images in blueprint)
       if (isOpen && !isEditOpen && hasMultipleImages) {
         if (e.key === "ArrowLeft") {
           e.preventDefault();
           setCurrentImageIndex((prev) => (prev === 0 ? availableImages.length - 1 : prev - 1));
+          return;
         } else if (e.key === "ArrowRight") {
           e.preventDefault();
           setCurrentImageIndex((prev) => (prev === availableImages.length - 1 ? 0 : prev + 1));
+          return;
+        }
+      }
+      
+      // Arrow key navigation for blueprints (if no image focus)
+      if (isOpen && !isEditOpen && blueprints.length > 1 && currentBlueprintIndex >= 0 && onNavigate) {
+        if (e.key === "ArrowLeft" && currentBlueprintIndex > 0) {
+          e.preventDefault();
+          onNavigate(currentBlueprintIndex - 1);
+        } else if (e.key === "ArrowRight" && currentBlueprintIndex < blueprints.length - 1) {
+          e.preventDefault();
+          onNavigate(currentBlueprintIndex + 1);
         }
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isImageExpanded, isOpen, isEditOpen, hasMultipleImages, availableImages.length]);
+  }, [isImageExpanded, isOpen, isEditOpen, hasMultipleImages, availableImages.length, blueprints.length, currentBlueprintIndex, onNavigate]);
 
   // Check for scrollable content
   useEffect(() => {
@@ -149,18 +163,48 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           transition={{ duration: 0.2 }}
           onClick={onClose}
         >
-          <motion.div
-            ref={setScrollableRef}
-            style={{
-              backgroundColor: theme.colors.elementBg,
+          {/* Navigation Container */}
+          <div className="flex items-center justify-center gap-2 w-full max-w-6xl">
+            {/* Previous Blueprint Arrow */}
+            {blueprints.length > 1 && currentBlueprintIndex > 0 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setNavigationDirection(-1);
+                  if (onNavigate) onNavigate(currentBlueprintIndex - 1);
+                }}
+                className="flex-shrink-0 p-2 rounded-lg transition hover:scale-110"
+                style={{
+                  backgroundColor: `${theme.colors.cardBg}80`,
+                  border: `1px solid ${theme.colors.cardBorder}`,
+                  color: theme.colors.textPrimary,
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `${theme.colors.cardBg}FF`}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = `${theme.colors.cardBg}80`}
+                title="Previous blueprint (Arrow Left)"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+            )}
+
+            {/* Spacer for when previous button doesn't exist */}
+            {(blueprints.length <= 1 || currentBlueprintIndex === 0) && (
+              <div className="flex-shrink-0 w-14" />
+            )}
+
+            <motion.div
+              ref={setScrollableRef}
+              style={{
+                backgroundColor: theme.colors.elementBg,
               backgroundImage: `linear-gradient(to bottom, ${theme.colors.elementBg}, ${theme.colors.elementBgCard})`,
               borderColor: theme.colors.elementBorder,
             }}
-            className="border-2 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto relative"
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.3, type: "spring", stiffness: 300, damping: 30 }}
+            className="border-2 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto relative"
+            key={blueprint?.id}
+            initial={{ opacity: 0, x: navigationDirection * 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: navigationDirection * -100 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
             onClick={(e) => e.stopPropagation()}
           >
         {/* Header */}
@@ -231,7 +275,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                       backgroundColor: `${theme.colors.cardBg}DD`,
                       borderColor: theme.colors.cardBorder
                     }}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full border shadow-lg transition-all hover:scale-110 z-10"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 p-1 rounded-full border shadow-lg transition-all hover:scale-110 z-10"
                   >
                     <ChevronLeft className="w-6 h-6" style={{ color: theme.colors.textPrimary }} />
                   </button>
@@ -244,7 +288,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                       backgroundColor: `${theme.colors.cardBg}DD`,
                       borderColor: theme.colors.cardBorder
                     }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full border shadow-lg transition-all hover:scale-110 z-10"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full border shadow-lg transition-all hover:scale-110 z-10"
                   >
                     <ChevronRight className="w-6 h-6" style={{ color: theme.colors.textPrimary }} />
                   </button>
@@ -272,64 +316,86 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           )}
 
           {/* Stats and Creator Row */}
-          <div className="flex flex-col lg:flex-row gap-2 items-stretch">
-            {/* Stats Grid */}
-            <div className="grid grid-cols-3 gap-2 lg:flex-1">
-              <div style={{
-                backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`,
-                borderColor: theme.colors.cardBorder,
-              }} className="p-2 rounded-lg border-2 shadow-lg text-center hover:shadow-xl transition" onMouseEnter={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}60, ${theme.colors.gradientTo}60)`} onMouseLeave={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`}>
-                <div style={{ color: theme.colors.accentYellow }} className="text-base font-bold">{downloadCount}</div>
-                <div style={{ color: theme.colors.textSecondary }} className="text-xs flex items-center justify-center mt-0.5">
-                  <Download className="w-3 h-3 mr-0.5" />
-                  Downloads
-                </div>
-              </div>
-              <div style={{
-                backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`,
-                borderColor: theme.colors.cardBorder,
-              }} className="p-2 rounded-lg border-2 shadow-lg text-center hover:shadow-xl transition" onMouseEnter={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}60, ${theme.colors.gradientTo}60)`} onMouseLeave={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`}>
-                <div className="text-base font-bold text-rose-400">{likeCount}</div>
-                <div style={{ color: theme.colors.textSecondary }} className="text-xs flex items-center justify-center mt-0.5">
-                  <Heart className="w-3 h-3 mr-0.5" />
-                  Likes
-                </div>
-              </div>
-              <div style={{
-                backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`,
-                borderColor: theme.colors.cardBorder,
-              }} className="p-2 rounded-lg border-2 shadow-lg text-center hover:shadow-xl transition" onMouseEnter={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}60, ${theme.colors.gradientTo}60)`} onMouseLeave={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`}>
-                <div className="text-base font-bold text-blue-300">
-                  {new Date(blueprint.created_at).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </div>
-                <div style={{ color: theme.colors.textSecondary }} className="text-xs flex items-center justify-center mt-0.5">
-                  <Calendar className="w-3 h-3 mr-0.5" />
-                  Uploaded
-                </div>
-              </div>
+          <div className="flex flex-wrap lg:flex-nowrap items-center overflow-x-auto w-full justify-between">
+            {/* Downloads */}
+            <div style={{
+              backgroundColor: theme.colors.cardBg,
+              borderColor: theme.colors.cardBorder,
+              backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)`,
+            }} className="px-3 py-2 rounded-lg border-2 flex items-center gap-1.5 transition cursor-pointer"
+            onMouseEnter={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)`}>
+              <Download className="w-4 h-4" style={{ color: theme.colors.accentYellow }} />
+              <span style={{ color: theme.colors.accentYellow }} className="text-sm font-semibold">{downloadCount}</span>
+              <span style={{ color: theme.colors.textSecondary }} className="text-xs hidden sm:inline">Downloads</span>
+            </div>
+
+            {/* Likes */}
+            <div style={{
+              backgroundColor: theme.colors.cardBg,
+              borderColor: theme.colors.cardBorder,
+              backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)`,
+            }} className="px-3 py-2 rounded-lg border-2 flex items-center gap-1.5 transition cursor-pointer"
+            onMouseEnter={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)`}>
+              <Heart className="w-4 h-4" style={{ color: '#f87171' }} />
+              <span className="text-sm font-semibold text-rose-400">{likeCount}</span>
+              <span style={{ color: theme.colors.textSecondary }} className="text-xs hidden sm:inline">Likes</span>
+            </div>
+
+            {/* Uploaded */}
+            <div style={{
+              backgroundColor: theme.colors.cardBg,
+              borderColor: theme.colors.cardBorder,
+              backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)`,
+            }} className="px-3 py-2 rounded-lg border-2 flex items-center gap-1.5 transition cursor-pointer"
+            onMouseEnter={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)`}>
+              <Calendar className="w-4 h-4" style={{ color: '#60a5fa' }} />
+              <span className="text-sm font-semibold text-blue-300 whitespace-nowrap">
+                {new Date(blueprint.created_at).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                })}
+              </span>
+              <span style={{ color: theme.colors.textSecondary }} className="text-xs hidden sm:inline">Uploaded</span>
+            </div>
+
+            {/* Updated */}
+            <div style={{
+              backgroundColor: theme.colors.cardBg,
+              borderColor: theme.colors.cardBorder,
+              backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)`,
+            }} className="px-3 py-2 rounded-lg border-2 flex items-center gap-1.5 transition cursor-pointer"
+            onMouseEnter={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)`}>
+              <Calendar className="w-4 h-4" style={{ color: '#34d399' }} />
+              <span className="text-sm font-semibold text-emerald-400 whitespace-nowrap">
+                {new Date(blueprint.updated_at || blueprint.created_at).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                })}
+              </span>
+              <span style={{ color: theme.colors.textSecondary }} className="text-xs hidden sm:inline">Updated</span>
             </div>
 
             {/* Creator Info */}
             <div style={{
-              backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`,
+              backgroundColor: theme.colors.cardBg,
               borderColor: theme.colors.cardBorder,
-            }} className="p-2 rounded-lg border-2 shadow-lg lg:flex-1 hover:shadow-xl transition" onMouseEnter={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}60, ${theme.colors.gradientTo}60)`} onMouseLeave={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`}>
-              <div className="flex items-center gap-2 h-full">
-                <User className="w-4 h-4 flex-shrink-0" style={{ color: theme.colors.accentYellow }} />
-                <div className="min-w-0">
-                  <p style={{ color: theme.colors.textPrimary }} className="font-semibold text-xs">Creator</p>
-                  <button
-                    onClick={handleCreatorClick}
-                    style={{ color: theme.colors.accentYellow }}
-                    className="font-semibold hover:underline transition cursor-pointer text-sm"
-                  >
-                    {sanitizeCreatorName(stripDiscordDiscriminator(blueprint.creator_name))}
-                  </button>
-                </div>
-              </div>
+              backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)`,
+            }} className="px-2 py-2 rounded-lg border-2 flex items-center gap-1.5 min-w-0 transition cursor-pointer"
+            onMouseEnter={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)`}>
+              <User className="w-4 h-4 flex-shrink-0" style={{ color: theme.colors.accentYellow }} />
+              <span style={{ color: theme.colors.textSecondary }} className="text-xs hidden sm:inline flex-shrink-0">Created by</span>
+              <button
+                onClick={handleCreatorClick}
+                style={{ color: theme.colors.accentYellow }}
+                className="font-semibold hover:underline transition cursor-pointer text-sm truncate"
+              >
+                {sanitizeCreatorName(stripDiscordDiscriminator(blueprint.creator_name))}
+              </button>
             </div>
           </div>
 
@@ -363,67 +429,14 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
             </div>
           )}
 
-          {/* Blueprint Data*/}
-          {blueprint.parsed && (
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm px-2 p-1">
-              {/* Min Tier */}
-              {blueprint.parsed.MinTierRequired !== undefined && (
-                <div className="flex items-center gap-2">
-                  <span style={{ color: theme.colors.accentYellow }} className="font-semibold">Min Tier:</span>
-                  <span 
-                    style={{ 
-                      color: theme.colors.accentYellow,
-                      backgroundColor: theme.colors.cardBg,
-                      borderColor: theme.colors.cardBorder
-                    }} 
-                    className="px-3 py-1 rounded border font-bold"
-                  >
-                    {blueprint.parsed.MinTierRequired}
-                  </span>
-                </div>
-              )}
-
-              {/* Inventory Slots */}
-              {blueprint.parsed.InventorySlotsRequired !== undefined && (
-                <div className="flex items-center gap-2">
-                  <span style={{ color: theme.colors.accentYellow }} className="font-semibold">Inventory Slots:</span>
-                  <span 
-                    style={{ 
-                      color: theme.colors.accentYellow,
-                      backgroundColor: theme.colors.cardBg,
-                      borderColor: theme.colors.cardBorder
-                    }} 
-                    className="px-3 py-1 rounded border font-bold"
-                  >
-                    {blueprint.parsed.InventorySlotsRequired}
-                  </span>
-                </div>
-              )}
-
-              {/* Grid Area */}
-              {blueprint.parsed.GridArea && (
-                <div className="flex items-center gap-2">
-                  <span style={{ color: theme.colors.accentYellow }} className="font-semibold">Grid Size:</span>
-                  <span 
-                    style={{ 
-                      color: theme.colors.accentYellow,
-                      backgroundColor: theme.colors.cardBg,
-                      borderColor: theme.colors.cardBorder
-                    }} 
-                    className="px-3 py-1 rounded border font-bold"
-                  >
-                    {blueprint.parsed.GridArea.x} × {blueprint.parsed.GridArea.y}
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
-
           {/* Materials and Buildings */}
           <BlueprintStats 
             key={`${blueprint.id}-stats`}
             materials={blueprint.materials || []} 
-            buildings={blueprint.buildings || []} 
+            buildings={blueprint.buildings || []}
+            minTier={blueprint.parsed?.MinTierRequired}
+            inventorySlots={blueprint.parsed?.InventorySlotsRequired}
+            gridSize={blueprint.parsed?.GridArea}
           />
 
           {/* Skills */}
@@ -635,6 +648,33 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
         </div>
       </motion.div>
 
+            {/* Next Blueprint Arrow */}
+            {blueprints.length > 1 && currentBlueprintIndex < blueprints.length - 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setNavigationDirection(1);
+                  if (onNavigate) onNavigate(currentBlueprintIndex + 1);
+                }}
+                className="flex-shrink-0 p-2 rounded-lg transition hover:scale-110"
+                style={{
+                  backgroundColor: `${theme.colors.cardBg}80`,
+                  border: `1px solid ${theme.colors.cardBorder}`,
+                  color: theme.colors.textPrimary,
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `${theme.colors.cardBg}FF`}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = `${theme.colors.cardBg}80`}
+                title="Next blueprint (Arrow Right)"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            )}
+
+            {/* Spacer for when next button doesn't exist */}
+            {(blueprints.length <= 1 || currentBlueprintIndex === blueprints.length - 1) && (
+              <div className="flex-shrink-0 w-10" />
+            )}
+          </div>
       {/* Edit Blueprint Modal */}
       <EditBlueprint
         blueprint={blueprint}

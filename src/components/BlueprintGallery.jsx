@@ -649,6 +649,13 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         onClose={() => setSelectedBlueprint(null)}
         user={user}
         userLikes={userLikes}
+        blueprints={blueprints}
+        currentBlueprintIndex={blueprints.findIndex(b => b.id === selectedBlueprint?.id)}
+        onNavigate={(newIndex) => {
+          if (newIndex >= 0 && newIndex < blueprints.length) {
+            setSelectedBlueprint(blueprints[newIndex]);
+          }
+        }}
         onLikeChange={(liked) => {
           if (selectedBlueprint) {
             handleLike(selectedBlueprint.id, !liked);
