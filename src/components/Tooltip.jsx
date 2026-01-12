@@ -15,11 +15,14 @@ export default function Tooltip({ children, title, position = 'top' }) {
   useEffect(() => {
     if (isVisible && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
-      const offset = 0;
+      const offset = 10;
+      const padding = 8;
       
       let top = 0;
       let left = 0;
+      let finalPosition = position;
 
+      // Calculate initial position based on requested position
       switch (position) {
         case 'top':
           top = rect.top - offset + window.scrollY;
@@ -37,6 +40,29 @@ export default function Tooltip({ children, title, position = 'top' }) {
           top = rect.top + rect.height / 2 + window.scrollY;
           left = rect.right + offset + window.scrollX;
           break;
+      }
+
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const tooltipWidth = 150;
+      const tooltipHeight = 40;
+
+      // Check horizontal bounds
+      if (left - tooltipWidth / 2 < padding) {
+        left = rect.right + offset + window.scrollX;
+        finalPosition = 'right';
+      } else if (left + tooltipWidth / 2 > viewportWidth - padding) {
+        left = rect.left - offset + window.scrollX;
+        finalPosition = 'left';
+      }
+
+      // Check vertical bounds
+      if (top - tooltipHeight < padding) {
+        top = rect.bottom + offset + window.scrollY;
+        finalPosition = 'bottom';
+      } else if (top + tooltipHeight > viewportHeight - padding) {
+        top = rect.top - offset + window.scrollY;
+        finalPosition = 'top';
       }
 
       setTooltipPos({ top, left });

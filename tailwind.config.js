@@ -1,5 +1,8 @@
 export default {
-  content: ["./index.html", "./src/**/*.{js,jsx}"],
+  content: [
+    "./index.html",
+    "./src/**/*.{js,jsx}",
+  ],
   theme: {
     extend: {
       fontFamily: {
@@ -8,6 +11,9 @@ export default {
       },
       screens: {
         "4k": "3840px",
+      },
+      fontSize: {
+        'md': '1.1rem',
       },
     },
   },

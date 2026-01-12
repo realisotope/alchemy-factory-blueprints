@@ -143,7 +143,7 @@ export default function BlueprintCard({
       }} className="p-4 space-y-2 flex-grow flex flex-col">
         {/* Title and Description */}
         <div>
-          <h3 style={{ color: theme.colors.accentYellow }} className="text-lg font-bold truncate group-hover:opacity-80 transition">
+          <h3 style={{ color: theme.colors.accentYellow }} className="text-md font-bold truncate group-hover:opacity-80 transition">
             {blueprint.title}
           </h3>
 
