@@ -24,34 +24,35 @@ export function getSpriteStyle(sprite) {
 }
 
 /**
- * Loads and parses a spritesheet JSON file
- * @param {Object} json - Spritesheet JSON data
+ * Loads and parses a spritesheet from an ordered array of sprite names
+ * @param {Array<string>} spriteNames - Ordered array of sprite names
  * @param {string} spritesheetUrl - URL to the spritesheet image
+ * @param {Object} config - Spritesheet configuration
+ * @param {number} config.columns - Number of columns in spritesheet
+ * @param {number} config.cellWidth - Width of each sprite cell
+ * @param {number} config.cellHeight - Height of each sprite cell
  * @returns {Object} Map of sprite name to sprite data
  */
-export function parseSpritesheet(json, spritesheetUrl) {
+export function parseSpritesheet(spriteNames, spritesheetUrl, config) {
   const sprites = {};
   
-  if (!json.layers || !json.layers[0] || !json.layers[0].sprites) {
+  if (!Array.isArray(spriteNames) || spriteNames.length === 0) {
     return sprites;
   }
   
-  const columns = json.columns || 4;
-  const cellWidth = json.manualCellWidth || 64;
-  const cellHeight = json.manualCellHeight || 64;
+  const { columns = 4, cellWidth = 64, cellHeight = 64 } = config;
   
   // Calculate sheet dimensions based on sprite count
-  const spriteList = json.layers[0].sprites;
-  const rows = Math.ceil(spriteList.length / columns);
+  const rows = Math.ceil(spriteNames.length / columns);
   const sheetWidth = columns * cellWidth;
   const sheetHeight = rows * cellHeight;
   
-  spriteList.forEach((sprite, index) => {
+  spriteNames.forEach((spriteName, index) => {
     // Calculate position based on index (sprites are laid out in columns)
     const col = index % columns;
     const row = Math.floor(index / columns);
     
-    sprites[sprite.name] = {
+    sprites[spriteName] = {
       x: col * cellWidth,
       y: row * cellHeight,
       width: cellWidth,
@@ -59,7 +60,7 @@ export function parseSpritesheet(json, spritesheetUrl) {
       spritesheet: `url(${spritesheetUrl})`,
       sheetWidth,
       sheetHeight,
-      name: sprite.name
+      name: spriteName
     };
   });
   
