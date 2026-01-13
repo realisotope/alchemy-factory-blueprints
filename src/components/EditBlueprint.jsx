@@ -152,8 +152,8 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
   if (!isOpen || !blueprint) return null;
 
   const handleSelectTag = (tag) => {
-    if (tags.length >= 3) {
-      setError("Maximum of 3 tags allowed");
+    if (tags.length >= 5) {
+      setError("Maximum of 5 tags allowed");
       return;
     }
     
@@ -776,7 +776,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
           {/* Tags */}
           <div>
             <label className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
-              Tags (up to 3)
+              Tags (up to 5)
             </label>
             <div className="flex gap-2 mb-2 flex-wrap">
               {tags.map((tag) => (
@@ -803,7 +803,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 className="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 text-left disabled:opacity-50"
                 style={{ borderColor: theme.colors.cardBorder, backgroundColor: `${theme.colors.cardBg}33`, color: theme.colors.textPrimary }}
-                disabled={isLoading || tags.length >= 3}
+                disabled={isLoading || tags.length >= 5}
               >
                 {tagInput || "Select tags..."}
               </button>

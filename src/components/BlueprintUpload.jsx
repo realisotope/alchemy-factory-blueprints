@@ -506,8 +506,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
   };
 
   const handleAddTag = () => {
-    if (tags.length >= 3) {
-      setError("Maximum of 3 tags allowed");
+    if (tags.length >= 5) {
+      setError("Maximum of 5 tags allowed");
       return;
     }
 
@@ -525,8 +525,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
   };
 
   const handleSelectTag = (tag) => {
-    if (tags.length >= 3) {
-      setError("Maximum of 3 tags allowed");
+    if (tags.length >= 5) {
+      setError("Maximum of 5 tags allowed");
       return;
     }
 
@@ -594,8 +594,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
     }
 
     // Validate tag count
-    if (tags.length > 3) {
-      setError("Maximum 3 tags allowed");
+    if (tags.length > 5) {
+      setError("Maximum 5 tags allowed");
       return;
     }
 
@@ -822,7 +822,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         {/* Tags */}
         <div>
           <label style={{ color: theme.colors.textPrimary }} className="block text-sm font-medium mb-2">
-            Tags (Select up to 3)
+            Tags (Select up to 5)
           </label>
           <div className="space-y-2">
             <div className="flex gap-2">

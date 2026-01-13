@@ -166,7 +166,7 @@ export default function BlueprintCard({
 
         {/* Tags */}
         {blueprint.tags && blueprint.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-2">
+          <div className="flex flex-wrap gap-1.5 mt-2">
             {blueprint.tags.slice(0, 3).map((tag) => (
               <span
                 key={tag}
@@ -180,11 +180,6 @@ export default function BlueprintCard({
                 {tag}
               </span>
             ))}
-            {blueprint.tags.length > 3 && (
-              <span style={{ color: theme.colors.textSecondary }} className="text-xs">
-                +{blueprint.tags.length - 3} more
-              </span>
-            )}
           </div>
         )}
 
