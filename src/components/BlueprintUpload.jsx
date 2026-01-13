@@ -603,10 +603,12 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Title */}
         <div>
-          <label style={{ color: theme.colors.textPrimary }} className="block text-l font-medium mb-2">
+          <label htmlFor="blueprint-title" style={{ color: theme.colors.textPrimary }} className="block text-l font-medium mb-2">
             Blueprint Title *
           </label>
           <input
+            id="blueprint-title"
+            name="blueprint-title"
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -618,21 +620,16 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
             }}
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 placeholder-opacity-50"
           />
-          <style jsx>{`
-    input::placeholder {
-      color: ${theme.colors.textPrimary};
-      opacity: 0.5;
-    }
-  `}</style>
         </div>
-
         {/* Description */}
         <div>
-          <label style={{ color: theme.colors.textPrimary }} className="block text-l font-medium mb-2">
+          <label htmlFor="blueprint-description" style={{ color: theme.colors.textPrimary }} className="block text-l font-medium mb-2">
             Description
           </label>
           <div className="relative">
             <textarea
+              id="blueprint-description"
+              name="blueprint-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows="4"

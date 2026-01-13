@@ -276,7 +276,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                       backgroundColor: `${theme.colors.cardBg}DD`,
                       borderColor: theme.colors.cardBorder
                     }}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 p-1 rounded-full border shadow-lg transition-all hover:scale-110 z-10"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 p-1 rounded-full border shadow-lg transition-all hover:scale-110 z-5"
                   >
                     <ChevronLeft className="w-6 h-6" style={{ color: theme.colors.textPrimary }} />
                   </button>
@@ -289,13 +289,13 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                       backgroundColor: `${theme.colors.cardBg}DD`,
                       borderColor: theme.colors.cardBorder
                     }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full border shadow-lg transition-all hover:scale-110 z-10"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full border shadow-lg transition-all hover:scale-110 z-5"
                   >
                     <ChevronRight className="w-6 h-6" style={{ color: theme.colors.textPrimary }} />
                   </button>
 
                   {/* Image Indicators */}
-                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-5">
                     {availableImages.map((_, index) => (
                       <button
                         key={index}
@@ -485,9 +485,6 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                   </div>
                 </div>
               )}
-
-          
-
           {/* Changelog
           {blueprint.changelog && (
             <div>
@@ -504,7 +501,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
     color: theme.colors.textSecondary,
     borderTopColor: theme.colors.cardBorder,
   }}
-  className="text-sm pt-4 border-t space-y-2"
+  className="text-sm py-4 border-t space-y-2"
 >
   {/* Tags */}
           {blueprint.tags && blueprint.tags.length > 0 && (

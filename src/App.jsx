@@ -84,6 +84,15 @@ export default function App() {
         backgroundColor: theme.colors.primary,
       }}
     >
+      {/* Global Styles */}
+      <style>{`
+        input::placeholder,
+        textarea::placeholder {
+          color: ${theme.colors.textPrimary};
+          opacity: 0.5;
+        }
+      `}</style>
+      
       <div className="relative z-10 flex flex-col flex-grow">
         {/* Header */}
         <header style={{

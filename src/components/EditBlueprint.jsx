@@ -460,10 +460,12 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
 
           {/* Title */}
           <div>
-            <label className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
+            <label htmlFor="edit-blueprint-title" className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
               Blueprint Title *
             </label>
             <input
+              id="edit-blueprint-title"
+              name="edit-blueprint-title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -476,10 +478,12 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
 
           {/* Description */}
           <div>
-            <label className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
+            <label htmlFor="edit-blueprint-description" className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
               Description
             </label>
             <textarea
+              id="edit-blueprint-description"
+              name="edit-blueprint-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe your blueprint..."

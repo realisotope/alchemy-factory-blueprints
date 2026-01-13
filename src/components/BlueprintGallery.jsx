@@ -444,11 +444,13 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
       </div>
 
       {/* Search and Sort */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row gap-2 mb-6">
         <div className="flex-1 relative">
+          <label htmlFor="blueprint-search" className="sr-only">Search blueprints</label>
           <Search style={{ color: theme.colors.textPrimary }} className="absolute left-3 top-3 w-5 h-5" />
           <input
-            name="input-search"
+            id="blueprint-search"
+            name="blueprint-search"
             type="text"
             placeholder="Search for blueprints....."
             value={searchTerm}
@@ -460,12 +462,6 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
             }}
             className="w-full pl-10 pr-10 py-2.5 border rounded-lg focus:outline-none focus:ring-2 placeholder-opacity-50 transition-all shadow-sm"
           />
-          <style jsx>{`
-    input::placeholder {
-      color: ${theme.colors.textPrimary};
-      opacity: 0.5;
-    }
-  `}</style>
           {searchTerm && (
             <button
               onClick={() => handleSearch("")}

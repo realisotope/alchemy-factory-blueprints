@@ -23,7 +23,7 @@ const BlueprintStats = memo(function BlueprintStats({
   const hasBuildings = buildings.length > 0;
 
   return (
-    <div style={{ borderColor: theme.colors.cardBorder }} className="border-2 rounded-lg overflow-hidden">
+    <div style={{ borderColor: theme.colors.cardBorder }} className="border-2 rounded-md overflow-hidden">
       {/* Header with tabs */}
       <div
         style={{
