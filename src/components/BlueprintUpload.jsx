@@ -773,8 +773,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
           </label>
           <div className="grid grid-cols-3 gap-3">
             {[0, 1, 2].map((index) => (
-              <div key={index} className="space-y-2">
-                {imagePreviews[index] && (
+              <div key={index}>
+                {imagePreviews[index] ? (
                   <div className="relative">
                     <img
                       src={imagePreviews[index]}
@@ -797,40 +797,41 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
                       <X className="w-3 h-3" />
                     </button>
                   </div>
-                )}
-                <div
-                  className="relative"
-                  onDragEnter={(e) => handleImageDrag(e, index)}
-                  onDragLeave={(e) => handleImageDrag(e, index)}
-                  onDragOver={(e) => handleImageDrag(e, index)}
-                  onDrop={(e) => handleImageDrop(e, index)}
-                >
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleImageSelect(e, index)}
-                    className="hidden"
-                    id={`image-input-${index}`}
-                  />
-                  <label
-                    htmlFor={`image-input-${index}`}
-                    style={{
-                      borderColor: imageDragActive[index] ? theme.colors.cardBorder : `${theme.colors.accentYellow}`,
-                      backgroundColor: imageDragActive[index] ? `${theme.colors.cardBorder}20` : `${theme.colors.cardBorder}20`,
-                      color: theme.colors.textPrimary
-                    }}
-                    className="flex flex-col items-center justify-center w-full px-2 py-4 border-2 border-dashed rounded-lg cursor-pointer transition hover:opacity-60 text-xs text-center"
+                ) : (
+                  <div
+                    className="relative"
+                    onDragEnter={(e) => handleImageDrag(e, index)}
+                    onDragLeave={(e) => handleImageDrag(e, index)}
+                    onDragOver={(e) => handleImageDrag(e, index)}
+                    onDrop={(e) => handleImageDrop(e, index)}
                   >
-                    <Upload className="w-4 h-4 mb-1" style={{ color: theme.colors.accentYellow }} />
-                    <span>
-                      {imageFiles[index]
-                        ? imageFiles[index].name.substring(0, 15) + '...'
-                        : imageDragActive[index]
-                          ? "Drop here"
-                          : `Image ${index + 1}`}
-                    </span>
-                  </label>
-                </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageSelect(e, index)}
+                      className="hidden"
+                      id={`image-input-${index}`}
+                    />
+                    <label
+                      htmlFor={`image-input-${index}`}
+                      style={{
+                        borderColor: imageDragActive[index] ? theme.colors.cardBorder : `${theme.colors.accentYellow}`,
+                        backgroundColor: imageDragActive[index] ? `${theme.colors.cardBorder}20` : `${theme.colors.cardBorder}20`,
+                        color: theme.colors.textPrimary
+                      }}
+                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition hover:opacity-60 text-xs text-center"
+                    >
+                      <Upload className="w-6 h-6 mb-2" style={{ color: theme.colors.accentYellow }} />
+                      <span>
+                        {imageFiles[index]
+                          ? imageFiles[index].name.substring(0, 15) + '...'
+                          : imageDragActive[index]
+                            ? "Drop here"
+                            : `Image ${index + 1}`}
+                      </span>
+                    </label>
+                  </div>
+                )}
               </div>
             ))}
           </div>

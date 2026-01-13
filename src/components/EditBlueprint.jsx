@@ -458,13 +458,6 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
             </div>
           )}
 
-          {/* Rate Limit Info */}
-          {rateLimitInfo && !error && (
-            <div className="border rounded-lg text-sm px-4 py-3" style={{ backgroundColor: `${theme.colors.cardBg}33`, borderColor: theme.colors.cardBorder, color: theme.colors.textSecondary }}>
-              <p>📊 Edits remaining this hour: <span style={{ color: theme.colors.accentGold }} className="font-semibold">{rateLimitInfo.remaining}/{rateLimitInfo.maxAttempts}</span></p>
-            </div>
-          )}
-
           {/* Title */}
           <div>
             <label className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
@@ -546,8 +539,8 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
             </label>
             <div className="grid grid-cols-3 gap-3">
               {[0, 1, 2].map((index) => (
-                <div key={index} className="space-y-2">
-                  {imagePreviews[index] && (
+                <div key={index}>
+                  {imagePreviews[index] ? (
                     <div className="relative">
                       <img
                         src={imagePreviews[index]}
@@ -571,41 +564,42 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
                         <X className="w-3 h-3" />
                       </button>
                     </div>
-                  )}
-                  <div
-                    className="relative"
-                    onDragEnter={(e) => handleImageDragEnter(e, index)}
-                    onDragLeave={(e) => handleImageDragLeave(e, index)}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => handleImageDrop(e, index)}
-                  >
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleImageSelect(e, index)}
-                      className="hidden"
-                      id={`image-input-${index}`}
-                      disabled={isLoading}
-                    />
-                    <label
-                      htmlFor={`image-input-${index}`}
-                      style={{
-                        borderColor: imageDragActive[index] ? theme.colors.cardBorder : `${theme.colors.accentYellow}`,
-                        backgroundColor: imageDragActive[index] ? `${theme.colors.cardBorder}20` : `${theme.colors.cardBorder}20`,
-                        color: theme.colors.textPrimary
-                      }}
-                      className="flex flex-col items-center justify-center w-full px-2 py-4 border-2 border-dashed rounded-lg cursor-pointer transition hover:opacity-60 text-xs text-center"
+                  ) : (
+                    <div
+                      className="relative"
+                      onDragEnter={(e) => handleImageDragEnter(e, index)}
+                      onDragLeave={(e) => handleImageDragLeave(e, index)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => handleImageDrop(e, index)}
                     >
-                      <Upload className="w-4 h-4 mb-1" style={{ color: theme.colors.accentYellow }} />
-                      <span>
-                        {imageFiles[index]
-                          ? imageFiles[index].name.substring(0, 15) + '...'
-                          : imageDragActive[index]
-                          ? "Drop here"
-                          : `Image ${index + 1}`}
-                      </span>
-                    </label>
-                  </div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleImageSelect(e, index)}
+                        className="hidden"
+                        id={`image-input-${index}`}
+                        disabled={isLoading}
+                      />
+                      <label
+                        htmlFor={`image-input-${index}`}
+                        style={{
+                          borderColor: imageDragActive[index] ? theme.colors.cardBorder : `${theme.colors.accentYellow}`,
+                          backgroundColor: imageDragActive[index] ? `${theme.colors.cardBorder}20` : `${theme.colors.cardBorder}20`,
+                          color: theme.colors.textPrimary
+                        }}
+                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition hover:opacity-60 text-xs text-center"
+                      >
+                        <Upload className="w-6 h-6 mb-2" style={{ color: theme.colors.accentYellow }} />
+                        <span>
+                          {imageFiles[index]
+                            ? imageFiles[index].name.substring(0, 15) + '...'
+                            : imageDragActive[index]
+                            ? "Drop here"
+                            : `Image ${index + 1}`}
+                        </span>
+                      </label>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -664,6 +658,13 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               )}
             </div>
           </div>
+
+          {/* Rate Limit Info */}
+          {rateLimitInfo && !error && (
+            <div className="border rounded-lg text-sm px-4 py-3" style={{ backgroundColor: `${theme.colors.cardBg}33`, borderColor: theme.colors.cardBorder, color: theme.colors.textSecondary }}>
+              <p>📊 Edits remaining this hour: <span style={{ color: theme.colors.accentGold }} className="font-semibold">{rateLimitInfo.remaining}/{rateLimitInfo.maxAttempts}</span></p>
+            </div>
+          )}
 
           {/* Submit */}
           <div className="flex gap-3 pt-4">

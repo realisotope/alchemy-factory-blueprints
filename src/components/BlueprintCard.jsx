@@ -17,6 +17,7 @@ export default function BlueprintCard({
   onDownload,
   onLike,
   onDelete,
+  onSearchByCreator,
 }) {
   const { theme } = useTheme();
   const [isHovered, setIsHovered] = useState(false);
@@ -197,6 +198,9 @@ export default function BlueprintCard({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
+                  if (onSearchByCreator) {
+                    onSearchByCreator(blueprint.creator_name);
+                  }
                 }}
                 style={{ color: theme.colors.accentYellow }}
                 className="hover:opacity-80 hover:underline transition cursor-pointer"

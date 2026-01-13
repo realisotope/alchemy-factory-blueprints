@@ -5,6 +5,8 @@ export const lightTheme = {
     primary: "#876e54",
     secondary: "#9c8368",
     tertiary: "#a78158",
+    gridTo: "#b99773",
+    gridFrom: "#e0a766",
     
     // Header
     headerGradientFrom: "#a78158",
@@ -29,7 +31,7 @@ export const lightTheme = {
     elementBorder: "#cfb153",
     
     // Buttons
-    buttonBg: "#dbb84a",
+    buttonBg: "#f1c535",
     buttonBg2: "#5b4a39",
     buttonBgAlt: "#fbcd32",
     buttonHover: "#dbb84a",
@@ -66,6 +68,8 @@ export const darkTheme = {
     primary: "#0f172a",
     secondary: "#1e293b",
     tertiary: "#475569",
+    gridTo: "#164e63",
+    gridFrom: "#1e3a8a",
     
     // Header
     headerGradientFrom: "#1e3a8a",
@@ -127,6 +131,8 @@ export const darkerTheme = {
     primary: "#1E1A16",
     secondary: "#2A231C",
     tertiary: "#362B22",
+    gridTo: "#503214",
+    gridFrom: "#584114",
 
     // Header
     headerGradientFrom: "#3C2F24",
@@ -137,7 +143,7 @@ export const darkerTheme = {
     // Accents
     accentYellow: "#c3980a",
     accentGold: "#876c12",
-    accentLighter: "#fde047",
+    accentLighter: "#cfb11a",
 
     // Text
     textPrimary: "#c5a37a",
@@ -164,8 +170,8 @@ export const darkerTheme = {
     cardShadow: "#000000",
 
     // Gradients for stat/info boxes
-    gradientFrom: "#362B22",
-    gradientTo: "#47382B",
+    gradientFrom: "#271600",
+    gradientTo: "#533f30",
 
     // Scrollbar
     scrollbarTrack: "#2C231A",
@@ -188,6 +194,8 @@ export const darkNightTheme = {
     primary: "#0a0a0a",            // Main page background
     secondary: "#141414",          // Main container background
     tertiary: "#1a1a1a",           // Element background
+    gridTo: "#2b2b2b",
+    gridFrom: "#363636",
 
     // Header
     headerGradientFrom: "#1f1f1f",

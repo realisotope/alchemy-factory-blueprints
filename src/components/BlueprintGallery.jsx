@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "../lib/supabase";
-import { Search, Download, Trash2, Loader, Heart, X } from "lucide-react";
+import { Search, Download, Trash2, Loader, Heart, X, User } from "lucide-react";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { sanitizeCreatorName } from "../lib/sanitization";
 import { getThumbnailUrl } from "../lib/imageOptimization";
@@ -10,6 +10,7 @@ import { useTheme } from "../lib/ThemeContext";
 import { deleteCloudinaryImage } from "../lib/cloudinaryDelete";
 import BlueprintDetail from "./BlueprintDetail";
 import BlueprintCard from "./BlueprintCard";
+import CreatorCard from "./CreatorCard";
 
 export default function BlueprintGallery({ user, refreshTrigger, initialBlueprintId }) {
   const { theme } = useTheme();
@@ -24,6 +25,8 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
   const [downloadingId, setDownloadingId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const initialBlueprintAppliedRef = useRef(false);
+  const [selectedCreator, setSelectedCreator] = useState(null);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   
   // Responsive items per page: 8 for desktop (4 cols, 2 rows), 12 for 4K (6 cols, 2 rows)
   const getItemsPerPage = () => {
@@ -343,12 +346,17 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
   };
 
   const filteredBlueprints = blueprints
-    .filter((bp) =>
-      bp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (bp.description && bp.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (bp.tags && bp.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase()))) ||
-      (bp.creator_name && bp.creator_name.toLowerCase().includes(searchTerm.toLowerCase()))
-    )
+    .filter((bp) => {
+      // Filter by favorites if active
+      if (showFavoritesOnly && !userLikes.has(bp.id)) {
+        return false;
+      }
+      // Filter by search term
+      return bp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (bp.description && bp.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (bp.tags && bp.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase()))) ||
+        (bp.creator_name && bp.creator_name.toLowerCase().includes(searchTerm.toLowerCase()));
+    })
     .sort((a, b) => {
       if (sortBy === "oldest") {
         return new Date(a.created_at) - new Date(b.created_at);
@@ -385,7 +393,30 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
 
   const handleSearchByCreator = (creatorName) => {
     handleSearch(creatorName);
+    setSelectedCreator(creatorName);
   };
+
+  const toggleFavorites = () => {
+    setShowFavoritesOnly(!showFavoritesOnly);
+    setCurrentPage(1);
+  };
+
+  const showMyUploads = () => {
+    if (user && user.user_metadata?.full_name) {
+      handleSearch(user.user_metadata.full_name);
+      setSelectedCreator(user.user_metadata.full_name);
+    }
+  };
+
+  // Check if current search is a creator search
+  const isCreatorSearch = selectedCreator && searchTerm.toLowerCase() === selectedCreator.toLowerCase();
+  const creatorBlueprints = isCreatorSearch 
+    ? blueprints.filter(bp => bp.creator_name && bp.creator_name.toLowerCase().includes(searchTerm.toLowerCase()))
+    : [];
+  
+  // Calculate creator stats
+  const totalCreatorDownloads = creatorBlueprints.reduce((sum, bp) => sum + (bp.downloads || 0), 0);
+  const totalCreatorLikes = creatorBlueprints.reduce((sum, bp) => sum + (bp.likes || 0), 0);
 
   return (
     <>
@@ -429,6 +460,12 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
             }}
             className="w-full pl-10 pr-10 py-2.5 border rounded-lg focus:outline-none focus:ring-2 placeholder-opacity-50 transition-all shadow-sm"
           />
+          <style jsx>{`
+    input::placeholder {
+      color: ${theme.colors.textPrimary};
+      opacity: 0.5;
+    }
+  `}</style>
           {searchTerm && (
             <button
               onClick={() => handleSearch("")}
@@ -522,6 +559,38 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
             </div>
           )}
         </div>
+        {user && (
+          <>
+            <button
+              type="button"
+              onClick={toggleFavorites}
+              style={{
+                borderColor: theme.colors.cardBorder,
+                backgroundColor: showFavoritesOnly ? theme.colors.accentYellow : `${theme.colors.cardBg}33`,
+                color: showFavoritesOnly ? theme.colors.bgPrimary : theme.colors.textPrimary
+              }}
+              className="px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 font-medium transition-all shadow-sm hover:opacity-80 flex items-center gap-2"
+              title={showFavoritesOnly ? "Show all blueprints" : "Show favorites only"}
+            >
+              <Heart className={`w-5 h-5 ${showFavoritesOnly ? 'fill-current' : ''}`} />
+              <span className="hidden sm:inline">Liked</span>
+            </button>
+            <button
+              type="button"
+              onClick={showMyUploads}
+              style={{
+                borderColor: theme.colors.cardBorder,
+                backgroundColor: `${theme.colors.cardBg}33`,
+                color: theme.colors.textPrimary
+              }}
+              className="px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 font-medium transition-all shadow-sm hover:opacity-80 flex items-center gap-2"
+              title="Show my uploaded blueprints"
+            >
+              <User className="w-5 h-5" />
+              <span className="hidden sm:inline">My Uploads</span>
+            </button>
+          </>
+        )}
       </div>
 
       {/* Loading State */}
@@ -547,6 +616,16 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
 
       {/* Blueprint Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 4k:grid-cols-6 gap-4">
+        {/* Creator Card */}
+        {isCreatorSearch && creatorBlueprints.length > 0 && (
+          <CreatorCard
+            creatorName={selectedCreator}
+            blueprintCount={creatorBlueprints.length}
+            totalDownloads={totalCreatorDownloads}
+            totalLikes={totalCreatorLikes}
+          />
+        )}
+        
         {paginatedBlueprints.map((blueprint) => {
           const isLiked = userLikes.has(blueprint.id);
           return (
@@ -562,6 +641,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
               onDownload={handleDownload}
               onLike={handleLike}
               onDelete={handleDelete}
+              onSearchByCreator={handleSearchByCreator}
             />
           );
         })}

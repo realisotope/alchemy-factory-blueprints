@@ -43,6 +43,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
     setDownloadCount(blueprint?.downloads ?? 0);
     setIsLiked(userLikes.has(blueprint?.id));
     setCurrentImageIndex(0);
+    setImageError(false);
   }, [blueprint?.id, blueprint?.likes, blueprint?.downloads, userLikes]);
 
   // Update meta tags when blueprint is opened/closed
@@ -199,7 +200,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
               backgroundImage: `linear-gradient(to bottom, ${theme.colors.elementBg}, ${theme.colors.elementBgCard})`,
               borderColor: theme.colors.elementBorder,
             }}
-            className="border-2 rounded-lg max-w-[50rem] w-full max-h-[90vh] overflow-y-auto relative"
+            className="border-2 rounded-lg max-w-[50rem] w-full max-h-[80vh] overflow-y-auto relative"
             key={blueprint?.id}
             initial={navigationDirection === 0 ? { opacity: 0, y: 100 } : { opacity: 0, x: navigationDirection * 100 }}
             animate={{ opacity: 1, x: 0, y: 0 }}
@@ -404,7 +405,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           {blueprint.description && (
             <div>
               <h3 style={{ color: theme.colors.accentYellow }} className="text-lg font-bold mb-2">Description</h3>
-              <p style={{ color: theme.colors.textPrimary }} className="leading-relaxed whitespace-pre-wrap break-words">
+              <p style={{ color: theme.colors.textPrimary, lineHeight: 1.4 }} className="leading-relaxed whitespace-pre-wrap break-words">
                 {parseUrlsInText(blueprint.description).map((part, idx) => {
                   if (typeof part === 'string') {
                     return <span key={idx}>{part}</span>;
@@ -485,27 +486,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                 </div>
               )}
 
-          {/* Tags */}
-          {blueprint.tags && blueprint.tags.length > 0 && (
-            <div>
-              <h3 style={{ color: theme.colors.accentYellow }} className="text-lg font-bold mb-3">Tags</h3>
-              <div className="flex flex-wrap gap-2">
-                {blueprint.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    style={{
-                      backgroundColor: `${theme.colors.cardBg}50`,
-                      color: theme.colors.textPrimary,
-                      borderColor: theme.colors.cardBorder,
-                    }}
-                    className="px-3 py-1 rounded-lg text-sm font-medium border shadow"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+          
 
           {/* Changelog
           {blueprint.changelog && (
@@ -518,32 +499,59 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           )} */}
 
           {/* Date Info */}
-          <div style={{
-            color: theme.colors.textSecondary,
-            borderTopColor: theme.colors.cardBorder,
-          }} className="text-sm pt-4 border-t space-y-2">
-            {blueprint.updated_at && blueprint.updated_at !== blueprint.created_at && (
-              <div>
-                Updated on{" "}
-                {new Date(blueprint.updated_at).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </div>
-            )}
+          <div
+  style={{
+    color: theme.colors.textSecondary,
+    borderTopColor: theme.colors.cardBorder,
+  }}
+  className="text-sm pt-4 border-t space-y-2"
+>
+  {/* Tags */}
+          {blueprint.tags && blueprint.tags.length > 0 && (
             <div>
-              Uploaded on{" "}
-              {new Date(blueprint.created_at).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              <div className="flex flex-wrap items-center gap-3 mb-3">
+                <h3 style={{ color: theme.colors.accentYellow }} className="text-lg font-bold">Tags</h3>
+                <div className="flex flex-wrap gap-2">
+                  {blueprint.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      style={{
+                        backgroundColor: `${theme.colors.cardBg}50`,
+                        color: theme.colors.textPrimary,
+                        borderColor: theme.colors.cardBorder,
+                      }}
+                      className="px-3 py-1 rounded-lg text-sm font-medium border shadow"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
+          )}
+  <div>
+    Uploaded on{" "}
+    {new Date(blueprint.created_at).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })}
+    {blueprint.updated_at && blueprint.updated_at !== blueprint.created_at && (
+      <>
+        {" - "}
+        Updated on{" "}
+        {new Date(blueprint.updated_at).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })}
+      </>
+    )}
+  </div>
             {blueprint.filehash && (
               <div className="text-xs px-2 py-1 rounded-md -mx-1" style={{color: theme.colors.textTertiary, backgroundColor: 'rgba(0, 0, 0, 0.1)'}}>
                 <div className="opacity-75" style={{ fontStyle: 'italic' }}>Blueprint File Hash: <span className="font-mono break-all pl-1">{blueprint.filehash}</span></div>

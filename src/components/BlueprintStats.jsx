@@ -158,7 +158,7 @@ const BlueprintStats = memo(function BlueprintStats({
                   <div
                     key={material.id}
                     style={{
-                      backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`,
+                      backgroundImage: `linear-gradient(to top, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`,
                       borderColor: theme.colors.cardBorder,
                     }}
                     className="rounded-lg border-2 shadow-lg p-1 text-center transition hover:shadow-lg flex flex-col items-center justify-center"
@@ -194,7 +194,7 @@ const BlueprintStats = memo(function BlueprintStats({
                   <div
                     key={building.id}
                     style={{
-                      backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`,
+                      backgroundImage: `linear-gradient(to top, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`,
                       borderColor: theme.colors.cardBorder,
                     }}
                     className="rounded-lg border-2 p-1 text-center transition hover:shadow-lg flex flex-col items-center justify-center"
