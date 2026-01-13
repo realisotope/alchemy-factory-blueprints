@@ -67,6 +67,51 @@ export default function Tooltip({ children, title, position = 'top' }) {
 
       setTooltipPos({ top, left });
     }
+  }, [isVisible, position, triggerRef]);
+
+  // Recalculate tooltip position on scroll/resize
+  useEffect(() => {
+    if (!isVisible) return;
+
+    const handleScroll = () => {
+      if (triggerRef.current) {
+        const rect = triggerRef.current.getBoundingClientRect();
+        const offset = -2;
+        const padding = 8;
+        
+        let top = 0;
+        let left = 0;
+
+        switch (position) {
+          case 'top':
+            top = rect.top - offset + window.scrollY;
+            left = rect.left + rect.width / 2 + window.scrollX;
+            break;
+          case 'bottom':
+            top = rect.bottom + offset + window.scrollY;
+            left = rect.left + rect.width / 2 + window.scrollX;
+            break;
+          case 'left':
+            top = rect.top + rect.height / 2 + window.scrollY;
+            left = rect.left - offset + window.scrollX;
+            break;
+          case 'right':
+            top = rect.top + rect.height / 2 + window.scrollY;
+            left = rect.right + offset + window.scrollX;
+            break;
+        }
+
+        setTooltipPos({ top, left });
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('resize', handleScroll);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', handleScroll);
+    };
   }, [isVisible, position]);
 
   const positionClasses = {

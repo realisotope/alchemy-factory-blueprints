@@ -11,6 +11,7 @@ import imageCompression from "browser-image-compression";
 import JSZip from "jszip";
 import { ClientRateLimiter, checkServerRateLimit } from "../lib/rateLimiter";
 import { sendBlueprintToParser } from "../lib/blueprintParser";
+import { extractBlueprintFromPng, isPngBlueprint, formatBytes } from "../lib/pngBlueprintExtractor";
 
 // Constants for validation
 const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB
@@ -18,6 +19,7 @@ const MAX_IMAGE_WIDTH = 4000;
 const MAX_IMAGE_HEIGHT = 4000;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const AF_FILE_MAX_SIZE = 50 * 1024 * 1024; // 50MB
+const PNG_BLUEPRINT_MAX_SIZE = 20 * 1024 * 1024; // 20MB
 
 // Predefined tags list
 const AVAILABLE_TAGS = [
@@ -37,12 +39,42 @@ const AVAILABLE_TAGS = [
   "experimental",
 ];
 
-// Validate .af file by checking extension and file structure
-const validateAfFile = async (file) => {
-  if (!file.name.toLowerCase().endsWith(".af")) {
-    return { valid: false, error: "File must have .af extension" };
+// Validate blueprint file (.af or .png) by checking extension and file structure
+const validateBlueprintFile = async (file) => {
+  const fileName = file.name.toLowerCase();
+
+  // Check extension - must end with .af or .png
+  if (!fileName.endsWith(".af") && !fileName.endsWith(".png")) {
+    return { valid: false, error: "File must have .af or .png extension" };
   }
 
+  // If PNG blueprint, validate and extract
+  if (fileName.endsWith(".png")) {
+    // Check file size for PNG
+    if (file.size > PNG_BLUEPRINT_MAX_SIZE) {
+      return { valid: false, error: `PNG blueprint must be smaller than ${formatBytes(PNG_BLUEPRINT_MAX_SIZE)}` };
+    }
+
+    try {
+      // Extract blueprint data from PNG (strips image data)
+      const result = await extractBlueprintFromPng(file);
+      
+      return { 
+        valid: true, 
+        isPng: true,
+        strippedFile: result.strippedFile,
+        compressionInfo: {
+          originalSize: result.originalSize,
+          strippedSize: result.strippedSize,
+          savedSpace: result.compressionRatio
+        }
+      };
+    } catch (error) {
+      return { valid: false, error: `PNG validation failed: ${error.message}` };
+    }
+  }
+
+  // For .af files, continue with existing validation
   if (file.size > AF_FILE_MAX_SIZE) {
     return { valid: false, error: "Blueprint file must be smaller than 50MB" };
   }
@@ -125,6 +157,9 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
   const [error, setError] = useState("");
   const [imageDragActive, setImageDragActive] = useState([false, false, false]);
   const [rateLimitInfo, setRateLimitInfo] = useState(null);
+  const [processingPng, setProcessingPng] = useState(false);
+  const [compressionInfo, setCompressionInfo] = useState(null);
+  const [blueprintFileExtension, setBlueprintFileExtension] = useState(".af");
   const fileInputRef = useRef(null);
   const imageInputRef = useRef(null);
 
@@ -151,12 +186,30 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
   const handleBlueprintSelect = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      const validation = await validateAfFile(file);
+      const isPng = isPngBlueprint(file.name);
+      setProcessingPng(isPng);
+      
+      const validation = await validateBlueprintFile(file);
+      
+      setProcessingPng(false);
+      
       if (!validation.valid) {
         setError(validation.error);
         setBlueprintFile(null);
+        setCompressionInfo(null);
+        setBlueprintFileExtension(".af");
       } else {
-        setBlueprintFile(file);
+        // If PNG, convert stripped Blob to File with proper filename; otherwise use original
+        let fileToUse;
+        if (validation.isPng) {
+          // Convert Blob to File with original filename
+          fileToUse = new File([validation.strippedFile], file.name, { type: 'image/png' });
+        } else {
+          fileToUse = file;
+        }
+        setBlueprintFile(fileToUse);
+        setCompressionInfo(validation.compressionInfo || null);
+        setBlueprintFileExtension(isPng ? ".png" : ".af");
         setError(null);
       }
     }
@@ -308,11 +361,11 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
         }
 
         // Create and upload new zip file
-        // Rename the .af file to the blueprint title before zipping
-        const afFileName = `${sanitizeTitleForFilename(title)}.af`;
+        // Rename the file to the blueprint title before zipping (preserving extension)
+        const blueprintFileName = `${sanitizeTitleForFilename(title)}${blueprintFileExtension}`;
         
         const zip = new JSZip();
-        zip.file(afFileName, blueprintFile, { compression: "DEFLATE" });
+        zip.file(blueprintFileName, blueprintFile, { compression: "DEFLATE" });
         const zipBlob = await zip.generateAsync({
           type: "blob",
           compression: "DEFLATE",
@@ -458,19 +511,14 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
             </div>
           )}
 
-          {/* Rate Limit Info */}
-          {rateLimitInfo && !error && (
-            <div className="border rounded-lg text-sm px-4 py-3" style={{ backgroundColor: `${theme.colors.cardBg}33`, borderColor: theme.colors.cardBorder, color: theme.colors.textSecondary }}>
-              <p>📊 Edits remaining this hour: <span style={{ color: theme.colors.accentGold }} className="font-semibold">{rateLimitInfo.remaining}/{rateLimitInfo.maxAttempts}</span></p>
-            </div>
-          )}
-
           {/* Title */}
           <div>
-            <label className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
+            <label htmlFor="edit-blueprint-title" className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
               Blueprint Title *
             </label>
             <input
+              id="edit-blueprint-title"
+              name="edit-blueprint-title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -483,10 +531,12 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
 
           {/* Description */}
           <div>
-            <label className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
+            <label htmlFor="edit-blueprint-description" className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
               Description
             </label>
             <textarea
+              id="edit-blueprint-description"
+              name="edit-blueprint-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe your blueprint..."
@@ -515,7 +565,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
           {/* Blueprint File */}
           <div>
             <label className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
-              Blueprint File (.af)
+              Blueprint File (.af or .png)
             </label>
             <p className="text-xs mb-2" style={{ color: theme.colors.textSecondary }}>
               {blueprintFile ? "New file selected" : "Keep existing file or upload a new one"}
@@ -523,16 +573,25 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              disabled={isLoading}
+              disabled={isLoading || processingPng}
               style={{ borderColor: theme.colors.accentYellow, color: theme.colors.accentYellow }}
               className="w-full px-4 py-3 border-2 border-dashed rounded-lg transition font-medium disabled:opacity-50 hover:opacity-60"
             >
-              {blueprintFile ? `✓ ${blueprintFile.name}` : "Click to select or upload .af file"}
+              {processingPng
+                ? "Processing PNG blueprint..."
+                : blueprintFile
+                ? `✓ ${blueprintFile.name}`
+                : "Click to select or upload .af/.png file"}
             </button>
+            {compressionInfo && (
+              <p style={{ color: theme.colors.textSecondary }} className="text-xs mt-1">
+                PNG optimized: {formatBytes(compressionInfo.originalSize)} → {formatBytes(compressionInfo.strippedSize)} ({compressionInfo.savedSpace})
+              </p>
+            )}
             <input
               ref={fileInputRef}
               type="file"
-              accept=".af"
+              accept=".af,.png"
               onChange={handleBlueprintSelect}
               className="hidden"
               disabled={isLoading}
@@ -546,8 +605,8 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
             </label>
             <div className="grid grid-cols-3 gap-3">
               {[0, 1, 2].map((index) => (
-                <div key={index} className="space-y-2">
-                  {imagePreviews[index] && (
+                <div key={index}>
+                  {imagePreviews[index] ? (
                     <div className="relative">
                       <img
                         src={imagePreviews[index]}
@@ -571,41 +630,42 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
                         <X className="w-3 h-3" />
                       </button>
                     </div>
-                  )}
-                  <div
-                    className="relative"
-                    onDragEnter={(e) => handleImageDragEnter(e, index)}
-                    onDragLeave={(e) => handleImageDragLeave(e, index)}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => handleImageDrop(e, index)}
-                  >
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleImageSelect(e, index)}
-                      className="hidden"
-                      id={`image-input-${index}`}
-                      disabled={isLoading}
-                    />
-                    <label
-                      htmlFor={`image-input-${index}`}
-                      style={{
-                        borderColor: imageDragActive[index] ? theme.colors.cardBorder : `${theme.colors.accentYellow}`,
-                        backgroundColor: imageDragActive[index] ? `${theme.colors.cardBorder}20` : `${theme.colors.cardBorder}20`,
-                        color: theme.colors.textPrimary
-                      }}
-                      className="flex flex-col items-center justify-center w-full px-2 py-4 border-2 border-dashed rounded-lg cursor-pointer transition hover:opacity-60 text-xs text-center"
+                  ) : (
+                    <div
+                      className="relative"
+                      onDragEnter={(e) => handleImageDragEnter(e, index)}
+                      onDragLeave={(e) => handleImageDragLeave(e, index)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => handleImageDrop(e, index)}
                     >
-                      <Upload className="w-4 h-4 mb-1" style={{ color: theme.colors.accentYellow }} />
-                      <span>
-                        {imageFiles[index]
-                          ? imageFiles[index].name.substring(0, 15) + '...'
-                          : imageDragActive[index]
-                          ? "Drop here"
-                          : `Image ${index + 1}`}
-                      </span>
-                    </label>
-                  </div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleImageSelect(e, index)}
+                        className="hidden"
+                        id={`image-input-${index}`}
+                        disabled={isLoading}
+                      />
+                      <label
+                        htmlFor={`image-input-${index}`}
+                        style={{
+                          borderColor: imageDragActive[index] ? theme.colors.cardBorder : `${theme.colors.accentYellow}`,
+                          backgroundColor: imageDragActive[index] ? `${theme.colors.cardBorder}20` : `${theme.colors.cardBorder}20`,
+                          color: theme.colors.textPrimary
+                        }}
+                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition hover:opacity-60 text-xs text-center"
+                      >
+                        <Upload className="w-6 h-6 mb-2" style={{ color: theme.colors.accentYellow }} />
+                        <span>
+                          {imageFiles[index]
+                            ? imageFiles[index].name.substring(0, 15) + '...'
+                            : imageDragActive[index]
+                            ? "Drop here"
+                            : `Image ${index + 1}`}
+                        </span>
+                      </label>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -664,6 +724,13 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               )}
             </div>
           </div>
+
+          {/* Rate Limit Info */}
+          {rateLimitInfo && !error && (
+            <div className="border rounded-lg text-sm px-4 py-3" style={{ backgroundColor: `${theme.colors.cardBg}33`, borderColor: theme.colors.cardBorder, color: theme.colors.textSecondary }}>
+              <p>📊 Edits remaining this hour: <span style={{ color: theme.colors.accentGold }} className="font-semibold">{rateLimitInfo.remaining}/{rateLimitInfo.maxAttempts}</span></p>
+            </div>
+          )}
 
           {/* Submit */}
           <div className="flex gap-3 pt-4">

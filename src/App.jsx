@@ -82,14 +82,17 @@ export default function App() {
       className="min-h-screen w-full relative flex flex-col"
       style={{
         backgroundColor: theme.colors.primary,
-        backgroundImage: `
-        radial-gradient(circle, ${theme.gradients.dots[0]} 1px, transparent 1px),
-        radial-gradient(circle, ${theme.gradients.dots[1]} 1px, transparent 1px),
-        radial-gradient(circle, ${theme.gradients.dots[2]} 1px, transparent 1px)
-      `,
-        backgroundSize: "72px 72px, 72px 72px, 100% 100%",
       }}
     >
+      {/* Global Styles */}
+      <style>{`
+        input::placeholder,
+        textarea::placeholder {
+          color: ${theme.colors.textPrimary};
+          opacity: 0.5;
+        }
+      `}</style>
+      
       <div className="relative z-10 flex flex-col flex-grow">
         {/* Header */}
         <header style={{
@@ -142,7 +145,22 @@ export default function App() {
         </header>
 
         {/* Main Content */}
-        <main className="max-w-7xl 4k:max-w-[120rem] mx-auto px-4 py-12 space-y-12 flex-grow w-full min-w-0">
+        <main className="max-w-7xl 4k:max-w-[120rem] mx-auto px-4 py-6 space-y-4 flex-grow w-full min-w-0 relative">
+          {/* Background Pattern */}
+          <div className="fixed inset-0 pointer-events-none -z-10">
+            <div className="relative h-full w-full [&>div]:absolute [&>div]:h-full [&>div]:w-full [&>div]:[background-size:36px_36px] [&>div]:[mask-image:radial-gradient(circle_at_50%_50%,#000_0%,transparent_90%)]"
+              style={{
+                opacity: 0.6,
+                '--dot-color': theme.colors.accentYellow
+              }}>
+              <div style={{
+                backgroundImage: `linear-gradient(0deg, ${theme.colors.gridTo} 1px, transparent 1px), linear-gradient(90deg, ${theme.colors.gridFrom} 1px, transparent 1px)`
+              }}></div>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="relative z-10">
 
           {/* Gallery Section */}
           <section>
@@ -154,6 +172,7 @@ export default function App() {
             </h2>
             <BlueprintGallery user={user} refreshTrigger={refreshGallery} initialBlueprintId={initialBlueprintId} />
           </section>
+          </div>
         </main>
 
         {/* Upload Modal */}
