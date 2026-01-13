@@ -227,7 +227,7 @@
           "id": "4f9682c9-c441-4add-a120-ab2a104bbb63",
           "width": 64,
           "height": 64,
-          "name": "dispatchportal"
+          "name": "portal_wholesaling"
         },
         {
           "id": "d271eb4e-3b12-448d-af32-f0f5d44cdbed",
@@ -648,6 +648,12 @@
           "width": 64,
           "height": 64,
           "name": "advancedalembic"
+        },
+        {
+          "id": "d3f3f3e1-3f2e-4f4a-80b4-7c9e6d5c3b2a1f",
+          "width": 64,
+          "height": 64,
+          "name": "liquidsupplier"
         }
       ]
     }

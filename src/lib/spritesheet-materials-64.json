@@ -186,6 +186,12 @@
           "width": 64,
           "height": 64,
           "name": "world-tree-seeds"
+        },
+        {
+          "id": "e3f3f4a1-5f4b-4c2e-9f4a-2b3c4d5e6f70",
+          "width": 64,
+          "height": 64,
+          "name": "linen"
         }
       ]
     }
