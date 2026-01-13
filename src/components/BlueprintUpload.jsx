@@ -15,6 +15,7 @@ import { sendBlueprintToParser } from "../lib/blueprintParser";
 import { transformParsedMaterials, transformParsedBuildings } from "../lib/blueprintMappings";
 import { ClientRateLimiter, checkServerRateLimit } from "../lib/rateLimiter";
 import { extractBlueprintFromPng, isPngBlueprint, formatBytes } from "../lib/pngBlueprintExtractor";
+import { AVAILABLE_TAGS } from "../lib/tags";
 
 // Constants for validation
 const MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB
@@ -23,28 +24,6 @@ const MAX_IMAGE_HEIGHT = 2160;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const AF_FILE_MAX_SIZE = 10 * 1024 * 1024; // 10MB
 const PNG_BLUEPRINT_MAX_SIZE = 20 * 1024 * 1024; // 20MB
-
-// Predefined tags list
-const AVAILABLE_TAGS = [
-  "logistics",
-  "smelting",
-  "crafting",
-  "extraction",
-  "enchanting",
-  "brewing",
-  "compact",
-  "modular",
-  "scalable",
-  "stackable",
-  "fuel",
-  "currency",
-  "misc",
-  "experimental",
-  "automation",
-  "liquid",
-  "relic",
-  "decorative",
-];
 
 // Validate blueprint file (.af or .png) by checking extension and file structure
 const validateBlueprintFile = async (file) => {

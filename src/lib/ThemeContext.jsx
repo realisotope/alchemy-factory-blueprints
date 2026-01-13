@@ -21,6 +21,9 @@ export function ThemeProvider({ children }) {
     root.style.setProperty("--theme-primary", theme.colors.primary);
     root.style.setProperty("--theme-secondary", theme.colors.secondary);
     root.style.setProperty("--theme-text-primary", theme.colors.textPrimary);
+    root.style.setProperty("--scrollbar-track", theme.colors.scrollbarTrack);
+    root.style.setProperty("--scrollbar-thumb", theme.colors.scrollbarThumb);
+    root.style.setProperty("--scrollbar-thumb-hover", theme.colors.scrollbarThumbHover);
   }, [theme, themeName]);
 
   const toggleTheme = () => {

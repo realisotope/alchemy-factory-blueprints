@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "../lib/supabase";
-import { Search, Download, Trash2, Loader, Heart, X, User } from "lucide-react";
+import { Search, Download, Trash2, Loader, Heart, X, User, Filter } from "lucide-react";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { sanitizeCreatorName } from "../lib/sanitization";
 import { getThumbnailUrl, prefetchImage } from "../lib/imageOptimization";
 import { transformParsedMaterials, transformParsedBuildings } from "../lib/blueprintMappings";
 import { useTheme } from "../lib/ThemeContext";
 import { deleteCloudinaryImage } from "../lib/cloudinaryDelete";
+import { AVAILABLE_TAGS } from "../lib/tags";
 import BlueprintDetail from "./BlueprintDetail";
 import BlueprintCard from "./BlueprintCard";
 import CreatorCard from "./CreatorCard";
@@ -19,6 +20,8 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
+  const [selectedTags, setSelectedTags] = useState([]); // Track selected tags for filtering
+  const [tagsDropdownOpen, setTagsDropdownOpen] = useState(false);
   const [deleting, setDeleting] = useState(null);
   const [selectedBlueprint, setSelectedBlueprint] = useState(null);
   const [userLikes, setUserLikes] = useState(new Set());
@@ -374,6 +377,16 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
       if (showFavoritesOnly && !userLikes.has(bp.id)) {
         return false;
       }
+      // Filter by selected tags (all selected tags must be present)
+      if (selectedTags.length > 0) {
+        const bpTags = bp.tags || [];
+        const hasAllSelectedTags = selectedTags.every((tag) =>
+          bpTags.some((bpTag) => bpTag.toLowerCase() === tag.toLowerCase())
+        );
+        if (!hasAllSelectedTags) {
+          return false;
+        }
+      }
       // Filter by search term
       return bp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (bp.description && bp.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -429,6 +442,17 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
 
   const handleSort = (value) => {
     setSortBy(value);
+    setCurrentPage(1);
+  };
+
+  const handleTagToggle = (tag) => {
+    setSelectedTags((prev) => {
+      if (prev.includes(tag)) {
+        return prev.filter((t) => t !== tag);
+      } else {
+        return [...prev, tag];
+      }
+    });
     setCurrentPage(1);
   };
 
@@ -593,6 +617,71 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
               >
                 Most Liked
               </button>
+            </div>
+          )}
+        </div>
+
+        {/* Tags Filter */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setTagsDropdownOpen(!tagsDropdownOpen)}
+            style={{
+              borderColor: theme.colors.cardBorder,
+              backgroundColor: selectedTags.length > 0 ? `${theme.colors.accentYellow}33` : `${theme.colors.cardBg}33`,
+              color: theme.colors.textPrimary
+            }}
+            className="w-full sm:w-auto px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 font-medium transition-all shadow-sm hover:opacity-80 flex items-center justify-between gap-2"
+          >
+            <span className="flex items-center gap-2">
+              <Filter className="w-4 h-4" />
+              Tags {selectedTags.length > 0 && <span style={{ color: theme.colors.accentYellow }} className="font-bold">({selectedTags.length})</span>}
+            </span>
+            <span className={`transition transform ${tagsDropdownOpen ? "rotate-180" : ""}`}>▼</span>
+          </button>
+          
+          {tagsDropdownOpen && (
+            <div style={{ borderColor: theme.colors.cardBorder, backgroundColor: theme.colors.elementBg }} className="absolute top-full right-0 mt-1 border rounded-lg shadow-lg z-50 w-56 max-h-80 overflow-y-auto">
+              {AVAILABLE_TAGS.map((tag, index) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => handleTagToggle(tag)}
+                  style={{ 
+                    color: selectedTags.includes(tag) ? theme.colors.accentYellow : theme.colors.textPrimary,
+                    borderColor: `${theme.colors.cardBorder}33`,
+                    backgroundColor: selectedTags.includes(tag) ? `${theme.colors.accentYellow}33` : 'transparent'
+                  }}
+                  className={`w-full text-left px-4 py-2.5 transition ${index === 0 ? 'first:rounded-t-lg' : ''} ${index === AVAILABLE_TAGS.length - 1 ? 'last:rounded-b-lg last:border-b-0' : 'border-b'}`}
+                  onMouseEnter={(e) => {
+                    if (!selectedTags.includes(tag)) {
+                      e.target.style.backgroundColor = `${theme.colors.cardBorder}33`;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = selectedTags.includes(tag) ? `${theme.colors.accentYellow}33` : 'transparent';
+                  }}
+                >
+                  {tag}
+                </button>
+              ))}
+              {selectedTags.length > 0 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedTags([]);
+                      setCurrentPage(1);
+                    }}
+                    style={{ color: theme.colors.accentYellow, borderColor: `${theme.colors.cardBorder}33` }}
+                    className="w-full text-left px-4 py-2.5 transition border-t"
+                    onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                  >
+                    Clear All Tags
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>

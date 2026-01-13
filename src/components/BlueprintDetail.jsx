@@ -412,7 +412,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           {blueprint.description && (
             <div>
               <h3 style={{ color: theme.colors.accentYellow }} className="text-lg font-bold mb-2">Description</h3>
-              <p style={{ color: theme.colors.textPrimary, lineHeight: 1.4 }} className="leading-relaxed whitespace-pre-wrap break-words">
+              <p style={{ color: theme.colors.textPrimary, lineHeight: 1.4 }} className="leading-relaxed whitespace-pre-wrap break-words p-1">
                 {parseUrlsInText(blueprint.description).map((part, idx) => {
                   if (typeof part === 'string') {
                     return <span key={idx}>{part}</span>;
@@ -508,7 +508,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
     color: theme.colors.textSecondary,
     borderTopColor: theme.colors.cardBorder,
   }}
-  className="text-sm py-4 border-t space-y-2"
+  className="text-sm pt-4 border-t space-y-2"
 >
   {/* Tags */}
           {blueprint.tags && blueprint.tags.length > 0 && (
@@ -566,7 +566,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
 
         {/* Footer Actions */}
         <div style={{
-          background: `linear-gradient(to top, ${theme.colors.headerGradientFrom}, ${theme.colors.headerGradientVia}, ${theme.colors.headerGradientTo})`,
+          background: `linear-gradient(to left, ${theme.colors.headerGradientFrom}, ${theme.colors.headerGradientVia}, ${theme.colors.headerGradientTo})`,
           borderTopColor: theme.colors.cardBorder,
           color: `${theme.colors.textPrimary}90`,
         }} className="sticky bottom-0 p-3 sm:p-6 flex gap-2 sm:gap-3 border-t-2 flex-wrap relative z-[10] text-white">

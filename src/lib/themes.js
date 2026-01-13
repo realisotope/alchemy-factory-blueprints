@@ -72,9 +72,9 @@ export const darkTheme = {
     gridFrom: "#1e3a8a",
     
     // Header
-    headerGradientFrom: "#1e3a8a",
-    headerGradientVia: "#0c4a6e",
-    headerGradientTo: "#164e63",
+    headerGradientFrom: "#1b2e63",
+    headerGradientVia: "#144363",
+    headerGradientTo: "#0f3c4d",
     headerBorder: "#0074aa",
     
     // Accents

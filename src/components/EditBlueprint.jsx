@@ -12,6 +12,7 @@ import JSZip from "jszip";
 import { ClientRateLimiter, checkServerRateLimit } from "../lib/rateLimiter";
 import { sendBlueprintToParser } from "../lib/blueprintParser";
 import { extractBlueprintFromPng, isPngBlueprint, formatBytes } from "../lib/pngBlueprintExtractor";
+import { AVAILABLE_TAGS } from "../lib/tags";
 
 // Constants for validation
 const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB
@@ -20,24 +21,6 @@ const MAX_IMAGE_HEIGHT = 4000;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const AF_FILE_MAX_SIZE = 50 * 1024 * 1024; // 50MB
 const PNG_BLUEPRINT_MAX_SIZE = 20 * 1024 * 1024; // 20MB
-
-// Predefined tags list
-const AVAILABLE_TAGS = [
-  "logistics",
-  "smelting",
-  "crafting",
-  "extraction",
-  "enchanting",
-  "brewing",
-  "compact",
-  "modular",
-  "scalable",
-  "stackable",
-  "fuel",
-  "currency",
-  "misc",
-  "experimental",
-];
 
 // Validate blueprint file (.af or .png) by checking extension and file structure
 const validateBlueprintFile = async (file) => {
