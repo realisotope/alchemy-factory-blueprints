@@ -14,13 +14,15 @@ import { m } from "framer-motion";
 import { sendBlueprintToParser } from "../lib/blueprintParser";
 import { transformParsedMaterials, transformParsedBuildings } from "../lib/blueprintMappings";
 import { ClientRateLimiter, checkServerRateLimit } from "../lib/rateLimiter";
+import { extractBlueprintFromPng, isPngBlueprint, formatBytes } from "../lib/pngBlueprintExtractor";
 
 // Constants for validation
-const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
-const MAX_IMAGE_WIDTH = 4000;
-const MAX_IMAGE_HEIGHT = 4000;
+const MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB
+const MAX_IMAGE_WIDTH = 3840;
+const MAX_IMAGE_HEIGHT = 2160;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const AF_FILE_MAX_SIZE = 25 * 1024 * 1024; // 25MB
+const AF_FILE_MAX_SIZE = 10 * 1024 * 1024; // 10MB
+const PNG_BLUEPRINT_MAX_SIZE = 20 * 1024 * 1024; // 20MB
 
 // Predefined tags list
 const AVAILABLE_TAGS = [
@@ -44,16 +46,43 @@ const AVAILABLE_TAGS = [
   "decorative",
 ];
 
-// Validate .af file by checking extension and file structure
-const validateAfFile = async (file) => {
+// Validate blueprint file (.af or .png) by checking extension and file structure
+const validateBlueprintFile = async (file) => {
   const fileName = file.name.toLowerCase();
 
-  // Check extension - must end with .af
-  if (!fileName.endsWith(".af")) {
-    return { valid: false, error: "File must have .af extension" };
+  // Check extension - must end with .af or .png
+  if (!fileName.endsWith(".af") && !fileName.endsWith(".png")) {
+    return { valid: false, error: "File must have .af or .png extension" };
   }
 
-  // Check for double extensions or suspicious patterns (e.g., file.exe.af, file.pdf.af)
+  // If PNG blueprint, validate and extract
+  if (fileName.endsWith(".png")) {
+    // Check file size for PNG
+    if (file.size > PNG_BLUEPRINT_MAX_SIZE) {
+      return { valid: false, error: `PNG blueprint must be smaller than ${formatBytes(PNG_BLUEPRINT_MAX_SIZE)}` };
+    }
+
+    try {
+      // Extract blueprint data from PNG (strips image data)
+      const result = await extractBlueprintFromPng(file);
+      
+      return { 
+        valid: true, 
+        isPng: true,
+        strippedFile: result.strippedFile,
+        compressionInfo: {
+          originalSize: result.originalSize,
+          strippedSize: result.strippedSize,
+          savedSpace: result.compressionRatio
+        }
+      };
+    } catch (error) {
+      return { valid: false, error: `PNG validation failed: ${error.message}` };
+    }
+  }
+
+  // For .af files, continue with existing validation
+  // Check for double extensions or suspicious patterns
   const nameWithoutExt = fileName.slice(0, -3); // Remove .af
   const dangerousExtensions = [
     ".exe", ".bat", ".cmd", ".com", ".scr", ".vbs", ".js", ".jse",
@@ -217,6 +246,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
   const [blueprintDragActive, setBlueprintDragActive] = useState(false);
   const [imageDragActive, setImageDragActive] = useState([false, false, false]);
   const [rateLimitInfo, setRateLimitInfo] = useState(null);
+  const [processingPng, setProcessingPng] = useState(false);
+  const [compressionInfo, setCompressionInfo] = useState(null);
 
   const handleImageSelect = (e, index) => {
     const file = e.target.files?.[0];
@@ -247,13 +278,22 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
   const handleBlueprintSelect = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate .af file
-      const validation = await validateAfFile(file);
+      setProcessingPng(isPngBlueprint(file.name));
+      
+      // Validate blueprint file (.af or .png)
+      const validation = await validateBlueprintFile(file);
+      
+      setProcessingPng(false);
+      
       if (!validation.valid) {
         setError(validation.error);
         setBlueprintFile(null);
+        setCompressionInfo(null);
       } else {
-        setBlueprintFile(file);
+        // If PNG, use the stripped file; otherwise use original
+        const fileToUse = validation.isPng ? validation.strippedFile : file;
+        setBlueprintFile(fileToUse);
+        setCompressionInfo(validation.compressionInfo || null);
         setError(null);
       }
     }
@@ -276,13 +316,22 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
 
     const file = e.dataTransfer.files?.[0];
     if (file) {
-      // Validate .af file
-      const validation = await validateAfFile(file);
+      setProcessingPng(isPngBlueprint(file.name));
+      
+      // Validate blueprint file (.af or .png)
+      const validation = await validateBlueprintFile(file);
+      
+      setProcessingPng(false);
+      
       if (!validation.valid) {
         setError(validation.error);
         setBlueprintFile(null);
+        setCompressionInfo(null);
       } else {
-        setBlueprintFile(file);
+        // If PNG, use the stripped file; otherwise use original
+        const fileToUse = validation.isPng ? validation.strippedFile : file;
+        setBlueprintFile(fileToUse);
+        setCompressionInfo(validation.compressionInfo || null);
         setError(null);
       }
     }
@@ -726,7 +775,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         {/* Blueprint File Upload */}
         <div>
           <label style={{ color: theme.colors.textPrimary }} className="block text-s font-medium mb-2">
-            Blueprint File (.af) *
+            Blueprint File (.af or .png) *
           </label>
           <div
             className="relative"
@@ -737,7 +786,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
           >
             <input
               type="file"
-              accept=".af"
+              accept=".af,.png"
               onChange={handleBlueprintSelect}
               className="hidden"
               id="blueprint-input"
@@ -753,13 +802,20 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
             >
               <Upload className="w-5 h-5 mr-2" style={{ color: theme.colors.accentYellow }} />
               <span>
-                {blueprintFile
+                {processingPng
+                  ? "Processing PNG blueprint..."
+                  : blueprintFile
                   ? blueprintFile.name
                   : blueprintDragActive
-                    ? "Drop your .af file here"
-                    : "Click to select or drag & drop .af file"}
+                    ? "Drop your .af or .png file here"
+                    : "Click to select or drag & drop .af/.png file"}
               </span>
             </label>
+            {compressionInfo && (
+              <p style={{ color: theme.colors.textSecondary }} className="text-xs mt-1">
+                PNG optimized: {formatBytes(compressionInfo.originalSize)} → {formatBytes(compressionInfo.strippedSize)} ({compressionInfo.savedSpace})
+              </p>
+            )}
           </div>
         </div>
 

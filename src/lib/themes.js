@@ -151,9 +151,9 @@ export const darkerTheme = {
     textDark: "#876E54",
 
     // Backgrounds for elements
-    elementBg: "#3D3128",
+    elementBg: "#362b22",
     elementBgDark: "#30261E",
-    elementBgCard: "#30261E",
+    elementBgCard: "#251d17",
     elementBorder: "#66573D",
 
     // Buttons
@@ -170,8 +170,8 @@ export const darkerTheme = {
     cardShadow: "#000000",
 
     // Gradients for stat/info boxes
-    gradientFrom: "#271600",
-    gradientTo: "#533f30",
+    gradientFrom: "#201000",
+    gradientTo: "#33251b",
 
     // Scrollbar
     scrollbarTrack: "#2C231A",

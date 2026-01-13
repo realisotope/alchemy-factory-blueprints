@@ -11,6 +11,7 @@ import imageCompression from "browser-image-compression";
 import JSZip from "jszip";
 import { ClientRateLimiter, checkServerRateLimit } from "../lib/rateLimiter";
 import { sendBlueprintToParser } from "../lib/blueprintParser";
+import { extractBlueprintFromPng, isPngBlueprint, formatBytes } from "../lib/pngBlueprintExtractor";
 
 // Constants for validation
 const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB
@@ -18,6 +19,7 @@ const MAX_IMAGE_WIDTH = 4000;
 const MAX_IMAGE_HEIGHT = 4000;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const AF_FILE_MAX_SIZE = 50 * 1024 * 1024; // 50MB
+const PNG_BLUEPRINT_MAX_SIZE = 20 * 1024 * 1024; // 20MB
 
 // Predefined tags list
 const AVAILABLE_TAGS = [
@@ -37,12 +39,42 @@ const AVAILABLE_TAGS = [
   "experimental",
 ];
 
-// Validate .af file by checking extension and file structure
-const validateAfFile = async (file) => {
-  if (!file.name.toLowerCase().endsWith(".af")) {
-    return { valid: false, error: "File must have .af extension" };
+// Validate blueprint file (.af or .png) by checking extension and file structure
+const validateBlueprintFile = async (file) => {
+  const fileName = file.name.toLowerCase();
+
+  // Check extension - must end with .af or .png
+  if (!fileName.endsWith(".af") && !fileName.endsWith(".png")) {
+    return { valid: false, error: "File must have .af or .png extension" };
   }
 
+  // If PNG blueprint, validate and extract
+  if (fileName.endsWith(".png")) {
+    // Check file size for PNG
+    if (file.size > PNG_BLUEPRINT_MAX_SIZE) {
+      return { valid: false, error: `PNG blueprint must be smaller than ${formatBytes(PNG_BLUEPRINT_MAX_SIZE)}` };
+    }
+
+    try {
+      // Extract blueprint data from PNG (strips image data)
+      const result = await extractBlueprintFromPng(file);
+      
+      return { 
+        valid: true, 
+        isPng: true,
+        strippedFile: result.strippedFile,
+        compressionInfo: {
+          originalSize: result.originalSize,
+          strippedSize: result.strippedSize,
+          savedSpace: result.compressionRatio
+        }
+      };
+    } catch (error) {
+      return { valid: false, error: `PNG validation failed: ${error.message}` };
+    }
+  }
+
+  // For .af files, continue with existing validation
   if (file.size > AF_FILE_MAX_SIZE) {
     return { valid: false, error: "Blueprint file must be smaller than 50MB" };
   }
@@ -125,6 +157,8 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
   const [error, setError] = useState("");
   const [imageDragActive, setImageDragActive] = useState([false, false, false]);
   const [rateLimitInfo, setRateLimitInfo] = useState(null);
+  const [processingPng, setProcessingPng] = useState(false);
+  const [compressionInfo, setCompressionInfo] = useState(null);
   const fileInputRef = useRef(null);
   const imageInputRef = useRef(null);
 
@@ -151,12 +185,21 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
   const handleBlueprintSelect = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      const validation = await validateAfFile(file);
+      setProcessingPng(isPngBlueprint(file.name));
+      
+      const validation = await validateBlueprintFile(file);
+      
+      setProcessingPng(false);
+      
       if (!validation.valid) {
         setError(validation.error);
         setBlueprintFile(null);
+        setCompressionInfo(null);
       } else {
-        setBlueprintFile(file);
+        // If PNG, use the stripped file; otherwise use original
+        const fileToUse = validation.isPng ? validation.strippedFile : file;
+        setBlueprintFile(fileToUse);
+        setCompressionInfo(validation.compressionInfo || null);
         setError(null);
       }
     }
@@ -512,7 +555,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
           {/* Blueprint File */}
           <div>
             <label className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
-              Blueprint File (.af)
+              Blueprint File (.af or .png)
             </label>
             <p className="text-xs mb-2" style={{ color: theme.colors.textSecondary }}>
               {blueprintFile ? "New file selected" : "Keep existing file or upload a new one"}
@@ -520,16 +563,25 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              disabled={isLoading}
+              disabled={isLoading || processingPng}
               style={{ borderColor: theme.colors.accentYellow, color: theme.colors.accentYellow }}
               className="w-full px-4 py-3 border-2 border-dashed rounded-lg transition font-medium disabled:opacity-50 hover:opacity-60"
             >
-              {blueprintFile ? `✓ ${blueprintFile.name}` : "Click to select or upload .af file"}
+              {processingPng
+                ? "Processing PNG blueprint..."
+                : blueprintFile
+                ? `✓ ${blueprintFile.name}`
+                : "Click to select or upload .af/.png file"}
             </button>
+            {compressionInfo && (
+              <p style={{ color: theme.colors.textSecondary }} className="text-xs mt-1">
+                PNG optimized: {formatBytes(compressionInfo.originalSize)} → {formatBytes(compressionInfo.strippedSize)} ({compressionInfo.savedSpace})
+              </p>
+            )}
             <input
               ref={fileInputRef}
               type="file"
-              accept=".af"
+              accept=".af,.png"
               onChange={handleBlueprintSelect}
               className="hidden"
               disabled={isLoading}
