@@ -70,6 +70,7 @@ const validateBlueprintFile = async (file) => {
         valid: true, 
         isPng: true,
         strippedFile: result.strippedFile,
+        imageBlob: result.imageBlob, // Include extracted PNG image
         compressionInfo: {
           originalSize: result.originalSize,
           strippedSize: result.strippedSize,
@@ -249,30 +250,56 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
   const [processingPng, setProcessingPng] = useState(false);
   const [compressionInfo, setCompressionInfo] = useState(null);
   const [blueprintFileExtension, setBlueprintFileExtension] = useState(".af");
+  const [processingState, setProcessingState] = useState(""); // Track current processing stage
+  const [imageCompressionInfo, setImageCompressionInfo] = useState([null, null, null]); // Track compression info for each image
 
-  const handleImageSelect = (e, index) => {
+  const handleImageSelect = async (e, index) => {
     const file = e.target.files?.[0];
     if (file) {
       // Validate image before processing
-      validateImageFile(file).then((validation) => {
-        if (!validation.valid) {
-          setError(validation.error);
+      const validation = await validateImageFile(file);
+      if (!validation.valid) {
+        setError(validation.error);
+        const newFiles = [...imageFiles];
+        const newPreviews = [...imagePreviews];
+        const newCompressionInfo = [...imageCompressionInfo];
+        newFiles[index] = null;
+        newPreviews[index] = null;
+        newCompressionInfo[index] = null;
+        setImageFiles(newFiles);
+        setImagePreviews(newPreviews);
+        setImageCompressionInfo(newCompressionInfo);
+      } else {
+        // Compress image immediately
+        try {
+          const originalSize = file.size;
+          const options = {
+            maxSizeMB: 0.3,
+            maxWidthOrHeight: 1500,
+            useWebWorker: true,
+            initialQuality: 0.55,
+          };
+          const compressedFile = await imageCompression(file, options);
+          
           const newFiles = [...imageFiles];
           const newPreviews = [...imagePreviews];
-          newFiles[index] = null;
-          newPreviews[index] = null;
+          const newCompressionInfo = [...imageCompressionInfo];
+          newFiles[index] = compressedFile;
+          newPreviews[index] = URL.createObjectURL(compressedFile);
+          newCompressionInfo[index] = {
+            originalSize: originalSize,
+            compressedSize: compressedFile.size,
+            fromPng: false
+          };
           setImageFiles(newFiles);
           setImagePreviews(newPreviews);
-        } else {
-          const newFiles = [...imageFiles];
-          const newPreviews = [...imagePreviews];
-          newFiles[index] = file;
-          newPreviews[index] = URL.createObjectURL(file);
-          setImageFiles(newFiles);
-          setImagePreviews(newPreviews);
+          setImageCompressionInfo(newCompressionInfo);
           setError(null);
+        } catch (compressionError) {
+          console.error('Image compression failed:', compressionError);
+          setError('Failed to compress image. Please try a different image.');
         }
-      });
+      }
     }
   };
 
@@ -281,13 +308,14 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
     if (file) {
       const isPng = isPngBlueprint(file.name);
       setProcessingPng(isPng);
+      setProcessingState(isPng ? "Extracting PNG..." : "Processing...");
       
       // Validate blueprint file (.af or .png)
       const validation = await validateBlueprintFile(file);
       
-      setProcessingPng(false);
-      
       if (!validation.valid) {
+        setProcessingPng(false);
+        setProcessingState("");
         setError(validation.error);
         setBlueprintFile(null);
         setCompressionInfo(null);
@@ -298,6 +326,41 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         if (validation.isPng) {
           // Convert Blob to File with original filename
           fileToUse = new File([validation.strippedFile], file.name, { type: 'image/png' });
+          
+          // Compress and populate the extracted PNG image as first preview
+          if (validation.imageBlob) {
+            try {
+              setProcessingState("Compressing image...");
+              const imageFile = new File([validation.imageBlob], 'preview.png', { type: 'image/png' });
+              const originalSize = imageFile.size;
+              const options = {
+                maxSizeMB: 0.3,
+                maxWidthOrHeight: 1500,
+                useWebWorker: true,
+                initialQuality: 0.55,
+              };
+              const compressedFile = await imageCompression(imageFile, options);
+              
+              // Populate first image slot if empty
+              if (!imageFiles[0]) {
+                const newFiles = [...imageFiles];
+                const newPreviews = [...imagePreviews];
+                const newCompressionInfo = [...imageCompressionInfo];
+                newFiles[0] = compressedFile;
+                newPreviews[0] = URL.createObjectURL(compressedFile);
+                newCompressionInfo[0] = {
+                  originalSize: validation.imageBlob.size,
+                  compressedSize: compressedFile.size,
+                  fromPng: true
+                };
+                setImageFiles(newFiles);
+                setImagePreviews(newPreviews);
+                setImageCompressionInfo(newCompressionInfo);
+              }
+            } catch (compressionError) {
+              console.warn('Failed to compress PNG image:', compressionError);
+            }
+          }
         } else {
           fileToUse = file;
         }
@@ -305,6 +368,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         setCompressionInfo(validation.compressionInfo || null);
         setBlueprintFileExtension(isPng ? ".png" : ".af");
         setError(null);
+        setProcessingPng(false);
+        setProcessingState("");
       }
     }
   };
@@ -328,13 +393,14 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
     if (file) {
       const isPng = isPngBlueprint(file.name);
       setProcessingPng(isPng);
+      setProcessingState(isPng ? "Extracting PNG..." : "Processing...");
       
       // Validate blueprint file (.af or .png)
       const validation = await validateBlueprintFile(file);
       
-      setProcessingPng(false);
-      
       if (!validation.valid) {
+        setProcessingPng(false);
+        setProcessingState("");
         setError(validation.error);
         setBlueprintFile(null);
         setCompressionInfo(null);
@@ -345,6 +411,40 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         if (validation.isPng) {
           // Convert Blob to File with original filename
           fileToUse = new File([validation.strippedFile], file.name, { type: 'image/png' });
+          
+          // Compress and populate the extracted PNG image as first preview
+          if (validation.imageBlob) {
+            try {
+              setProcessingState("Compressing image...");
+              const imageFile = new File([validation.imageBlob], 'preview.png', { type: 'image/png' });
+              const options = {
+                maxSizeMB: 0.3,
+                maxWidthOrHeight: 1500,
+                useWebWorker: true,
+                initialQuality: 0.55,
+              };
+              const compressedFile = await imageCompression(imageFile, options);
+              
+              // Populate first image slot if empty
+              if (!imageFiles[0]) {
+                const newFiles = [...imageFiles];
+                const newPreviews = [...imagePreviews];
+                const newCompressionInfo = [...imageCompressionInfo];
+                newFiles[0] = compressedFile;
+                newPreviews[0] = URL.createObjectURL(compressedFile);
+                newCompressionInfo[0] = {
+                  originalSize: validation.imageBlob.size,
+                  compressedSize: compressedFile.size,
+                  fromPng: true
+                };
+                setImageFiles(newFiles);
+                setImagePreviews(newPreviews);
+                setImageCompressionInfo(newCompressionInfo);
+              }
+            } catch (compressionError) {
+              console.warn('Failed to compress PNG image:', compressionError);
+            }
+          }
         } else {
           fileToUse = file;
         }
@@ -385,18 +485,43 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         setError(validation.error);
         const newFiles = [...imageFiles];
         const newPreviews = [...imagePreviews];
+        const newCompressionInfo = [...imageCompressionInfo];
         newFiles[index] = null;
         newPreviews[index] = null;
+        newCompressionInfo[index] = null;
         setImageFiles(newFiles);
         setImagePreviews(newPreviews);
+        setImageCompressionInfo(newCompressionInfo);
       } else {
-        const newFiles = [...imageFiles];
-        const newPreviews = [...imagePreviews];
-        newFiles[index] = file;
-        newPreviews[index] = URL.createObjectURL(file);
-        setImageFiles(newFiles);
-        setImagePreviews(newPreviews);
-        setError(null);
+        // Compress image immediately
+        try {
+          const originalSize = file.size;
+          const options = {
+            maxSizeMB: 0.3,
+            maxWidthOrHeight: 1500,
+            useWebWorker: true,
+            initialQuality: 0.55,
+          };
+          const compressedFile = await imageCompression(file, options);
+          
+          const newFiles = [...imageFiles];
+          const newPreviews = [...imagePreviews];
+          const newCompressionInfo = [...imageCompressionInfo];
+          newFiles[index] = compressedFile;
+          newPreviews[index] = URL.createObjectURL(compressedFile);
+          newCompressionInfo[index] = {
+            originalSize: originalSize,
+            compressedSize: compressedFile.size,
+            fromPng: false
+          };
+          setImageFiles(newFiles);
+          setImagePreviews(newPreviews);
+          setImageCompressionInfo(newCompressionInfo);
+          setError(null);
+        } catch (compressionError) {
+          console.error('Image compression failed:', compressionError);
+          setError('Failed to compress image. Please try a different image.');
+        }
       }
     }
   };
@@ -554,17 +679,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         if (!imageFile) return null;
 
         try {
-          // Compress image
-          const options = {
-            maxSizeMB: 0.3,
-            maxWidthOrHeight: 1500,
-            useWebWorker: true,
-            quality: 0.55,
-          };
-          const compressedFile = await imageCompression(imageFile, options);
-
-          // Upload to Cloudinary
-          return await uploadToCloudinary(compressedFile, user.id);
+          // Images are already compressed when selected, just upload directly
+          return await uploadToCloudinary(imageFile, user.id);
         } catch (imageError) {
           throw new Error(`Image ${index + 1} upload failed: ${imageError.message}`);
         }
@@ -795,6 +911,9 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         <div>
           <label style={{ color: theme.colors.textPrimary }} className="block text-s font-medium mb-2">
             Blueprint File (.af or .png) *
+            </label>
+          <label style={{ color: theme.colors.textPrimary }} className="block text-xs font-medium mb-2">
+            If uploading a PNG blueprint with a custom screenshot, the image will be used as the first preview image.
           </label>
           <div
             className="relative"
@@ -832,7 +951,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
             </label>
             {compressionInfo && (
               <p style={{ color: theme.colors.textSecondary }} className="text-xs mt-1">
-                PNG optimized: {formatBytes(compressionInfo.originalSize)} → {formatBytes(compressionInfo.strippedSize)} ({compressionInfo.savedSpace})
+                PNG blueprint optimized: {formatBytes(compressionInfo.originalSize)} → {formatBytes(compressionInfo.strippedSize)} ({compressionInfo.savedSpace})
               </p>
             )}
           </div>
@@ -859,15 +978,35 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
                       onClick={() => {
                         const newFiles = [...imageFiles];
                         const newPreviews = [...imagePreviews];
+                        const newCompressionInfo = [...imageCompressionInfo];
                         newFiles[index] = null;
                         newPreviews[index] = null;
+                        newCompressionInfo[index] = null;
                         setImageFiles(newFiles);
                         setImagePreviews(newPreviews);
+                        setImageCompressionInfo(newCompressionInfo);
                       }}
                       className="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full p-1"
                     >
                       <X className="w-3 h-3" />
                     </button>
+                    {imageCompressionInfo[index] && (
+                      <div className="mt-1 text-xs" style={{ color: theme.colors.textSecondary }}>
+                        {imageCompressionInfo[index].fromPng ? (
+                          <span>
+                            Stripped: {formatBytes(imageCompressionInfo[index].originalSize)} → {formatBytes(imageCompressionInfo[index].compressedSize)}
+                          </span>
+                        ) : imageCompressionInfo[index].compressedSize ? (
+                          <span>
+                            {formatBytes(imageCompressionInfo[index].originalSize)} → {formatBytes(imageCompressionInfo[index].compressedSize)}
+                          </span>
+                        ) : (
+                          <span>
+                            {formatBytes(imageCompressionInfo[index].originalSize)}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div
@@ -926,17 +1065,17 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || processingPng}
           style={{
             backgroundImage: `linear-gradient(to right, ${theme.colors.buttonBg}, ${theme.colors.accentGold})`,
             color: theme.colors.buttonText
           }}
           className="w-full font-semibold py-3 rounded-lg transition flex items-center justify-center shadow-lg hover:opacity-70 hover:scale-105 disabled:opacity-50"
         >
-          {loading ? (
+          {loading || processingState ? (
             <>
               <Loader className="w-5 h-5 mr-2 animate-spin" />
-              Uploading...
+              {processingState || "Uploading..."}
             </>
           ) : (
             <>

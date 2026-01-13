@@ -65,9 +65,10 @@ const validateBlueprintSignature = (blueprintData) => {
 /**
  * Extract blueprint data from PNG file
  * Returns a new Blob containing only the IEND chunk + blueprint data (image data removed)
+ * Also returns the PNG image portion for use as preview
  * 
  * @param {File} pngFile
- * @returns {Promise<{strippedFile: Blob, originalSize: number, strippedSize: number}>}
+ * @returns {Promise<{strippedFile: Blob, originalSize: number, strippedSize: number, imageBlob: Blob}>}
  */
 export const extractBlueprintFromPng = async (pngFile) => {
   return new Promise((resolve, reject) => {
@@ -87,7 +88,11 @@ export const extractBlueprintFromPng = async (pngFile) => {
         
         validateBlueprintSignature(dataAfterIend);
         
-        // create
+        // Extract the PNG image portion (everything up to and including IEND)
+        const pngImageData = buffer.slice(0, iendIndex + IEND_CHUNK.length);
+        const imageBlob = new Blob([pngImageData], { type: 'image/png' });
+        
+        // Create stripped file with just PNG header + IEND + blueprint data
         const strippedSize = PNG_SIGNATURE.length + IEND_CHUNK.length + dataAfterIend.byteLength;
         const strippedBuffer = new Uint8Array(strippedSize);
 
@@ -104,7 +109,8 @@ export const extractBlueprintFromPng = async (pngFile) => {
           strippedFile: strippedBlob,
           originalSize,
           strippedSize: strippedBlob.size,
-          compressionRatio: ((1 - strippedBlob.size / originalSize) * 100).toFixed(1)
+          compressionRatio: ((1 - strippedBlob.size / originalSize) * 100).toFixed(1),
+          imageBlob // Include the extracted PNG image
         });
         
       } catch (error) {
