@@ -278,16 +278,35 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
       }
 
       // Trigger download
-      // Extract filename from URL to preserve extension (.af, .png, .zip)
+      // For PNG files, fetch as blob to force download instead of opening in browser
       const urlParts = blueprint.file_url.split('/');
       const filename = urlParts[urlParts.length - 1];
       
-      const a = document.createElement("a");
-      a.href = blueprint.file_url;
-      a.download = filename; // Use actual filename to preserve extension
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      try {
+        const response = await fetch(blueprint.file_url);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = filename; // Use actual filename to preserve extension
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        // Clean up the blob URL after a short delay
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+      } catch (fetchError) {
+        console.error("Error fetching file for download:", fetchError);
+        // Fallback to direct link if fetch fails
+        const a = document.createElement("a");
+        a.href = blueprint.file_url;
+        a.download = filename;
+        a.target = "_blank";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
     } catch (err) {
       console.error("Error downloading:", err);
     } finally {

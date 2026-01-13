@@ -293,8 +293,14 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         setCompressionInfo(null);
         setBlueprintFileExtension(".af");
       } else {
-        // If PNG, use the stripped file; otherwise use original
-        const fileToUse = validation.isPng ? validation.strippedFile : file;
+        // If PNG, convert stripped Blob to File with proper filename; otherwise use original
+        let fileToUse;
+        if (validation.isPng) {
+          // Convert Blob to File with original filename
+          fileToUse = new File([validation.strippedFile], file.name, { type: 'image/png' });
+        } else {
+          fileToUse = file;
+        }
         setBlueprintFile(fileToUse);
         setCompressionInfo(validation.compressionInfo || null);
         setBlueprintFileExtension(isPng ? ".png" : ".af");
@@ -334,8 +340,14 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         setCompressionInfo(null);
         setBlueprintFileExtension(".af");
       } else {
-        // If PNG, use the stripped file; otherwise use original
-        const fileToUse = validation.isPng ? validation.strippedFile : file;
+        // If PNG, convert stripped Blob to File with proper filename; otherwise use original
+        let fileToUse;
+        if (validation.isPng) {
+          // Convert Blob to File with original filename
+          fileToUse = new File([validation.strippedFile], file.name, { type: 'image/png' });
+        } else {
+          fileToUse = file;
+        }
         setBlueprintFile(fileToUse);
         setCompressionInfo(validation.compressionInfo || null);
         setBlueprintFileExtension(isPng ? ".png" : ".af");
