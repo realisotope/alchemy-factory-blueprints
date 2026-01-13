@@ -278,9 +278,13 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
       }
 
       // Trigger download
+      // Extract filename from URL to preserve extension (.af, .png, .zip)
+      const urlParts = blueprint.file_url.split('/');
+      const filename = urlParts[urlParts.length - 1];
+      
       const a = document.createElement("a");
       a.href = blueprint.file_url;
-      a.download = blueprint.title;
+      a.download = filename; // Use actual filename to preserve extension
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

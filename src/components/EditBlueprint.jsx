@@ -159,6 +159,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
   const [rateLimitInfo, setRateLimitInfo] = useState(null);
   const [processingPng, setProcessingPng] = useState(false);
   const [compressionInfo, setCompressionInfo] = useState(null);
+  const [blueprintFileExtension, setBlueprintFileExtension] = useState(".af");
   const fileInputRef = useRef(null);
   const imageInputRef = useRef(null);
 
@@ -185,7 +186,8 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
   const handleBlueprintSelect = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      setProcessingPng(isPngBlueprint(file.name));
+      const isPng = isPngBlueprint(file.name);
+      setProcessingPng(isPng);
       
       const validation = await validateBlueprintFile(file);
       
@@ -195,11 +197,13 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
         setError(validation.error);
         setBlueprintFile(null);
         setCompressionInfo(null);
+        setBlueprintFileExtension(".af");
       } else {
         // If PNG, use the stripped file; otherwise use original
         const fileToUse = validation.isPng ? validation.strippedFile : file;
         setBlueprintFile(fileToUse);
         setCompressionInfo(validation.compressionInfo || null);
+        setBlueprintFileExtension(isPng ? ".png" : ".af");
         setError(null);
       }
     }
@@ -351,11 +355,11 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
         }
 
         // Create and upload new zip file
-        // Rename the .af file to the blueprint title before zipping
-        const afFileName = `${sanitizeTitleForFilename(title)}.af`;
+        // Rename the file to the blueprint title before zipping (preserving extension)
+        const blueprintFileName = `${sanitizeTitleForFilename(title)}${blueprintFileExtension}`;
         
         const zip = new JSZip();
-        zip.file(afFileName, blueprintFile, { compression: "DEFLATE" });
+        zip.file(blueprintFileName, blueprintFile, { compression: "DEFLATE" });
         const zipBlob = await zip.generateAsync({
           type: "blob",
           compression: "DEFLATE",

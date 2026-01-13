@@ -248,6 +248,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
   const [rateLimitInfo, setRateLimitInfo] = useState(null);
   const [processingPng, setProcessingPng] = useState(false);
   const [compressionInfo, setCompressionInfo] = useState(null);
+  const [blueprintFileExtension, setBlueprintFileExtension] = useState(".af");
 
   const handleImageSelect = (e, index) => {
     const file = e.target.files?.[0];
@@ -278,7 +279,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
   const handleBlueprintSelect = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      setProcessingPng(isPngBlueprint(file.name));
+      const isPng = isPngBlueprint(file.name);
+      setProcessingPng(isPng);
       
       // Validate blueprint file (.af or .png)
       const validation = await validateBlueprintFile(file);
@@ -289,11 +291,13 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         setError(validation.error);
         setBlueprintFile(null);
         setCompressionInfo(null);
+        setBlueprintFileExtension(".af");
       } else {
         // If PNG, use the stripped file; otherwise use original
         const fileToUse = validation.isPng ? validation.strippedFile : file;
         setBlueprintFile(fileToUse);
         setCompressionInfo(validation.compressionInfo || null);
+        setBlueprintFileExtension(isPng ? ".png" : ".af");
         setError(null);
       }
     }
@@ -316,7 +320,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
 
     const file = e.dataTransfer.files?.[0];
     if (file) {
-      setProcessingPng(isPngBlueprint(file.name));
+      const isPng = isPngBlueprint(file.name);
+      setProcessingPng(isPng);
       
       // Validate blueprint file (.af or .png)
       const validation = await validateBlueprintFile(file);
@@ -327,11 +332,13 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         setError(validation.error);
         setBlueprintFile(null);
         setCompressionInfo(null);
+        setBlueprintFileExtension(".af");
       } else {
         // If PNG, use the stripped file; otherwise use original
         const fileToUse = validation.isPng ? validation.strippedFile : file;
         setBlueprintFile(fileToUse);
         setCompressionInfo(validation.compressionInfo || null);
+        setBlueprintFileExtension(isPng ? ".png" : ".af");
         setError(null);
       }
     }
@@ -482,13 +489,13 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
     try {
       // Determine if file should be zipped (only for files over 100KB)
       const shouldZip = blueprintFile.size > 100 * 1024;
-      const afFileName = `${sanitizeTitleForFilename(title)}.af`;
+      const blueprintFileName = `${sanitizeTitleForFilename(title)}${blueprintFileExtension}`;
       let fileUrl;
 
       if (shouldZip) {
         // Create zip file containing the blueprint file with compression
         const zip = new JSZip();
-        zip.file(afFileName, blueprintFile, { compression: "DEFLATE" });
+        zip.file(blueprintFileName, blueprintFile, { compression: "DEFLATE" });
         const zipBlob = await zip.generateAsync({
           type: "blob",
           compression: "DEFLATE",
@@ -510,9 +517,9 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
           .getPublicUrl(blueprintPath);
         fileUrl = blueprintData?.publicUrl;
       } else {
-        // For smaller files, just upload renamed .af file directly
-        const afFileNameWithTimestamp = `${sanitizeTitleForFilename(title)}_${Date.now()}.af`;
-        const blueprintPath = `${user.id}/${afFileNameWithTimestamp}`;
+        // For smaller files, just upload the file directly with correct extension
+        const blueprintFileNameWithTimestamp = `${sanitizeTitleForFilename(title)}_${Date.now()}${blueprintFileExtension}`;
+        const blueprintPath = `${user.id}/${blueprintFileNameWithTimestamp}`;
         const { error: blueprintError } = await supabase.storage
           .from("blueprints")
           .upload(blueprintPath, blueprintFile);
