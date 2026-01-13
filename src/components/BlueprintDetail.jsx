@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { sanitizeCreatorName } from "../lib/sanitization";
 import { updateBlueprintMetaTags, resetMetaTags } from "../lib/metaTags";
-import { getDetailViewUrl, getLightboxUrl } from "../lib/imageOptimization";
+import { getDetailViewUrl, getLightboxUrl, prefetchImage } from "../lib/imageOptimization";
 import { parseUrlsInText } from "../lib/urlProcessor";
 import { useTheme } from "../lib/ThemeContext";
 import EditBlueprint from "./EditBlueprint";
@@ -180,7 +180,14 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                   border: `1px solid ${theme.colors.cardBorder}`,
                   color: theme.colors.textPrimary,
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `${theme.colors.cardBg}FF`}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = `${theme.colors.cardBg}FF`;
+                  // Prefetch previous blueprint's detail image
+                  const prevBlueprint = blueprints[currentBlueprintIndex - 1];
+                  if (prevBlueprint?.image_url) {
+                    prefetchImage(getDetailViewUrl(prevBlueprint.image_url));
+                  }
+                }}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = `${theme.colors.cardBg}80`}
                 title="Previous blueprint (Arrow Left)"
               >
@@ -239,12 +246,12 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                   alt={blueprint.title}
                   className="w-full h-48 sm:h-96 object-cover cursor-pointer"
                   onClick={() => setIsImageExpanded(true)}
-                  loading="lazy"
+                  loading="eager"
                   onError={() => setImageError(true)}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.15, ease: "easeInOut" }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
                 />
               </AnimatePresence>
               {/* Tint Overlay */}
@@ -668,7 +675,14 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                   border: `1px solid ${theme.colors.cardBorder}`,
                   color: theme.colors.textPrimary,
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `${theme.colors.cardBg}FF`}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = `${theme.colors.cardBg}FF`;
+                  // Prefetch next blueprint's detail image
+                  const nextBlueprint = blueprints[currentBlueprintIndex + 1];
+                  if (nextBlueprint?.image_url) {
+                    prefetchImage(getDetailViewUrl(nextBlueprint.image_url));
+                  }
+                }}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = `${theme.colors.cardBg}80`}
                 title="Next blueprint (Arrow Right)"
               >

@@ -4,7 +4,7 @@ import { supabase } from "../lib/supabase";
 import { Search, Download, Trash2, Loader, Heart, X, User } from "lucide-react";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { sanitizeCreatorName } from "../lib/sanitization";
-import { getThumbnailUrl } from "../lib/imageOptimization";
+import { getThumbnailUrl, prefetchImage } from "../lib/imageOptimization";
 import { transformParsedMaterials, transformParsedBuildings } from "../lib/blueprintMappings";
 import { useTheme } from "../lib/ThemeContext";
 import { deleteCloudinaryImage } from "../lib/cloudinaryDelete";
@@ -403,6 +403,24 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
     startIndex + itemsPerPage
   );
 
+  // Prefetch next page images for faster page transitions
+  useEffect(() => {
+    if (currentPage < totalPages) {
+      const nextPageStart = currentPage * itemsPerPage;
+      const nextPageBlueprints = filteredBlueprints.slice(
+        nextPageStart,
+        nextPageStart + itemsPerPage
+      );
+      
+      // Prefetch first 4 images of next page
+      nextPageBlueprints.slice(0, 4).forEach((bp) => {
+        if (bp.image_url) {
+          prefetchImage(getThumbnailUrl(bp.image_url));
+        }
+      });
+    }
+  }, [currentPage, totalPages, filteredBlueprints, itemsPerPage]);
+
   // Reset to page 1 when search changes
   const handleSearch = (value) => {
     setSearchTerm(value);
@@ -645,7 +663,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
           />
         )}
         
-        {paginatedBlueprints.map((blueprint) => {
+        {paginatedBlueprints.map((blueprint, index) => {
           const isLiked = userLikes.has(blueprint.id);
           return (
             <BlueprintCard
@@ -661,6 +679,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
               onLike={handleLike}
               onDelete={handleDelete}
               onSearchByCreator={handleSearchByCreator}
+              isFirstPage={currentPage === 1}
             />
           );
         })}

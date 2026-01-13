@@ -122,3 +122,15 @@ export function getLightboxUrl(imageUrl) {
     lightbox: true
   });
 }
+
+// Prefetch image for faster loading when needed
+export function prefetchImage(imageUrl) {
+  if (!imageUrl || typeof window === 'undefined') return;
+  
+  // Use browser's native prefetch via link element
+  const link = document.createElement('link');
+  link.rel = 'prefetch';
+  link.as = 'image';
+  link.href = imageUrl;
+  document.head.appendChild(link);
+}

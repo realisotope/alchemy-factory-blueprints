@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Download, Trash2, Loader, Heart, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useTheme } from "../lib/ThemeContext";
-import { getThumbnailUrl } from "../lib/imageOptimization";
+import { getThumbnailUrl, getDetailViewUrl, prefetchImage } from "../lib/imageOptimization";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { sanitizeCreatorName } from "../lib/sanitization";
 
@@ -18,6 +18,7 @@ export default function BlueprintCard({
   onLike,
   onDelete,
   onSearchByCreator,
+  isFirstPage = false,
 }) {
   const { theme } = useTheme();
   const [isHovered, setIsHovered] = useState(false);
@@ -43,6 +44,14 @@ export default function BlueprintCard({
     setCurrentImageIndex((prev) => (prev === availableImages.length - 1 ? 0 : prev + 1));
   };
 
+  // Prefetch detail image on hover for instant loading
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+    if (availableImages[0]) {
+      prefetchImage(getDetailViewUrl(availableImages[0]));
+    }
+  };
+
   return (
     <motion.div
       style={{
@@ -54,7 +63,7 @@ export default function BlueprintCard({
       }}
       className="fade-in-card rounded-xl overflow-hidden transition-all duration-200 border-2 rounded-lg cursor-pointer flex flex-col h-full group"
       whileHover={{ y: -8, scale: 1.02, transition: { duration: 0.3, type: "spring", stiffness: 300, damping: 20 } }}
-      onMouseEnter={() => setIsHovered(true)}
+      onMouseEnter={handleMouseEnter}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => onSelect(blueprint)}
     >
@@ -69,7 +78,7 @@ export default function BlueprintCard({
                 alt={blueprint.title}
                 style={{ backgroundColor: theme.colors.elementBg }}
                 className="w-full h-48 object-cover flex-shrink-0"
-                loading="lazy"
+                loading={isFirstPage ? "eager" : "lazy"}
                 onError={() => setImageError(true)}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
