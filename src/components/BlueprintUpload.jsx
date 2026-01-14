@@ -215,6 +215,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
   const { theme } = useTheme();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [productionRate, setProductionRate] = useState("");
   const [blueprintFile, setBlueprintFile] = useState(null);
   const [imageFiles, setImageFiles] = useState([null, null, null]); // Support 3 images
   const [imagePreviews, setImagePreviews] = useState([null, null, null]);
@@ -567,6 +568,17 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
     // Display rate limit info to user (how many uploads remaining)
     setRateLimitInfo(serverLimitStatus);
 
+    // Validate and sanitize production rate
+    let validatedProductionRate = null;
+    if (productionRate) {
+      const parsedRate = parseFloat(productionRate);
+      if (isNaN(parsedRate) || parsedRate < 0 || parsedRate > 999999.99) {
+        setError("Production rate must be a number between 0 and 999999.99");
+        return;
+      }
+      validatedProductionRate = parsedRate;
+    }
+
     // Validate and sanitize title
     const titleValidation = validateAndSanitizeTitle(title);
     if (!titleValidation.valid) {
@@ -679,6 +691,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
           {
             title: titleValidation.sanitized,
             description: descriptionValidation.sanitized || null,
+            production_rate: validatedProductionRate,
             slug: slug,
             user_id: user.id,
             creator_name: stripDiscordDiscriminator(user.user_metadata?.name) || "Anonymous",
@@ -737,6 +750,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       // Reset form
       setTitle("");
       setDescription("");
+      setProductionRate("");
       setBlueprintFile(null);
       setImageFiles([null, null, null]);
       setImagePreviews([null, null, null]);
@@ -817,6 +831,27 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
               Describe your blueprint, its purpose, and any special features...{"\n"}You can include links to your blueprint plan or youtube video demonstration.{"\n"}You can include multiple images to demonstrate any complex builds.
             </div>
           </div>
+        </div>
+
+        {/* Production Rate */}
+        <div>
+          <label htmlFor="blueprint-production-rate" style={{ color: theme.colors.textPrimary }} className="block text-l font-medium mb-2">
+            Production Rate
+            <span style={{ color: theme.colors.textSecondary }} className="text-sm font-normal"> (Items Per Minute) (optional)</span>
+          </label>
+          <input
+            id="blueprint-production-rate"
+            name="blueprint-production-rate"
+            type="number"
+            step="0.01"
+            min="0"
+            max="999.99"
+            value={productionRate}
+            onChange={(e) => setProductionRate(e.target.value)}
+            placeholder="e.g., 12.5 or 100"
+            style={{ borderColor: theme.colors.cardBorder, backgroundColor: `${theme.colors.cardBg}33`, color: theme.colors.textPrimary }}
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 placeholder-opacity-50"
+          />
         </div>
 
         {/* Tags */}

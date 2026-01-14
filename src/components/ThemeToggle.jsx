@@ -8,7 +8,7 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded-lg transition flex items-center justify-center hover:opacity-70 hover:scale-105 border-2"
+      className="p-2.5 rounded-lg transition flex items-center justify-center hover:opacity-70 hover:scale-105 border-2"
       style={{
         backgroundColor: `${theme.colors.tertiary}80`,
         borderColor: theme.colors.headerBorder,

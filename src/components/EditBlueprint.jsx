@@ -127,6 +127,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
   const { theme } = useTheme();
   const [title, setTitle] = useState(blueprint?.title || "");
   const [description, setDescription] = useState(blueprint?.description || "");
+  const [productionRate, setProductionRate] = useState(blueprint?.production_rate || "");
   const [changelog, setChangelog] = useState("");
   const [tags, setTags] = useState(blueprint?.tags || []);
   const [tagInput, setTagInput] = useState("");
@@ -149,6 +150,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
   const [imageCompressionInfo, setImageCompressionInfo] = useState([null, null, null]); // Track compression info for each image
   const fileInputRef = useRef(null);
   const imageInputRef = useRef(null);
+  const scrollableRef = useRef(null);
 
   if (!isOpen || !blueprint) return null;
 
@@ -416,6 +418,16 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
         throw new Error(changelogValidation.error);
       }
 
+      // Validate and sanitize production rate
+      let validatedProductionRate = null;
+      if (productionRate) {
+        const parsedRate = parseFloat(productionRate);
+        if (isNaN(parsedRate) || parsedRate < 0 || parsedRate > 999999.99) {
+          throw new Error("Production rate must be a number between 0 and 999999.99");
+        }
+        validatedProductionRate = parsedRate;
+      }
+
       let fileUrl = blueprint.file_url;
 
       // Upload new blueprint file if provided
@@ -521,6 +533,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
         .from("blueprints")
         .update({
           description: descriptionValidation.sanitized || null,
+          production_rate: validatedProductionRate,
           file_url: fileUrl,
           image_url: imageUrl,
           image_url_2: imageUrl2,
@@ -583,8 +596,8 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
   };
 
   return createPortal(
-    <div className="fixed inset-0 bg-black/70 z-50 flex items-start justify-center backdrop-blur-sm pt-20 pb-6 px-4" onClick={onClose}>
-      <div className="rounded-lg max-w-2xl w-full max-h-[calc(100vh-10rem)] blueprint-detail-1080p overflow-hidden flex flex-col" style={{ backgroundImage: `linear-gradient(to bottom, ${theme.colors.elementBg}, ${theme.colors.elementBgCard})`, borderColor: theme.colors.cardBorder, borderWidth: '2px' }} onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center backdrop-blur-sm px-4 py-6" onClick={onClose}>
+      <div className="rounded-lg max-w-2xl w-full max-h-[calc(100vh-3rem)] overflow-hidden flex flex-col relative" style={{ backgroundImage: `linear-gradient(to bottom, ${theme.colors.elementBg}, ${theme.colors.elementBgCard})`, borderColor: theme.colors.cardBorder, borderWidth: '2px' }} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex-shrink-0 text-white px-4 py-4 md:px-6 md:py-5 flex items-center justify-between" style={{ backgroundImage: `linear-gradient(to right, ${theme.colors.headerGradientFrom}, ${theme.colors.headerGradientVia}, ${theme.colors.headerGradientTo})` }}>
           <h2 className="text-xl md:text-2xl font-bold" style={{ color: theme.colors.accentYellow }}>Edit Blueprint</h2>
@@ -598,7 +611,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
         </div>
 
         {/* Form - Scrollable Content */}
-        <div className="flex-1 overflow-y-auto">
+        <div ref={scrollableRef} className="flex-1 overflow-y-auto min-h-0">
           <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4 md:space-y-5" style={{ color: theme.colors.textPrimary }}>
           {error && (
             <div className="border rounded-lg text-sm px-4 py-3" style={{ backgroundColor: `${theme.colors.cardBg}33`, borderColor: theme.colors.cardBorder, color: '#fca5a5' }}>
@@ -635,6 +648,96 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 placeholder-opacity-50"
               disabled={isLoading}
             />
+          </div>
+
+          {/* Production Rate */}
+          <div>
+            <label htmlFor="edit-blueprint-production-rate" className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
+              Production Rate (IPM) <span style={{ color: theme.colors.textSecondary }} className="text-sm font-normal">(optional)</span>
+            </label>
+            <input
+              id="edit-blueprint-production-rate"
+              name="edit-blueprint-production-rate"
+              type="number"
+              step="0.01"
+              min="0"
+              max="999.99"
+              value={productionRate}
+              onChange={(e) => setProductionRate(e.target.value)}
+              placeholder="e.g., 12.5 or 100"
+              style={{ borderColor: theme.colors.cardBorder, backgroundColor: `${theme.colors.cardBg}33`, color: `${theme.colors.textPrimary}80` }}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 placeholder-opacity-50"
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* Tags */}
+          <div>
+            <label className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
+              Tags (up to 5)
+            </label>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <button
+                    type="button"
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    style={{ borderColor: theme.colors.cardBorder, backgroundColor: `${theme.colors.cardBg}33`, color: theme.colors.textPrimary }}
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 text-left flex items-center justify-between transition disabled:opacity-50"
+                    disabled={isLoading || tags.length >= 5}
+                  >
+                    <span style={{ color: theme.colors.textPrimary }}>
+                      {tagInput || "-- Select a tag --"}
+                    </span>
+                    <span className={`transition transform ${dropdownOpen ? "rotate-180" : ""}`}>▼</span>
+                  </button>
+
+                  {dropdownOpen && (
+                    <div style={{ borderColor: theme.colors.cardBorder, backgroundColor: theme.colors.elementBg }} className="absolute top-full left-0 right-0 mt-1 border rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                      {AVAILABLE_TAGS.filter(tag => !tags.includes(tag)).map((tag) => (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => handleSelectTag(tag)}
+                          style={{ color: theme.colors.textPrimary, borderColor: `${theme.colors.cardBorder}33` }}
+                          className="w-full text-left px-4 py-2.5 transition first:rounded-t-lg last:rounded-b-lg border-b last:border-b-0"
+                          onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                      {AVAILABLE_TAGS.filter(tag => !tags.includes(tag)).length === 0 && (
+                        <div style={{ color: theme.colors.textSecondary }} className="px-4 py-2.5 text-center">
+                          All tags selected
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+              {tags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {tags.map((tag) => (
+                    <span
+                      key={tag}
+                      style={{ backgroundColor: `${theme.colors.cardBg}66`, color: theme.colors.textPrimary, borderColor: theme.colors.cardBorder }}
+                      className="px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 border"
+                    >
+                      #{tag}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTag(tag)}
+                        className="hover:text-red-400"
+                        disabled={isLoading}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Changelog
@@ -778,60 +881,6 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
                   )}
                 </div>
               ))}
-            </div>
-          </div>
-
-          {/* Tags */}
-          <div>
-            <label className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
-              Tags (up to 5)
-            </label>
-            <div className="flex gap-2 mb-2 flex-wrap">
-              {tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2"
-                  style={{ backgroundColor: `${theme.colors.cardBg}66`, color: theme.colors.textPrimary, borderColor: theme.colors.cardBorder, borderWidth: '1px' }}
-                >
-                  {tag}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveTag(tag)}
-                    className="hover:text-red-400"
-                    disabled={isLoading}
-                  >
-                    ×
-                  </button>
-                </span>
-              ))}
-            </div>
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 text-left disabled:opacity-50"
-                style={{ borderColor: theme.colors.cardBorder, backgroundColor: `${theme.colors.cardBg}33`, color: theme.colors.textPrimary }}
-                disabled={isLoading || tags.length >= 5}
-              >
-                {tagInput || "Select tags..."}
-              </button>
-              {dropdownOpen && (
-                <div className="absolute z-10 w-full mt-2 border rounded-lg shadow-lg max-h-64 overflow-y-auto" style={{ borderColor: theme.colors.cardBorder, backgroundColor: theme.colors.elementBg }}>
-                  {AVAILABLE_TAGS.filter((tag) => !tags.includes(tag)).map((tag) => (
-                    <button
-                      key={tag}
-                      type="button"
-                      onClick={() => handleSelectTag(tag)}
-                      className="w-full text-left px-4 py-2 transition border-b last:border-b-0"
-                      style={{ color: theme.colors.textPrimary, borderColor: `${theme.colors.cardBorder}33` }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                    >
-                      {tag}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
 

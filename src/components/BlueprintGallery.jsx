@@ -404,6 +404,10 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         return new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at);
       } else if (sortBy === "downloaded") {
         return (b.downloads || 0) - (a.downloads || 0);
+      } else if (sortBy === "ipm-high") {
+        return (b.production_rate || 0) - (a.production_rate || 0);
+      } else if (sortBy === "ipm-low") {
+        return (a.production_rate || 0) - (b.production_rate || 0);
       }
       return new Date(b.created_at) - new Date(a.created_at);
     });
@@ -550,7 +554,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
             className="w-full sm:w-auto px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 font-medium transition-all shadow-sm hover:opacity-80 flex items-center justify-between gap-2"
           >
             <span>
-              {sortBy === "newest" ? "Newest First" : sortBy === "oldest" ? "Oldest First" : sortBy === "alphabetical" ? "Alphabetical" : sortBy === "updated" ? "Recently Updated" : sortBy === "downloaded" ? "Most Downloaded" : "Most Liked"}
+              {sortBy === "newest" ? "Newest First" : sortBy === "oldest" ? "Oldest First" : sortBy === "alphabetical" ? "Alphabetical" : sortBy === "updated" ? "Recently Updated" : sortBy === "downloaded" ? "Most Downloaded" : sortBy === "popular" ? "Most Liked" : sortBy === "ipm-high" ? "Highest IPM" : "Lowest IPM"}
             </span>
             <span className={`transition transform ${sortDropdownOpen ? "rotate-180" : ""}`}>▼</span>
           </button>
@@ -611,11 +615,31 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
                 type="button"
                 onClick={() => { handleSort("popular"); setSortDropdownOpen(false); }}
                 style={{ color: theme.colors.textPrimary, borderColor: `${theme.colors.cardBorder}33` }}
-                className="w-full text-left px-4 py-2.5 transition last:rounded-b-lg last:border-b-0"
+                className="w-full text-left px-4 py-2.5 transition border-b"
                 onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
                 onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
               >
                 Most Liked
+              </button>
+              <button
+                type="button"
+                onClick={() => { handleSort("ipm-high"); setSortDropdownOpen(false); }}
+                style={{ color: theme.colors.textPrimary, borderColor: `${theme.colors.cardBorder}33` }}
+                className="w-full text-left px-4 py-2.5 transition border-b"
+                onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+              >
+                Highest IPM
+              </button>
+              <button
+                type="button"
+                onClick={() => { handleSort("ipm-low"); setSortDropdownOpen(false); }}
+                style={{ color: theme.colors.textPrimary, borderColor: `${theme.colors.cardBorder}33` }}
+                className="w-full text-left px-4 py-2.5 transition last:rounded-b-lg last:border-b-0"
+                onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+              >
+                Lowest IPM
               </button>
             </div>
           )}
@@ -696,7 +720,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
                 color: showFavoritesOnly ? theme.colors.bgPrimary : theme.colors.textPrimary
               }}
               className="px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 font-medium transition-all shadow-sm hover:opacity-80 flex items-center gap-2"
-              title={showFavoritesOnly ? "Show all blueprints" : "Show favorites only"}
+              data-tooltip={showFavoritesOnly ? "Show all blueprints" : "Show liked blueprints only"}
             >
               <Heart className={`w-5 h-5 ${showFavoritesOnly ? 'fill-current' : ''}`} />
               <span className="hidden sm:inline">Liked</span>
@@ -710,7 +734,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
                 color: theme.colors.textPrimary
               }}
               className="px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 font-medium transition-all shadow-sm hover:opacity-80 flex items-center gap-2"
-              title="Show my uploaded blueprints"
+              data-tooltip="Show my uploaded blueprints"
             >
               <User className="w-5 h-5" />
               <span className="hidden sm:inline">My Uploads</span>

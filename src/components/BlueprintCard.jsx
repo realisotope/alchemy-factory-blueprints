@@ -88,6 +88,16 @@ export default function BlueprintCard({
                 transition={{ duration: 0.2 }}
               />
             </AnimatePresence>
+            {/* IPM Badge */}
+            {blueprint.production_rate != null && (
+              <div className="absolute top-2 right-2 px-2 py-1 rounded text-xs font-semibold" style={{
+                backgroundColor: theme.colors.primary,
+                color: theme.colors.accentYellow,
+              }}>
+                {blueprint.production_rate.toFixed(2)} IPM
+              </div>
+            )}
+
             {/* Tint Overlay */}
             <div 
               className="absolute inset-0 w-full h-full pointer-events-none transition-opacity duration-200"
@@ -265,7 +275,6 @@ export default function BlueprintCard({
                   color: status.textColor
                 }}
                 className="flex-1 font-semibold py-2 rounded-lg transition shadow-md hover:opacity-60 hover:scale-105 disabled:opacity-50 flex items-center justify-center text-sm"
-                title={installStatus === 'update-available' ? 'A newer version is available' : installStatus === 'installed' ? 'Blueprint already downloaded' : 'Download this blueprint'}
               >
                 {isDownloading ? (
                   <Loader className="w-4 h-4 animate-spin" />

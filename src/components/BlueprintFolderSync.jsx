@@ -61,9 +61,10 @@ export default function BlueprintFolderSync() {
             : theme.colors.headerBorder,
           color: hasFolderSelected ? theme.colors.accentYellow : theme.colors.textPrimary,
         }}
-        title={hasFolderSelected 
-          ? `${localBlueprints.size} blueprints synced. Click to update` 
-          : 'Select your blueprints folder to sync their install/version with the site. (This does not upload your files.)'}
+        data-tooltip={hasFolderSelected 
+          ? `${localBlueprints.size} blueprints synced. Click to update or press the X to clear.` 
+          : 'Select your blueprints folder to sync their install/version with the site. (This just runs a name match.)'}
+        data-tooltip-position="bottom"
       >
         <FolderOpen className="w-4 h-4" />
         <span className="text-sm font-medium">

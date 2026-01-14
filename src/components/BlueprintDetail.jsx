@@ -193,7 +193,6 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                   }
                 }}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = `${theme.colors.cardBg}CC`}
-                title="Previous blueprint (Arrow Left)"
               >
                 <ChevronLeft className="w-6 h-6 md:w-7 md:h-7" />
               </button>
@@ -449,6 +448,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
             minTier={blueprint.parsed?.MinTierRequired}
             inventorySlots={blueprint.parsed?.InventorySlotsRequired}
             gridSize={blueprint.parsed?.GridArea}
+            productionRate={blueprint.production_rate}
           />
 
           {/* Skills */}
@@ -720,7 +720,6 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                   }
                 }}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = `${theme.colors.cardBg}CC`}
-                title="Next blueprint (Arrow Right)"
               >
                 <ChevronRight className="w-6 h-6 md:w-7 md:h-7" />
               </button>

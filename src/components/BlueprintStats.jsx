@@ -9,7 +9,8 @@ const BlueprintStats = memo(function BlueprintStats({
   buildings = [],
   minTier,
   inventorySlots,
-  gridSize
+  gridSize,
+  productionRate
 }) {
   const { theme } = useTheme();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -91,13 +92,13 @@ const BlueprintStats = memo(function BlueprintStats({
       </div>
 
       {/* Metadata badges */}
-      {(minTier !== undefined || inventorySlots !== undefined || gridSize) && (
+      {(minTier !== undefined || inventorySlots !== undefined || gridSize || productionRate) && (
         <div 
           style={{ 
             backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)`,
             borderTopColor: theme.colors.cardBorder 
           }}
-          className="border-t-2 px-3 py-3 flex justify-around items-center"
+          className="border-t-2 px-3 py-3 flex justify-around items-center flex-wrap gap-2"
         >
           {minTier !== undefined && (
             <div className="flex items-center gap-2">
@@ -141,6 +142,21 @@ const BlueprintStats = memo(function BlueprintStats({
                 className="px-3 py-0.5 rounded border text-sm font-bold"
               >
                 {gridSize.x} × {gridSize.y}
+              </span>
+            </div>
+          )}
+          {productionRate && (
+            <div className="flex items-center gap-2">
+              <span style={{ color: theme.colors.accentYellow }} className="text-sm font-semibold">Production Rate:</span>
+              <span 
+                style={{ 
+                  color: theme.colors.accentYellow,
+                  backgroundColor: theme.colors.cardBg,
+                  borderColor: theme.colors.cardBorder
+                }} 
+                className="px-3 py-0.5 rounded border text-sm font-bold"
+              >
+                {productionRate} IPM
               </span>
             </div>
           )}

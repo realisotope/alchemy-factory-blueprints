@@ -93,6 +93,49 @@ export default function App() {
           opacity: 0.5;
         }
 
+        /* Global tooltip styling using data-tooltip attribute */
+        [data-tooltip] {
+          position: relative;
+        }
+
+        /* Default: tooltip above the element */
+        [data-tooltip]::before {
+          content: attr(data-tooltip);
+          position: absolute;
+          bottom: 100%;
+          left: 50%;
+          margin-bottom: 0.75rem;
+          padding: 6px 12px;
+          background-color: ${theme.colors.cardBg};
+          color: ${theme.colors.textPrimary};
+          border: 1px solid ${theme.colors.cardBorder};
+          border-radius: 4px;
+          font-size: 0.875rem;
+          font-weight: 500;
+          white-space: nowrap;
+          pointer-events: none;
+          z-index: 999999;
+          opacity: 0;
+          visibility: hidden;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+          transition: opacity 0.2s, visibility 0.2s;
+          transform: translateX(-50%);
+        }
+
+        /* Tooltip below the element when data-tooltip-position="bottom" */
+        [data-tooltip-position="bottom"]::before {
+          bottom: auto;
+          top: 100%;
+          margin-bottom: 0;
+          margin-top: 0.75rem;
+        }
+
+        [data-tooltip]:hover::before,
+        [data-tooltip]:focus::before {
+          opacity: 1;
+          visibility: visible;
+        }
+
         /* Scale content to 90% for 1080p monitors - looks better for now */
         @media (min-height: 900px) and (max-height: 1050px) and (min-width: 1800px) {
           html {
@@ -134,7 +177,7 @@ export default function App() {
                 className="flex items-center gap-2 text-sm sm:text-base border-2 font-semibold py-2 px-3 sm:px-4 rounded-lg transition shadow-lg hover:shadow-xl hover:scale-105 hover:opacity-70 whitespace-nowrap"
               >
                 <BookOpen className="w-4 h-4 flex-shrink-0" />
-                <span className="hidden sm:inline">How to Use Blueprints</span>
+                <span className="hidden sm:inline" data-tooltip="How to Use Blueprints" data-tooltip-position="bottom">How to Use Blueprints</span>
                 <span className="sm:hidden">How to Use</span>
               </button>
               {user ? (
@@ -148,7 +191,7 @@ export default function App() {
                   className="inline-flex items-center gap-2 border-2 text-sm sm:text-base font-semibold py-2 px-4 sm:px-4 rounded-lg transition shadow-lg hover:shadow-xl hover:scale-105 hover:opacity-70 whitespace-nowrap"
                 >
                   <Upload className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                  <span className="hidden sm:inline">Upload</span>
+                  <span className="hidden sm:inline" data-tooltip="Upload a Blueprint" data-tooltip-position="bottom">Upload</span>
                   <span className="sm:hidden">Upload</span>
                 </button>
               ) : (
