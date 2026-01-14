@@ -1,5 +1,6 @@
 import { X, Download, Heart, Calendar, User, Maximize2, Share2, Check, Edit2, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { sanitizeCreatorName } from "../lib/sanitization";
@@ -153,11 +154,11 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
     }
   };
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {isOpen && blueprint && (
         <motion.div
-          className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+          className="fixed inset-0 bg-black/70 z-50 flex items-start justify-center backdrop-blur-sm pt-20 pb-6 px-2 md:px-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -165,7 +166,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           onClick={onClose}
         >
           {/* Navigation Container */}
-          <div className="flex items-center justify-center gap-2 w-full max-w-6xl">
+          <div className="flex items-center justify-center gap-1 md:gap-2 w-full max-w-6xl max-h-[calc(100vh-10rem)]">
             {/* Previous Blueprint Arrow */}
             {blueprints.length > 1 && currentBlueprintIndex > 0 && (
               <button
@@ -201,13 +202,12 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
             )}
 
             <motion.div
-              ref={setScrollableRef}
               style={{
                 backgroundColor: theme.colors.elementBg,
               backgroundImage: `linear-gradient(to bottom, ${theme.colors.elementBg}, ${theme.colors.elementBgCard})`,
               borderColor: theme.colors.elementBorder,
             }}
-            className="border-2 rounded-lg max-w-[50rem] w-full max-h-[80vh] overflow-y-auto relative"
+            className="border-2 rounded-lg max-w-[50rem] w-full max-h-[calc(110vh-12rem)] overflow-hidden flex flex-col relative"
             key={blueprint?.id}
             initial={navigationDirection === 0 ? { opacity: 0, y: 100 } : { opacity: 0, x: navigationDirection * 100 }}
             animate={{ opacity: 1, x: 0, y: 0 }}
@@ -218,20 +218,20 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
         {/* Header */}
         <div style={{
           background: `linear-gradient(to right, ${theme.colors.headerGradientFrom}, ${theme.colors.headerGradientVia}, ${theme.colors.headerGradientTo})`,
-        }} className="sticky top-0 z-10 text-white p-6 flex items-center justify-between">
+        }} className="flex-shrink-0 text-white px-4 py-4 md:px-6 md:py-5 flex items-center justify-between">
           <h2 style={{
             backgroundImage: `linear-gradient(to right, ${theme.colors.accentYellow}, ${theme.colors.accentLighter})`,
-          }} className="text-2xl font-bold bg-clip-text text-transparent flex-1 truncate">{blueprint.title}</h2>
+          }} className="text-xl md:text-2xl font-bold bg-clip-text text-transparent flex-1 truncate">{blueprint.title}</h2>
           <button
             onClick={onClose}
-            className="ml-4 p-2 hover:bg-white/10 rounded-lg transition"
+            className="ml-4 p-1.5 md:p-2 hover:bg-white/10 rounded-lg transition"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5 md:w-6 md:h-6" />
           </button>
         </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-3">
+        {/* Content - Scrollable */}
+        <div ref={setScrollableRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-3">
           {/* Image Carousel */}
           {availableImages.length > 0 && !imageError && (
             <div 
@@ -569,7 +569,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           background: `linear-gradient(to left, ${theme.colors.headerGradientFrom}, ${theme.colors.headerGradientVia}, ${theme.colors.headerGradientTo})`,
           borderTopColor: theme.colors.cardBorder,
           color: `${theme.colors.textPrimary}90`,
-        }} className="sticky bottom-0 p-3 sm:p-6 flex gap-2 sm:gap-3 border-t-2 flex-wrap relative z-[10] text-white">
+        }} className="sticky bottom-0 p-3 sm:p-3 flex gap-2 sm:gap-3 border-t-2 flex-wrap relative z-[10] text-white">
           {/* Scroll Indicator */}
           {showScrollIndicator && (
             <button
@@ -598,7 +598,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
               borderColor: theme.colors.headerBorder,
               color: isDownloadHovered ? "#22c55e" : theme.colors.textPrimary,
             }}
-            className="flex-1 min-w-0 border-2 hover:scale-105 py-2 sm:py-3 rounded-lg font-semibold transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
+            className="flex-1 min-w-0 border-2 hover:scale-105 py-2 sm:py-2 rounded-lg font-semibold transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
           >
             <Download className="w-4 h-4 sm:w-5 sm:h-5" />
             <span className="hidden sm:inline">Download</span>
@@ -613,7 +613,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
               borderColor: theme.colors.headerBorder,
               color: isLikeHovered ? "#ef4444" : (isLiked ? "#ef4444" : theme.colors.textPrimary),
             }}
-            className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 rounded-lg font-semibold transition text-sm sm:text-base border-2 hover:scale-105`}
+            className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-2 py-2 sm:py-2 rounded-lg font-semibold transition text-sm sm:text-base border-2 hover:scale-105`}
           >
             <Heart className={`w-4 h-4 sm:w-5 sm:h-5 hidden sm:inline ${isLiked ? "fill-current" : ""}`} />
             <span className="hidden sm:inline">{isLiked ? "Liked" : "Like"}</span>
@@ -628,7 +628,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
               borderColor: theme.colors.headerBorder,
               color: isShareHovered ? "#3b82f6" : theme.colors.textPrimary,
             }}
-            className={`flex-1 min-w-0 py-2 sm:py-3 rounded-lg font-semibold transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base border-2 hover:scale-105`}
+            className={`flex-1 min-w-0 py-2 sm:py-2 rounded-lg font-semibold transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base border-2 hover:scale-105`}
           >
             {copyFeedback ? (
               <>
@@ -652,7 +652,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                 borderColor: theme.colors.headerBorder,
                 color: isEditHovered ? "#ef4444" : theme.colors.textPrimary,
               }}
-              className="px-2 sm:px-4 py-2 sm:py-3 rounded-lg font-semibold transition flex items-center justify-center gap-1 sm:gap-2 border-2 hover:scale-105 text-sm sm:text-base"
+              className="px-2 sm:px-4 py-2 sm:py-2 rounded-lg font-semibold transition flex items-center justify-center gap-1 sm:gap-2 border-2 hover:scale-105 text-sm sm:text-base"
             >
               <Edit2 className="w-4 h-4 sm:w-5 sm:h-5" />
               <span className="hidden sm:inline">Edit</span>
@@ -777,6 +777,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
       )}
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

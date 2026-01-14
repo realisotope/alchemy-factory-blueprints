@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { supabase } from "../lib/supabase";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { validateAndSanitizeTitle, validateAndSanitizeDescription, validateAndSanitizeChangelog, sanitizeTitleForFilename } from "../lib/sanitization";
@@ -570,23 +571,24 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
     }
   };
 
-  return (
-    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto" style={{ backgroundImage: `linear-gradient(to bottom, ${theme.colors.elementBg}, ${theme.colors.elementBgCard})`, borderColor: theme.colors.cardBorder, borderWidth: '2px' }} onClick={(e) => e.stopPropagation()}>
+  return createPortal(
+    <div className="fixed inset-0 bg-black/70 z-50 flex items-start justify-center backdrop-blur-sm pt-20 pb-6 px-4" onClick={onClose}>
+      <div className="rounded-lg max-w-2xl w-full max-h-[calc(100vh-10rem)] overflow-hidden flex flex-col" style={{ backgroundImage: `linear-gradient(to bottom, ${theme.colors.elementBg}, ${theme.colors.elementBgCard})`, borderColor: theme.colors.cardBorder, borderWidth: '2px' }} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="sticky top-0 text-white p-6 flex items-center justify-between" style={{ backgroundImage: `linear-gradient(to right, ${theme.colors.headerGradientFrom}, ${theme.colors.headerGradientVia}, ${theme.colors.headerGradientTo})` }}>
-          <h2 className="text-2xl font-bold" style={{ color: theme.colors.accentYellow }}>Edit Blueprint</h2>
+        <div className="flex-shrink-0 text-white px-4 py-4 md:px-6 md:py-5 flex items-center justify-between" style={{ backgroundImage: `linear-gradient(to right, ${theme.colors.headerGradientFrom}, ${theme.colors.headerGradientVia}, ${theme.colors.headerGradientTo})` }}>
+          <h2 className="text-xl md:text-2xl font-bold" style={{ color: theme.colors.accentYellow }}>Edit Blueprint</h2>
           <button
             onClick={onClose}
-            className="ml-4 p-2 hover:bg-white/10 rounded-lg transition"
+            className="ml-4 p-1.5 md:p-2 hover:bg-white/10 rounded-lg transition"
             disabled={isLoading}
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5 md:w-6 md:h-6" />
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6" style={{ color: theme.colors.textPrimary }}>
+        {/* Form - Scrollable Content */}
+        <div className="flex-1 overflow-y-auto">
+          <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4 md:space-y-5" style={{ color: theme.colors.textPrimary }}>
           {error && (
             <div className="border rounded-lg text-sm px-4 py-3" style={{ backgroundColor: `${theme.colors.cardBg}33`, borderColor: theme.colors.cardBorder, color: '#fca5a5' }}>
               {error}
@@ -865,7 +867,9 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
             </button>
           </div>
         </form>
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

@@ -761,9 +761,9 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
 
   return (
     <div className="backdrop-blur-sm">
-      <h2 style={{ color: theme.colors.accentYellow }} className="text-2xl font-bold mb-6">Upload Your Blueprint</h2>
+      <h2 style={{ color: theme.colors.accentYellow }} className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Upload Your Blueprint</h2>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
         {/* Title */}
         <div>
           <label htmlFor="blueprint-title" style={{ color: theme.colors.textPrimary }} className="block text-l font-medium mb-2">
