@@ -16,11 +16,11 @@ import { extractBlueprintFromPng, isPngBlueprint, formatBytes } from "../lib/png
 import { AVAILABLE_TAGS } from "../lib/tags";
 
 // Constants for validation
-const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 const MAX_IMAGE_WIDTH = 4000;
 const MAX_IMAGE_HEIGHT = 4000;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const AF_FILE_MAX_SIZE = 50 * 1024 * 1024; // 50MB
+const AF_FILE_MAX_SIZE = 20 * 1024 * 1024; // 20MB
 const PNG_BLUEPRINT_MAX_SIZE = 20 * 1024 * 1024; // 20MB
 
 // Validate blueprint file (.af or .png) by checking extension and file structure
@@ -401,11 +401,6 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
     setError("");
 
     try {
-      const titleValidation = validateAndSanitizeTitle(title);
-      if (!titleValidation.valid) {
-        throw new Error(titleValidation.error);
-      }
-
       const descriptionValidation = validateAndSanitizeDescription(description);
       if (!descriptionValidation.valid) {
         throw new Error(descriptionValidation.error);
@@ -449,30 +444,47 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
           }
         }
 
-        // Create and upload new zip file
-        // Rename the file to the blueprint title before zipping (preserving extension)
+        // Determine if file should be zipped
+        const shouldZip = blueprintFile.size > 100 * 1024;
         const blueprintFileName = `${sanitizeTitleForFilename(title)}${blueprintFileExtension}`;
-        
-        const zip = new JSZip();
-        zip.file(blueprintFileName, blueprintFile, { compression: "DEFLATE" });
-        const zipBlob = await zip.generateAsync({
-          type: "blob",
-          compression: "DEFLATE",
-          compressionOptions: { level: 9 },
-        });
 
-        const zipFileName = `${sanitizeTitleForFilename(title)}_${Date.now()}.zip`;
-        const blueprintPath = `${user.id}/${zipFileName}`;
-        const { error: blueprintError } = await supabase.storage
-          .from("blueprints")
-          .upload(blueprintPath, zipBlob);
+        if (shouldZip) {
+          // Create and upload zip file for large files
+          const zip = new JSZip();
+          zip.file(blueprintFileName, blueprintFile, { compression: "DEFLATE" });
+          const zipBlob = await zip.generateAsync({
+            type: "blob",
+            compression: "DEFLATE",
+            compressionOptions: { level: 9 },
+          });
 
-        if (blueprintError) throw blueprintError;
+          const zipFileName = `${sanitizeTitleForFilename(title)}_${Date.now()}.zip`;
+          const blueprintPath = `${user.id}/${zipFileName}`;
+          const { error: blueprintError } = await supabase.storage
+            .from("blueprints")
+            .upload(blueprintPath, zipBlob);
 
-        const { data: blueprintData } = supabase.storage
-          .from("blueprints")
-          .getPublicUrl(blueprintPath);
-        fileUrl = blueprintData?.publicUrl;
+          if (blueprintError) throw blueprintError;
+
+          const { data: blueprintData } = supabase.storage
+            .from("blueprints")
+            .getPublicUrl(blueprintPath);
+          fileUrl = blueprintData?.publicUrl;
+        } else {
+          // For smaller files, upload directly without zipping
+          const blueprintFileNameWithTimestamp = `${sanitizeTitleForFilename(title)}_${Date.now()}${blueprintFileExtension}`;
+          const blueprintPath = `${user.id}/${blueprintFileNameWithTimestamp}`;
+          const { error: blueprintError } = await supabase.storage
+            .from("blueprints")
+            .upload(blueprintPath, blueprintFile);
+
+          if (blueprintError) throw blueprintError;
+
+          const { data: blueprintData } = supabase.storage
+            .from("blueprints")
+            .getPublicUrl(blueprintPath);
+          fileUrl = blueprintData?.publicUrl;
+        }
       }
 
       let imageUrl = blueprint.image_url;
@@ -508,7 +520,6 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
       const { error: dbError } = await supabase
         .from("blueprints")
         .update({
-          title: titleValidation.sanitized,
           description: descriptionValidation.sanitized || null,
           file_url: fileUrl,
           image_url: imageUrl,
@@ -595,22 +606,17 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
             </div>
           )}
 
-          {/* Title */}
+          {/* Title - Read Only */}
           <div>
-            <label htmlFor="edit-blueprint-title" className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
-              Blueprint Title *
+            <label className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
+              Blueprint Title
             </label>
-            <input
-              id="edit-blueprint-title"
-              name="edit-blueprint-title"
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g., Advanced Smeltery Setup"
-              style={{ borderColor: theme.colors.cardBorder, backgroundColor: `${theme.colors.cardBg}33`, color: `${theme.colors.textPrimary}80` }}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 placeholder-opacity-50"
-              disabled={isLoading}
-            />
+            <div
+              style={{ borderColor: theme.colors.cardBorder, backgroundColor: `${theme.colors.cardBg}33`, color: theme.colors.textPrimary }}
+              className="w-full px-4 py-2 border rounded-lg"
+            >
+              {title}
+            </div>
           </div>
 
           {/* Description */}

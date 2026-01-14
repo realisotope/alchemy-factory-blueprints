@@ -67,7 +67,7 @@ export const darkTheme = {
     // Primary backgrounds
     primary: "#0f172a",
     secondary: "#1e293b",
-    tertiary: "#475569",
+    tertiary: "#253244",
     gridTo: "#164e63",
     gridFrom: "#1e3a8a",
     

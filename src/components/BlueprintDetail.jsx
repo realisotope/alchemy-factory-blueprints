@@ -8,11 +8,13 @@ import { updateBlueprintMetaTags, resetMetaTags } from "../lib/metaTags";
 import { getDetailViewUrl, getLightboxUrl, prefetchImage } from "../lib/imageOptimization";
 import { parseUrlsInText } from "../lib/urlProcessor";
 import { useTheme } from "../lib/ThemeContext";
+import { useBlueprintFolder } from "../lib/BlueprintFolderContext";
 import EditBlueprint from "./EditBlueprint";
 import BlueprintStats from "./BlueprintStats";
 
 export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange, onSearchByCreator, onBlueprintUpdate, onDownload, userLikes = new Set(), blueprints = [], currentBlueprintIndex = -1, onNavigate }) {
   const { theme } = useTheme();
+  const { cacheDownloadedBlueprint, getInstallStatus } = useBlueprintFolder();
   const [isLiked, setIsLiked] = useState(userLikes.has(blueprint?.id));
   const [likeCount, setLikeCount] = useState(blueprint?.likes ?? 0);
   const [downloadCount, setDownloadCount] = useState(blueprint?.downloads ?? 0);
@@ -135,6 +137,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
 
   const handleDownloadClick = async () => {
     onDownload?.(blueprint);
+    cacheDownloadedBlueprint(blueprint);
   };
 
   const handleShareBlueprint = () => {
@@ -595,14 +598,46 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
             onMouseLeave={() => setIsDownloadHovered(false)}
             style={{
               backgroundColor: `${theme.colors.tertiary}80`,
-              borderColor: theme.colors.headerBorder,
-              color: isDownloadHovered ? "#22c55e" : theme.colors.textPrimary,
+              borderColor: 
+                getInstallStatus(blueprint) === 'installed' ? `${theme.colors.accentYellow}40` :
+                getInstallStatus(blueprint) === 'update-available' ? `${theme.colors.accentYellow}90` :
+                theme.colors.headerBorder,
+              color: isDownloadHovered ? (
+                getInstallStatus(blueprint) === 'installed' ? theme.colors.accentYellow :
+                getInstallStatus(blueprint) === 'update-available' ? "#22c55e" :
+                "#22c55e"
+              ) : (
+                getInstallStatus(blueprint) === 'installed' ? `${theme.colors.accentYellow}60` :
+                getInstallStatus(blueprint) === 'update-available' ? theme.colors.accentYellow :
+                theme.colors.textPrimary
+              ),
             }}
             className="flex-1 min-w-0 border-2 hover:scale-105 py-2 sm:py-2 rounded-lg font-semibold transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
+            title={
+              getInstallStatus(blueprint) === 'update-available' ? 'A newer version is available' :
+              getInstallStatus(blueprint) === 'installed' ? 'Blueprint already downloaded' :
+              'Download this blueprint'
+            }
           >
-            <Download className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="hidden sm:inline">Download</span>
-            <span className="sm:hidden">Download</span>
+            {getInstallStatus(blueprint) === 'installed' ? (
+              <>
+                <Check className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">Installed</span>
+                <span className="sm:hidden">Installed</span>
+              </>
+            ) : getInstallStatus(blueprint) === 'update-available' ? (
+              <>
+                <Download className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">Update</span>
+                <span className="sm:hidden">Update</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">Download</span>
+                <span className="sm:hidden">Download</span>
+              </>
+            )}
           </button>
           <button
             onClick={handleLike}

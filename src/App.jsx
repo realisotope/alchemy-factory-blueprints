@@ -7,6 +7,7 @@ import { useTheme } from "./lib/ThemeContext";
 import DiscordLogin from "./components/DiscordLogin";
 import UploadModal from "./components/UploadModal";
 import BlueprintGallery from "./components/BlueprintGallery";
+import BlueprintFolderSync from "./components/BlueprintFolderSync";
 import ThemeToggle from "./components/ThemeToggle";
 
 export default function App() {
@@ -122,6 +123,7 @@ export default function App() {
             </div>
             <div className="hidden sm:flex flex-col sm:flex-row gap-2 sm:gap-3 items-end sm:items-center sm:justify-end flex-shrink-0 ml-4">
               <ThemeToggle />
+              <BlueprintFolderSync />
               <button
                 onClick={() => setIsHowToOpen(true)}
                 style={{
@@ -143,10 +145,10 @@ export default function App() {
                     borderColor: theme.colors.headerBorder,
                     color: theme.colors.textPrimary,
                   }}
-                  className="inline-flex items-center gap-2 border-2 text-sm sm:text-base font-semibold py-2 px-4 sm:px-8 rounded-lg transition shadow-lg hover:shadow-xl hover:scale-105 hover:opacity-70 whitespace-nowrap"
+                  className="inline-flex items-center gap-2 border-2 text-sm sm:text-base font-semibold py-2 px-4 sm:px-4 rounded-lg transition shadow-lg hover:shadow-xl hover:scale-105 hover:opacity-70 whitespace-nowrap"
                 >
                   <Upload className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                  <span className="hidden sm:inline">Upload Blueprint</span>
+                  <span className="hidden sm:inline">Upload</span>
                   <span className="sm:hidden">Upload</span>
                 </button>
               ) : (

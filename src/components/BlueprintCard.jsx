@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Trash2, Loader, Heart, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Download, Trash2, Loader, Heart, X, ChevronLeft, ChevronRight, Check, AlertCircle } from "lucide-react";
 import { useTheme } from "../lib/ThemeContext";
 import { getThumbnailUrl, getDetailViewUrl, prefetchImage } from "../lib/imageOptimization";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { sanitizeCreatorName } from "../lib/sanitization";
+import { useBlueprintFolder } from "../lib/BlueprintFolderContext";
 
 export default function BlueprintCard({
   blueprint,
@@ -24,6 +25,7 @@ export default function BlueprintCard({
   const [isHovered, setIsHovered] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { getInstallStatus, cacheDownloadedBlueprint } = useBlueprintFolder();
 
   // Get available images
   const availableImages = [
@@ -217,27 +219,65 @@ export default function BlueprintCard({
 
         {/* Actions */}
         <div className="flex gap-2 mt-auto">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDownload(blueprint);
-            }}
-            disabled={downloadingId === blueprint.id}
-            style={{
-              backgroundColor: `${theme.colors.buttonBg2}80`,
-              color: theme.colors.textPrimary
-            }}
-            className="flex-1 font-semibold py-2 rounded-lg transition shadow-md hover:opacity-60 hover:scale-105 disabled:opacity-50 flex items-center justify-center text-sm"
-          >
-            {downloadingId === blueprint.id ? (
-              <Loader className="w-4 h-4 animate-spin" />
-            ) : (
-              <>
-                <Download className="w-4 h-4 mr-1" />
-                Download
-              </>
-            )}
-          </button>
+          {(() => {
+            const installStatus = getInstallStatus(blueprint);
+            const isDownloading = downloadingId === blueprint.id;
+            
+            if (installStatus !== 'not-installed') {
+              console.log(`[BlueprintCard] "${blueprint.title}" status: ${installStatus}`);
+            }
+
+            const statusConfig = {
+              'installed': {
+                icon: Check,
+                text: 'Installed',
+                bgColor: `${theme.colors.buttonBg2}40`,
+                textColor: `${theme.colors.accentYellow}50`,
+              },
+              'update-available': {
+                icon: AlertCircle,
+                text: 'Update Available',
+                bgColor: `${theme.colors.buttonBg2}80`,
+                textColor: `${theme.colors.accentYellow}`,
+              },
+              'not-installed': {
+                icon: Download,
+                text: 'Download',
+                bgColor: `${theme.colors.buttonBg2}80`,
+                textColor: theme.colors.textPrimary,
+              }
+            };
+
+            const status = statusConfig[installStatus];
+            const StatusIcon = status.icon;
+
+            return (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDownload(blueprint);
+                  // Cache the blueprint so it shows as installed next time
+                  cacheDownloadedBlueprint(blueprint);
+                }}
+                disabled={isDownloading}
+                style={{
+                  backgroundColor: status.bgColor,
+                  color: status.textColor
+                }}
+                className="flex-1 font-semibold py-2 rounded-lg transition shadow-md hover:opacity-60 hover:scale-105 disabled:opacity-50 flex items-center justify-center text-sm"
+                title={installStatus === 'update-available' ? 'A newer version is available' : installStatus === 'installed' ? 'Blueprint already downloaded' : 'Download this blueprint'}
+              >
+                {isDownloading ? (
+                  <Loader className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <StatusIcon className="w-4 h-4 mr-1" />
+                    {status.text}
+                  </>
+                )}
+              </button>
+            );
+          })()}
 
           <button
             onClick={(e) => {
