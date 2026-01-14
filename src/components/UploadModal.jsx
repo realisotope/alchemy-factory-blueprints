@@ -15,7 +15,7 @@ export default function UploadModal({ isOpen, onClose, user, onUploadSuccess }) 
           backgroundImage: `linear-gradient(to bottom, ${theme.colors.elementBg}, ${theme.colors.elementBgCard})`,
           borderColor: theme.colors.elementBorder,
         }}
-        className="rounded-lg w-full max-w-2xl max-h-[calc(100vh-10rem)] overflow-hidden flex flex-col border-2"
+        className="rounded-lg w-full max-w-2xl max-h-[calc(100vh-10rem)] blueprint-detail-1080p overflow-hidden flex flex-col border-2"
       >
         {/* Header */}
         <div

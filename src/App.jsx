@@ -91,8 +91,20 @@ export default function App() {
           color: ${theme.colors.textPrimary};
           opacity: 0.5;
         }
+
+        /* Scale content to 90% for 1080p monitors - looks better for now */
+        @media (min-height: 900px) and (max-height: 1050px) and (min-width: 1800px) {
+          html {
+            zoom: 0.9;
+          }
+          
+          /* Increase blueprint detail container height for 1080p */
+          .blueprint-detail-1080p {
+            max-height: calc(100vh + 6vh) !important;
+          }
+        }
       `}</style>
-      
+
       <div className="relative z-10 flex flex-col flex-grow">
         {/* Header */}
         <header style={{
@@ -127,10 +139,10 @@ export default function App() {
                 <button
                   onClick={() => setIsUploadModalOpen(true)}
                   style={{
-                  backgroundColor: `${theme.colors.tertiary}80`,
-                  borderColor: theme.colors.headerBorder,
-                  color: theme.colors.textPrimary,
-                }}
+                    backgroundColor: `${theme.colors.tertiary}80`,
+                    borderColor: theme.colors.headerBorder,
+                    color: theme.colors.textPrimary,
+                  }}
                   className="inline-flex items-center gap-2 border-2 text-sm sm:text-base font-semibold py-2 px-4 sm:px-8 rounded-lg transition shadow-lg hover:shadow-xl hover:scale-105 hover:opacity-70 whitespace-nowrap"
                 >
                   <Upload className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
@@ -139,7 +151,7 @@ export default function App() {
                 </button>
               ) : (
                 <></>)}
-                <DiscordLogin user={user} onLogout={handleLogout} />
+              <DiscordLogin user={user} onLogout={handleLogout} />
             </div>
           </div>
         </header>
@@ -162,16 +174,16 @@ export default function App() {
           {/* Content */}
           <div className="relative z-10">
 
-          {/* Gallery Section */}
-          <section>
-            <h2 style={{
-              backgroundColor: theme.colors.elementBg,
-              color: theme.colors.accentYellow,
-            }} className="text-3xl font-bold bg-clip-text text-transparent mb-3">
-              Blueprint Gallery
-            </h2>
-            <BlueprintGallery user={user} refreshTrigger={refreshGallery} initialBlueprintId={initialBlueprintId} />
-          </section>
+            {/* Gallery Section */}
+            <section>
+              <h2 style={{
+                backgroundColor: theme.colors.elementBg,
+                color: theme.colors.accentYellow,
+              }} className="text-3xl font-bold bg-clip-text text-transparent mb-3">
+                Blueprint Gallery
+              </h2>
+              <BlueprintGallery user={user} refreshTrigger={refreshGallery} initialBlueprintId={initialBlueprintId} />
+            </section>
           </div>
         </main>
 

@@ -573,7 +573,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
 
   return createPortal(
     <div className="fixed inset-0 bg-black/70 z-50 flex items-start justify-center backdrop-blur-sm pt-20 pb-6 px-4" onClick={onClose}>
-      <div className="rounded-lg max-w-2xl w-full max-h-[calc(100vh-10rem)] overflow-hidden flex flex-col" style={{ backgroundImage: `linear-gradient(to bottom, ${theme.colors.elementBg}, ${theme.colors.elementBgCard})`, borderColor: theme.colors.cardBorder, borderWidth: '2px' }} onClick={(e) => e.stopPropagation()}>
+      <div className="rounded-lg max-w-2xl w-full max-h-[calc(100vh-10rem)] blueprint-detail-1080p overflow-hidden flex flex-col" style={{ backgroundImage: `linear-gradient(to bottom, ${theme.colors.elementBg}, ${theme.colors.elementBgCard})`, borderColor: theme.colors.cardBorder, borderWidth: '2px' }} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex-shrink-0 text-white px-4 py-4 md:px-6 md:py-5 flex items-center justify-between" style={{ backgroundImage: `linear-gradient(to right, ${theme.colors.headerGradientFrom}, ${theme.colors.headerGradientVia}, ${theme.colors.headerGradientTo})` }}>
           <h2 className="text-xl md:text-2xl font-bold" style={{ color: theme.colors.accentYellow }}>Edit Blueprint</h2>
@@ -861,7 +861,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               onClick={onClose}
               disabled={isLoading}
               className="flex-1 py-3 rounded-lg font-semibold transition disabled:opacity-50 hover:opacity-70 hover:scale-105"
-              style={{ backgroundColor: theme.colors.buttonBg, color: "text-red-500" }}
+              style={{ backgroundColor: theme.colors.buttonBg, color: theme.colors.buttonText }}
             >
               Cancel
             </button>

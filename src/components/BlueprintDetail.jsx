@@ -158,26 +158,26 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
     <AnimatePresence>
       {isOpen && blueprint && (
         <motion.div
-          className="fixed inset-0 bg-black/70 z-50 flex items-start justify-center backdrop-blur-sm pt-20 pb-6 px-2 md:px-4"
+          className="fixed inset-0 bg-black/70 z-50 flex items-start justify-center backdrop-blur-sm pt-8 pb-8 px-2 md:px-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
           onClick={onClose}
         >
-          {/* Navigation Container */}
-          <div className="flex items-center justify-center gap-1 md:gap-2 w-full max-w-6xl max-h-[calc(100vh-10rem)]">
+          {/* Modal and Navigation Container */}
+          <div className="flex items-start justify-center gap-3 md:gap-4 w-full max-w-[60rem] max-h-[calc(100vh-4rem)]">
             {/* Previous Blueprint Arrow */}
-            {blueprints.length > 1 && currentBlueprintIndex > 0 && (
+            {blueprints.length > 1 && currentBlueprintIndex > 0 ? (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setNavigationDirection(-1);
                   if (onNavigate) onNavigate(currentBlueprintIndex - 1);
                 }}
-                className="flex-shrink-0 p-2 rounded-lg transition hover:scale-110"
+                className="flex-shrink-0 p-2 md:p-2 rounded-lg transition hover:scale-110 mt-[45vh]"
                 style={{
-                  backgroundColor: `${theme.colors.cardBg}80`,
+                  backgroundColor: `${theme.colors.cardBg}CC`,
                   border: `1px solid ${theme.colors.cardBorder}`,
                   color: theme.colors.textPrimary,
                 }}
@@ -189,17 +189,17 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                     prefetchImage(getDetailViewUrl(prevBlueprint.image_url));
                   }
                 }}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = `${theme.colors.cardBg}80`}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = `${theme.colors.cardBg}CC`}
                 title="Previous blueprint (Arrow Left)"
               >
-                <ChevronLeft className="w-6 h-6" />
+                <ChevronLeft className="w-6 h-6 md:w-7 md:h-7" />
               </button>
+            ) : (
+              <div className="flex-shrink-0 w-[52px] md:w-[60px]" />
             )}
 
-            {/* Spacer for when previous button doesn't exist */}
-            {(blueprints.length <= 1 || currentBlueprintIndex === 0) && (
-              <div className="flex-shrink-0 w-14" />
-            )}
+          {/* Modal Container */}
+          <div className="relative w-full max-w-[50rem] max-h-[calc(100vh-4rem)] blueprint-detail-1080p">
 
             <motion.div
               style={{
@@ -207,7 +207,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
               backgroundImage: `linear-gradient(to bottom, ${theme.colors.elementBg}, ${theme.colors.elementBgCard})`,
               borderColor: theme.colors.elementBorder,
             }}
-            className="border-2 rounded-lg max-w-[50rem] w-full max-h-[calc(110vh-12rem)] overflow-hidden flex flex-col relative"
+            className="border-2 rounded-lg max-w-[50rem] w-full max-h-[calc(100vh-4rem)] blueprint-detail-1080p overflow-hidden flex flex-col relative"
             key={blueprint?.id}
             initial={navigationDirection === 0 ? { opacity: 0, y: 100 } : { opacity: 0, x: navigationDirection * 100 }}
             animate={{ opacity: 1, x: 0, y: 0 }}
@@ -660,18 +660,19 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           )}
         </div>
       </motion.div>
+          </div>
 
             {/* Next Blueprint Arrow */}
-            {blueprints.length > 1 && currentBlueprintIndex < blueprints.length - 1 && (
+            {blueprints.length > 1 && currentBlueprintIndex < blueprints.length - 1 ? (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setNavigationDirection(1);
                   if (onNavigate) onNavigate(currentBlueprintIndex + 1);
                 }}
-                className="flex-shrink-0 p-2 rounded-lg transition hover:scale-110"
+                className="flex-shrink-0 p-2 md:p-2 rounded-lg transition hover:scale-110 mt-[45vh]"
                 style={{
-                  backgroundColor: `${theme.colors.cardBg}80`,
+                  backgroundColor: `${theme.colors.cardBg}CC`,
                   border: `1px solid ${theme.colors.cardBorder}`,
                   color: theme.colors.textPrimary,
                 }}
@@ -683,18 +684,16 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                     prefetchImage(getDetailViewUrl(nextBlueprint.image_url));
                   }
                 }}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = `${theme.colors.cardBg}80`}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = `${theme.colors.cardBg}CC`}
                 title="Next blueprint (Arrow Right)"
               >
-                <ChevronRight className="w-6 h-6" />
+                <ChevronRight className="w-6 h-6 md:w-7 md:h-7" />
               </button>
-            )}
-
-            {/* Spacer for when next button doesn't exist */}
-            {(blueprints.length <= 1 || currentBlueprintIndex === blueprints.length - 1) && (
-              <div className="flex-shrink-0 w-10" />
+            ) : (
+              <div className="flex-shrink-0 w-[52px] md:w-[60px]" />
             )}
           </div>
+
       {/* Edit Blueprint Modal */}
       <EditBlueprint
         blueprint={blueprint}
