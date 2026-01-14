@@ -12,57 +12,64 @@ export default function Tooltip({ children, title, position = 'top' }) {
 
   if (!title) return children;
 
+  const getZoomLevel = () => {
+    const computedZoom = window.getComputedStyle(document.documentElement).zoom;
+    return computedZoom && computedZoom !== 'normal' ? parseFloat(computedZoom) : 1;
+  };
+
   useEffect(() => {
     if (isVisible && triggerRef.current) {
+      const zoomLevel = getZoomLevel();
       const rect = triggerRef.current.getBoundingClientRect();
-      const offset = -2;
+      const offset = -36;
       const padding = 8;
+      const tooltipWidth = 150;
+      const tooltipHeight = 40;
       
       let top = 0;
       let left = 0;
-      let finalPosition = position;
 
-      // Calculate initial position based on requested position
+      const adjustedTop = rect.top / zoomLevel;
+      const adjustedLeft = rect.left / zoomLevel;
+      const adjustedRight = rect.right / zoomLevel;
+      const adjustedBottom = rect.bottom / zoomLevel;
+      const adjustedWidth = rect.width / zoomLevel;
+      const adjustedHeight = rect.height / zoomLevel;
+
       switch (position) {
         case 'top':
-          top = rect.top - offset + window.scrollY;
-          left = rect.left + rect.width / 2 + window.scrollX;
+          top = adjustedTop - tooltipHeight - offset;
+          left = adjustedLeft + adjustedWidth / 2;
           break;
         case 'bottom':
-          top = rect.bottom + offset + window.scrollY;
-          left = rect.left + rect.width / 2 + window.scrollX;
+          top = adjustedBottom + offset;
+          left = adjustedLeft + adjustedWidth / 2;
           break;
         case 'left':
-          top = rect.top + rect.height / 2 + window.scrollY;
-          left = rect.left - offset + window.scrollX;
+          top = adjustedTop + adjustedHeight / 2;
+          left = adjustedLeft - offset;
           break;
         case 'right':
-          top = rect.top + rect.height / 2 + window.scrollY;
-          left = rect.right + offset + window.scrollX;
+          top = adjustedTop + adjustedHeight / 2;
+          left = adjustedRight + offset;
           break;
       }
 
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-      const tooltipWidth = 150;
-      const tooltipHeight = 40;
+      const viewportWidth = window.innerWidth / zoomLevel;
+      const viewportHeight = window.innerHeight / zoomLevel;
 
       // Check horizontal bounds
       if (left - tooltipWidth / 2 < padding) {
-        left = rect.right + offset + window.scrollX;
-        finalPosition = 'right';
+        left = adjustedRight + offset;
       } else if (left + tooltipWidth / 2 > viewportWidth - padding) {
-        left = rect.left - offset + window.scrollX;
-        finalPosition = 'left';
+        left = adjustedLeft - offset;
       }
 
       // Check vertical bounds
-      if (top - tooltipHeight < padding) {
-        top = rect.bottom + offset + window.scrollY;
-        finalPosition = 'bottom';
+      if (top < padding) {
+        top = adjustedBottom + offset;
       } else if (top + tooltipHeight > viewportHeight - padding) {
-        top = rect.top - offset + window.scrollY;
-        finalPosition = 'top';
+        top = adjustedTop - tooltipHeight - offset;
       }
 
       setTooltipPos({ top, left });
@@ -75,29 +82,35 @@ export default function Tooltip({ children, title, position = 'top' }) {
 
     const handleScroll = () => {
       if (triggerRef.current) {
+        const zoomLevel = getZoomLevel();
         const rect = triggerRef.current.getBoundingClientRect();
-        const offset = -2;
-        const padding = 8;
+        const offset = 8;
+        
+        const adjustedTop = rect.top / zoomLevel;
+        const adjustedLeft = rect.left / zoomLevel;
+        const adjustedRight = rect.right / zoomLevel;
+        const adjustedHeight = rect.height / zoomLevel;
+        const adjustedWidth = rect.width / zoomLevel;
         
         let top = 0;
         let left = 0;
 
         switch (position) {
           case 'top':
-            top = rect.top - offset + window.scrollY;
-            left = rect.left + rect.width / 2 + window.scrollX;
+            top = adjustedTop - 40 - offset;
+            left = adjustedLeft + adjustedWidth / 2;
             break;
           case 'bottom':
-            top = rect.bottom + offset + window.scrollY;
-            left = rect.left + rect.width / 2 + window.scrollX;
+            top = adjustedTop + adjustedHeight + offset;
+            left = adjustedLeft + adjustedWidth / 2;
             break;
           case 'left':
-            top = rect.top + rect.height / 2 + window.scrollY;
-            left = rect.left - offset + window.scrollX;
+            top = adjustedTop + adjustedHeight / 2;
+            left = adjustedLeft - offset;
             break;
           case 'right':
-            top = rect.top + rect.height / 2 + window.scrollY;
-            left = rect.right + offset + window.scrollX;
+            top = adjustedTop + adjustedHeight / 2;
+            left = adjustedRight + offset;
             break;
         }
 
