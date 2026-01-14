@@ -56,7 +56,7 @@ const BlueprintStats = memo(function BlueprintStats({
                 ({materials.length})
               </span>
               <ChevronDown 
-                className={`w-4 h-4 transition-transform ${isExpanded && activeTab === "materials" ? "rotate-180" : ""}`}
+                className={`w-6 h-6 transition-transform ${isExpanded && activeTab === "materials" ? "rotate-180" : ""}`}
                 style={{ color: activeTab === "materials" && isExpanded ? theme.colors.accentYellow : theme.colors.textSecondary }}
               />
             </button>
@@ -82,7 +82,7 @@ const BlueprintStats = memo(function BlueprintStats({
                 ({buildings.length})
               </span>
               <ChevronDown 
-                className={`w-4 h-4 transition-transform ${isExpanded && activeTab === "buildings" ? "rotate-180" : ""}`}
+                className={`w-6 h-6 transition-transform ${isExpanded && activeTab === "buildings" ? "rotate-180" : ""}`}
                 style={{ color: activeTab === "buildings" && isExpanded ? theme.colors.accentYellow : theme.colors.textSecondary }}
               />
             </button>
