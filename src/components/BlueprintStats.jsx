@@ -123,7 +123,7 @@ const BlueprintStats = memo(function BlueprintStats({
       </div>
 
       {/* Metadata badges */}
-      {(minTier !== undefined || inventorySlots !== undefined || gridSize || productionRate) && (
+      {(minTier !== undefined || inventorySlots !== undefined || gridSize) && (
         <div 
           style={{ 
             backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)`,
@@ -176,7 +176,8 @@ const BlueprintStats = memo(function BlueprintStats({
               </span>
             </div>
           )}
-          {productionRate && (
+          {/* Production Rate - TEMPORARILY DISABLED */}
+          {false && productionRate && (
             <div className="flex items-center gap-2">
               <span style={{ color: theme.colors.accentYellow }} className="text-sm font-semibold">Production Rate:</span>
               <span 

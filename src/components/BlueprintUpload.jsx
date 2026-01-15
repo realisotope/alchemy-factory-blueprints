@@ -683,7 +683,6 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
           {
             title: titleValidation.sanitized,
             description: descriptionValidation.sanitized || null,
-            production_rate: validatedProductionRate,
             slug: slug,
             user_id: user.id,
             creator_name: stripDiscordDiscriminator(user.user_metadata?.name) || "Anonymous",
