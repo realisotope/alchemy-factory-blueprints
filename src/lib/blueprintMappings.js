@@ -53,17 +53,17 @@ export const BUILDING_MAPPINGS = {
   Alembic: { id: "alembic", name: "Alembic" },
   ArcaneProcessor: { id: "arcaneprocessor", name: "Arcane Processor" },
   AetherShaper: { id: "arcaneshaper", name: "Arcane Shaper" },
-  Assembler: { id: "assembler", name: "Assembler" },
+  Assembler: { id: "assembler", name: "Assembler", aliases: ["Assembler_Sym"] },
   // Row 3
-  Athanor: { id: "athanor", name: "Athanor" },
+  Athanor: { id: "athanor", name: "Athanor", hidePerUnit: true },
   AutoCheckout: { id: "autocheckout", name: "Auto Checkout" },
   AutoNursery: { id: "autonursery", name: "Auto Nursery" },
   Belt: { id: "belt", name: "Belt" },
   // Row 4
-  Beam3: { id: "beam3", name: "Beam" },
-  BeltInclinedUp: { id: "beltinclinedup", name: "Belt Inclined Up" },
-  BeltSlopeUp: { id: "beltslopeup", name: "Belt Slope Up" },
-  NoticeBoard: { id: "noticeboard", name: "Notice Board" },
+  Beam3: { id: "beam3", name: "Beam", aliases: ["Beam5", "Beam10", "Beam18"], hidePerUnit: true },
+  BeltInclinedUp: { id: "beltinclinedup", name: "Belt Inclined Up", aliases: ["BeltInclinedDown"] },
+  BeltSlopeUp: { id: "beltslopeup", name: "Belt Slope Up", aliases: ["BeltSlopeDown"] },
+  NoticeBoard: { id: "noticeboard", name: "Notice Board", aliases: ["NoticeBoard_2"] },
   // Row 5
   BlastFurnace: { id: "blastfurnace", name: "Blast Furnace" },
   Blender: { id: "blender", name: "Blender" },
@@ -81,8 +81,8 @@ export const BUILDING_MAPPINGS = {
   CheckoutTable: { id: "checkouttable", name: "Checkout Table" },
   // Row 8
   Column: { id: "column", name: "Column" },
-  ConicalFlask: { id: "conicalflask", name: "Conical Flask" },
-  ConveyerLift_Upwards: { id: "conveyerlift_upwards", name: "Conveyer Lift Upwards" },
+  ConicalFlask: { id: "conicalflask", name: "Conical Flask"},
+  ConveyerLift_Upwards: { id: "conveyerlift_upwards", name: "Conveyer Lift Upwards", hidePerUnit: true },
   ConveyorTunnel: { id: "conveyortunnel", name: "Conveyor Tunnel" },
   // Row 9
   CopperBlock: { id: "copperblock", name: "Copper Block" },
@@ -90,12 +90,12 @@ export const BUILDING_MAPPINGS = {
   Crucible: { id: "crucible", name: "Crucible" },
   Portal_Wholesaling: { id: "portal_wholesaling", name: "Dispatch Portal" },
   // Row 10
-  DrawBridge: { id: "drawbridge", name: "Draw Bridge" },
+  DrawBridge: { id: "drawbridge", name: "Draw Bridge", aliases: ["DrawBridgeR"] },
   EnhancedGrinder: { id: "enhancedgrinder", name: "Enhanced Grinder" },
   Extractor: { id: "extractor", name: "Extractor" },
-  Filter_Vert: { id: "filter_vert", name: "Filter Splitter" },
+  Filter_Vert: { id: "filter_vert", name: "Filter Splitter", aliases: ["Filter_Sym"] },
   // Row 11
-  FrameSingle: { id: "framesingle", name: "Frame Single" },
+  FrameSingle: { id: "framesingle", name: "Frame Single", hidePerUnit: true },
   GoldBlock: { id: "goldblock", name: "Gold Block" },
   Grinder: { id: "grinder", name: "Grinder" },
   IronBlock: { id: "ironblock", name: "Iron Block" },
@@ -107,7 +107,7 @@ export const BUILDING_MAPPINGS = {
   // Row 13
   Kiln: { id: "kiln", name: "Kiln" },
   KnowledgeAltar: { id: "knowledgealtar", name: "Knowledge Altar" },
-  IronStand: { id: "ironstand", name: "Lab Stands" },
+  IronStand: { id: "ironstand", name: "Lab Stands", aliases: ["IronStandDuo"], hidePerUnit: true },
   MediumStand: { id: "mediumstand", name: "Medium Stand" },
   // Row 14
   LargeStand: { id: "largestand", name: "Large Stand" },
@@ -121,11 +121,11 @@ export const BUILDING_MAPPINGS = {
   PotionStand: { id: "potionstand", name: "Potion Stand" },
   // Row 16
   Portal_Bank: { id: "portal_bank", name: "Portal Bank" },
-  Pipe: { id: "pipe", name: "Pipe" },
-  Merger_Vert: { id: "merger_vert", name: "Priority Merger" },
-  Splitter_Vert: { id: "splitter_vert", name: "Priority Splitter" },
+  Pipe: { id: "pipe", name: "Pipe", aliases: ["Pipe_Vertical"], hidePerUnit: true },
+  Merger_Vert: { id: "merger_vert", name: "Priority Merger", aliases: ["Merger_Sym"] },
+  Splitter_Vert: { id: "splitter_vert", name: "Priority Splitter", aliases: ["Splitter"] },
   // Row 17
-  Processor: { id: "processor", name: "Processor" },
+  Processor: { id: "processor", name: "Processor", aliases: ["Processor_Sym"], hidePerUnit: true },
   Portal_AlchGuild: { id: "portal_alchguild", name: "Purchasing Portal" },
   RailRamp: { id: "railramp", name: "Rail Ramp" },
   RailStation: { id: "railstation", name: "Rail Station" },
@@ -135,7 +135,7 @@ export const BUILDING_MAPPINGS = {
   RailTurn: { id: "railturn", name: "Rail Turn" },
   RailUp: { id: "railup", name: "Rail Up" },
   // Row 19
-  SmallPlatform: { id: "smallplatform", name: "Reinforced Platform" },
+  SmallPlatform: { id: "smallplatform", name: "Reinforced Platform", aliases: ["MediumPlatform"] },
   Refiner: { id: "refiner", name: "Refiner" },
   RoofHalf: { id: "roofhalf", name: "Roof Half" },
   SeedPlot: { id: "seedplot", name: "Seed Plot" },
@@ -145,7 +145,7 @@ export const BUILDING_MAPPINGS = {
   RelicStandSmall: { id: "relicstandsmall", name: "Relic Stand Small" },
   SimpleCrate: { id: "simplecrate", name: "Simple Crate" },
   // Row 21
-  SmallContainer: { id: "smallcontainer", name: "Small Container" },
+  SmallContainer: { id: "smallcontainer", name: "Small Container", aliases: ["SmallContainer_Side", "SmallContainer_Sym", "SmallContainer_Vert", "SmallContainer_Vert_Sym"], hidePerUnit: true },
   SmallBase: { id: "smallbase", name: "Small Base" },
   SphereFlask: { id: "sphereflask", name: "Sphere Flask" },
   StackableCrucible: { id: "stackablecrucible", name: "Stackable Crucible" },
@@ -166,7 +166,7 @@ export const BUILDING_MAPPINGS = {
   WallShelf: { id: "wallshelf", name: "Wall Shelf" },
   // Row 25
   WoodBed: { id: "woodbed", name: "Wood Bed" },
-  WoodContainer: { id: "woodcontainer", name: "Wood Container" },
+  WoodContainer: { id: "woodcontainer", name: "Wood Container", aliases: ["WoodContainer_Vert"] },
   WoodBlock: { id: "woodblock", name: "Wood Block" },
   WoodCrate: { id: "woodcrate", name: "Wood Crate" },
   // Row 26

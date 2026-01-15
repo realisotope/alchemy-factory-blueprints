@@ -15,9 +15,9 @@ export function getSpriteStyle(sprite) {
   return {
     backgroundImage: sprite.spritesheet,
     backgroundPosition: `-${sprite.x}px -${sprite.y}px`,
+    backgroundSize: `${sprite.sheetWidth}px ${sprite.sheetHeight}px`,
     width: `${sprite.width}px`,
     height: `${sprite.height}px`,
-    backgroundSize: `${sprite.sheetWidth}px ${sprite.sheetHeight}px`,
     display: 'inline-block'
     //imageRendering: 'pixelated'
   };

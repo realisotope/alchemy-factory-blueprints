@@ -568,16 +568,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
     // Display rate limit info to user (how many uploads remaining)
     setRateLimitInfo(serverLimitStatus);
 
-    // Validate and sanitize production rate
-    let validatedProductionRate = null;
-    if (productionRate) {
-      const parsedRate = parseFloat(productionRate);
-      if (isNaN(parsedRate) || parsedRate < 0 || parsedRate > 999999.99) {
-        setError("Production rate must be a number between 0 and 999999.99");
-        return;
-      }
-      validatedProductionRate = parsedRate;
-    }
+    // Production rate feature - Disabled for now
+    const validatedProductionRate = null;
 
     // Validate and sanitize title
     const titleValidation = validateAndSanitizeTitle(title);
@@ -833,8 +825,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
           </div>
         </div>
 
-        {/* Production Rate */}
-        <div>
+        {/* Production Rate - Disabled for now */}
+        <div style={{ display: 'none' }}>
           <label htmlFor="blueprint-production-rate" style={{ color: theme.colors.textPrimary }} className="block text-l font-medium mb-2">
             Production Rate
             <span style={{ color: theme.colors.textSecondary }} className="text-sm font-normal"> (Items Per Minute) (optional)</span>
@@ -848,7 +840,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
             max="999.99"
             value={productionRate}
             onChange={(e) => setProductionRate(e.target.value)}
-            placeholder="e.g., 12.5 or 100"
+            placeholder="e.g., 12.5"
             style={{ borderColor: theme.colors.cardBorder, backgroundColor: `${theme.colors.cardBg}33`, color: theme.colors.textPrimary }}
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 placeholder-opacity-50"
           />

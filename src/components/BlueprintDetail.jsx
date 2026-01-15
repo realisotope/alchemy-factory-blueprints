@@ -445,10 +445,12 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
             key={`${blueprint.id}-stats`}
             materials={blueprint.materials || []} 
             buildings={blueprint.buildings || []}
+            parsedBuildings={blueprint.parsed?.Buildings || {}}
             minTier={blueprint.parsed?.MinTierRequired}
             inventorySlots={blueprint.parsed?.InventorySlotsRequired}
             gridSize={blueprint.parsed?.GridArea}
             productionRate={blueprint.production_rate}
+            buildingBreakdownCost={blueprint.parsed?.BuildingBreakdownCost || {}}
           />
 
           {/* Skills */}

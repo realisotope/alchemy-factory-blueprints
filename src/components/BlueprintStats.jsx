@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, LayoutGrid, LayoutList } from "lucide-react";
 import { useState, memo } from "react";
 import { useTheme } from "../lib/ThemeContext";
 import Sprite from "./Sprite";
@@ -17,9 +17,8 @@ const BlueprintStats = memo(function BlueprintStats({
 }) {
   const { theme } = useTheme();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [activeTab, setActiveTab] = useState("materials"); // "materials", "buildings", or "breakdown"
-
-  // Create a mapping of display names to parser keys for looking up buildingBreakdownCost
+  const [isCompact, setIsCompact] = useState(false);
+  const [activeTab, setActiveTab] = useState("materials"); // materials/buildings/breakdown tabs.
   const buildingNameToParserKey = {};
   Object.entries(BUILDING_MAPPINGS).forEach(([parserKey, mapping]) => {
     buildingNameToParserKey[mapping.name] = parserKey;
@@ -276,19 +275,35 @@ const BlueprintStats = memo(function BlueprintStats({
             </div>
           ) : (
             <div className="space-y-3">
+              {/* View Toggle Button */}
+              <div className="flex justify-end px-1 mb-2">
+                <button
+                  onClick={() => setIsCompact(!isCompact)}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded text-sm font-bold transition-colors border"
+                  style={{
+                    borderColor: theme.colors.cardBorder,
+                    backgroundColor: `${theme.colors.cardBg}60`,
+                    color: theme.colors.textSecondary,
+                  }}
+                >
+                  {isCompact ? <LayoutGrid size={16} /> : <LayoutList size={16} />}
+                  <span>{isCompact ? "Grid View" : "Compact View"}</span>
+                </button>
+              </div>
+
               {buildings.map((building) => {
                 const sprite = getBuildingSprite(building.id);
-                // Get the parser key for this building to look up breakdown cost
                 const parserKey = buildingNameToParserKey[building.name];
+                const buildingMapping = BUILDING_MAPPINGS[parserKey];
+                const hidePerUnit = buildingMapping?.hidePerUnit;
                 
-                // Try to find breakdown data using parser key or aliases
                 let buildingBreakdownData = {};
                 if (parserKey) {
                   buildingBreakdownData = buildingBreakdownCost[parserKey] || {};
                   
                   if (Object.keys(buildingBreakdownData).length === 0) {
-                    const buildingMapping = BUILDING_MAPPINGS[parserKey];
-                    if (buildingMapping?.aliases) {
+                    const buildingMappingAliases = BUILDING_MAPPINGS[parserKey];
+                    if (buildingMappingAliases?.aliases) {
                       for (const alias of buildingMapping.aliases) {
                         if (buildingBreakdownCost[alias]) {
                           buildingBreakdownData = buildingBreakdownCost[alias];
@@ -300,38 +315,96 @@ const BlueprintStats = memo(function BlueprintStats({
                 }
                 const buildingMaterialEntries = Object.entries(buildingBreakdownData);
                 
+                // --- COMPACT VIEW ---
+                if (isCompact) {
+                  return (
+                    <div
+                      key={building.id}
+                      className="flex items-center gap-4 py-2 px-3 border-b last:border-0"
+                      style={{ borderColor: `${theme.colors.cardBorder}60` }}
+                    >
+                      {/* Left: Building Info */}
+                      <div className="flex items-center gap-3 w-1/3 min-w-[200px]">
+                        <div className="w-10 h-10 rounded overflow-hidden bg-black/20 flex-shrink-0">
+                          {sprite ? (
+                            <Sprite sprite={sprite} alt={building.name} className="w-full h-full" size={0.6} />
+                          ) : building.icon ? (
+                            <img src={building.icon} alt={building.name} className="w-full h-full object-cover" />
+                          ) : null}
+                        </div>
+                        <div className="leading-tight">
+                          <div style={{ color: theme.colors.accentYellow }} className="font-bold font-mono text-sm">
+                            {building.quantity}×
+                          </div>
+                          <div style={{ color: theme.colors.textPrimary }} className="text-sm truncate opacity-90">
+                            {building.name}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right: Inline Materials */}
+                      <div className="flex-1 flex flex-wrap gap-x-4 gap-y-2 items-center">
+                        {buildingMaterialEntries.map(([materialName, totalQuantity]) => {
+                           const materialMapping = MATERIAL_MAPPINGS[materialName];
+                           const spriteId = materialMapping?.id;
+                           const materialSprite = spriteId ? getMaterialSprite(spriteId) : null;
+                           const perUnitQuantity = (totalQuantity / building.quantity).toFixed(2);
+                           const displayPerUnit = parseFloat(perUnitQuantity) === Math.round(parseFloat(perUnitQuantity)) ? Math.round(parseFloat(perUnitQuantity)).toString() : parseFloat(perUnitQuantity).toString();
+
+                           return (
+                             <div 
+                               key={materialName} 
+                               className="flex items-center gap-1.5"
+                             >
+                               <div className="w-6 h-6 rounded overflow-hidden bg-black/20">
+                                 {materialSprite && <Sprite sprite={materialSprite} alt={materialMapping?.name || materialName} className="w-full h-full" size={0.38} />}
+                               </div>
+                               <div className="flex flex-col">
+                                 <div className="flex items-baseline gap-1">
+                                   <span style={{ color: theme.colors.accentYellow }} className="font-bold text-sm">
+                                     {totalQuantity}
+                                   </span>
+                                   <span style={{ color: theme.colors.textSecondary }} className="text-xs opacity-75">
+                                     {materialMapping?.name || materialName}
+                                   </span>
+                                 </div>
+                                 {!hidePerUnit && (
+                                   <span style={{ color: theme.colors.textSecondary }} className="text-xs opacity-60">
+                                     {displayPerUnit} per unit
+                                   </span>
+                                 )}
+                               </div>
+                             </div>
+                           );
+                        })}
+                      </div>
+                    </div>
+                  );
+                }
+
+                // --- CARD VIEW ---
                 return (
                   <div
                     key={building.id}
                     style={{
                       borderColor: theme.colors.cardBorder,
-                      backgroundColor: `${theme.colors.cardBg}40` // Low opacity background for the whole container
+                      backgroundColor: `${theme.colors.cardBg}40`
                     }}
                     className="rounded-lg border overflow-hidden shadow-sm"
                   >
-                    {/* Building Header - Darker background bar for separation */}
                     <div 
                       className="px-3 py-2 flex items-center gap-3 border-b border-white/5" 
-                      style={{ 
-                        backgroundColor: 'rgba(0, 0, 0, 0.12)' 
-                      }}
+                      style={{ backgroundColor: 'rgba(0, 0, 0, 0.12)' }}
                     >
-                      {/* Building Icon */}
                       <div className="rounded flex items-center justify-center overflow-hidden w-14 h-14 flex-shrink-0">
                         {sprite ? (
                           <Sprite sprite={sprite} alt={building.name} className="w-full h-full" />
                         ) : building.icon ? (
-                          <img
-                            src={building.icon}
-                            alt={building.name}
-                            className="w-full h-full object-cover"
-                          />
+                          <img src={building.icon} alt={building.name} className="w-full h-full object-cover" />
                         ) : (
                           <span style={{ color: theme.colors.textSecondary }} className="text-xs">?</span>
                         )}
                       </div>
-                      
-                      {/* Building Name & Count */}
                       <div className="flex-1 min-w-0 flex items-baseline gap-2">
                          <span style={{ color: theme.colors.accentYellow }} className="font-bold font-mono text-lg">
                           {building.quantity}×
@@ -342,7 +415,6 @@ const BlueprintStats = memo(function BlueprintStats({
                       </div>
                     </div>
                     
-                    {/* Materials Grid - Cleaner layout without borders */}
                     {buildingMaterialEntries.length > 0 ? (
                       <div className="p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                         {buildingMaterialEntries.map(([materialName, totalQuantity]) => {
@@ -351,34 +423,24 @@ const BlueprintStats = memo(function BlueprintStats({
                           const materialSprite = spriteId ? getMaterialSprite(spriteId) : null;
                           const material = materials.find(m => m.name === materialMapping?.name);
                           const perUnitQuantity = (totalQuantity / building.quantity).toFixed(2);
+                          const displayPerUnit = parseFloat(perUnitQuantity) === Math.round(parseFloat(perUnitQuantity)) ? Math.round(parseFloat(perUnitQuantity)).toString() : parseFloat(perUnitQuantity).toString();
                           
                           return (
                             <div
                               key={`${building.id}-${materialName}`}
-                              // No border here - just a subtle background fill
-                              style={{
-                                backgroundColor: 'rgba(255, 255, 255, 0.05)'
-                              }}
+                              style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
                               className="rounded p-2 flex items-center gap-3 transition hover:bg-white/10"
                             >
-                              {/* Material Icon - Slightly smaller */}
                               <div className="flex-shrink-0 w-10 h-10 rounded flex items-center justify-center overflow-hidden">
                                 {materialSprite ? (
                                   <Sprite sprite={materialSprite} alt={materialMapping?.name} className="w-full h-full" />
                                 ) : material?.icon ? (
-                                  <img
-                                    src={material.icon}
-                                    alt={materialMapping?.name}
-                                    className="w-full h-full object-cover"
-                                  />
+                                  <img src={material.icon} alt={materialMapping?.name} className="w-full h-full object-cover" />
                                 ) : (
                                   <span style={{ color: theme.colors.textSecondary }} className="text-xs">?</span>
                                 )}
                               </div>
-                              
-                              {/* Material Info - Text Hierarchy */}
                               <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                {/* Top Line: Total + Name */}
                                 <div className="flex items-baseline gap-1.5 truncate">
                                   <span style={{ color: theme.colors.accentYellow }} className="font-bold text-base leading-none">
                                     {totalQuantity}
@@ -387,11 +449,11 @@ const BlueprintStats = memo(function BlueprintStats({
                                     {materialMapping?.name || materialName}
                                   </span>
                                 </div>
-                                
-                                {/* Bottom Line: Metadata */}
-                                <div style={{ color: theme.colors.textSecondary }} className="text-[10px] opacity-60 font-mono mt-0.5">
-                                  {parseFloat(perUnitQuantity) === 1 ? "1" : perUnitQuantity} / unit
-                                </div>
+                                {!hidePerUnit && (
+                                  <div style={{ color: theme.colors.textSecondary }} className="text-[12px] opacity-80 font-mono mt-0.5">
+                                    {displayPerUnit} / unit
+                                  </div>
+                                )}
                               </div>
                             </div>
                           );

@@ -418,15 +418,8 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
         throw new Error(changelogValidation.error);
       }
 
-      // Validate and sanitize production rate
-      let validatedProductionRate = null;
-      if (productionRate) {
-        const parsedRate = parseFloat(productionRate);
-        if (isNaN(parsedRate) || parsedRate < 0 || parsedRate > 999999.99) {
-          throw new Error("Production rate must be a number between 0 and 999999.99");
-        }
-        validatedProductionRate = parsedRate;
-      }
+      // Production rate feature temporarily disabled
+      const validatedProductionRate = null;
 
       let fileUrl = blueprint.file_url;
 
@@ -650,8 +643,8 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
             />
           </div>
 
-          {/* Production Rate */}
-          <div>
+          {/* Production Rate - TEMPORARILY DISABLED */}
+          <div style={{ display: 'none' }}>
             <label htmlFor="edit-blueprint-production-rate" className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
               Production Rate (IPM) <span style={{ color: theme.colors.textSecondary }} className="text-sm font-normal">(optional)</span>
             </label>
@@ -664,7 +657,7 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
               max="999.99"
               value={productionRate}
               onChange={(e) => setProductionRate(e.target.value)}
-              placeholder="e.g., 12.5 or 100"
+              placeholder="e.g., 12.5"
               style={{ borderColor: theme.colors.cardBorder, backgroundColor: `${theme.colors.cardBg}33`, color: `${theme.colors.textPrimary}80` }}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 placeholder-opacity-50"
               disabled={isLoading}

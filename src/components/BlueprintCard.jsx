@@ -88,8 +88,8 @@ export default function BlueprintCard({
                 transition={{ duration: 0.2 }}
               />
             </AnimatePresence>
-            {/* IPM Badge */}
-            {blueprint.production_rate != null && (
+            {/* IPM Badge - Disabled for now */}
+            {false && blueprint.production_rate != null && (
               <div className="absolute top-2 right-2 px-2 py-1 rounded text-xs font-semibold" style={{
                 backgroundColor: theme.colors.primary,
                 color: theme.colors.accentYellow,
