@@ -9,6 +9,8 @@ import { getDetailViewUrl, getLightboxUrl, prefetchImage } from "../lib/imageOpt
 import { parseUrlsInText } from "../lib/urlProcessor";
 import { useTheme } from "../lib/ThemeContext";
 import { useBlueprintFolder } from "../lib/BlueprintFolderContext";
+import { transformParsedMaterials, transformParsedBuildings } from "../lib/blueprintMappings";
+import { validateParsedData } from "../lib/parsedDataValidator";
 import EditBlueprint from "./EditBlueprint";
 import BlueprintStats from "./BlueprintStats";
 
@@ -441,17 +443,25 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           )}
 
           {/* Materials and Buildings */}
-          <BlueprintStats 
-            key={`${blueprint.id}-stats`}
-            materials={blueprint.materials || []} 
-            buildings={blueprint.buildings || []}
-            parsedBuildings={blueprint.parsed?.Buildings || {}}
-            minTier={blueprint.parsed?.MinTierRequired}
-            inventorySlots={blueprint.parsed?.InventorySlotsRequired}
-            gridSize={blueprint.parsed?.GridArea}
-            productionRate={blueprint.production_rate}
-            buildingBreakdownCost={blueprint.parsed?.BuildingBreakdownCost || {}}
-          />
+          {(() => {
+            // Validate parsed data before using it
+            // Always returns a safe object (with empty defaults if parsing failed on upload)
+            const validatedParsed = validateParsedData(blueprint.parsed);
+            
+            return (
+              <BlueprintStats 
+                key={`${blueprint.id}-stats`}
+                materials={transformParsedMaterials(validatedParsed.Materials)} 
+                buildings={transformParsedBuildings(validatedParsed.Buildings)}
+                parsedBuildings={validatedParsed.Buildings || {}}
+                minTier={validatedParsed.MinTierRequired}
+                inventorySlots={validatedParsed.InventorySlotsRequired}
+                gridSize={validatedParsed.GridArea}
+                productionRate={blueprint.production_rate}
+                buildingBreakdownCost={validatedParsed.BuildingBreakdownCost || {}}
+              />
+            );
+          })()}
 
           {/* Skills */}
               {blueprint.skills && blueprint.skills.length > 0 && (

@@ -12,6 +12,7 @@ import imageCompression from "browser-image-compression";
 import JSZip from "jszip";
 import { ClientRateLimiter, checkServerRateLimit } from "../lib/rateLimiter";
 import { sendBlueprintToParser } from "../lib/blueprintParser";
+import { validateParsedData } from "../lib/parsedDataValidator";
 import { extractBlueprintFromPng, isPngBlueprint, formatBytes } from "../lib/pngBlueprintExtractor";
 import { AVAILABLE_TAGS } from "../lib/tags";
 
@@ -546,16 +547,14 @@ export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpda
           const parserResponse = await sendBlueprintToParser(blueprintFile, blueprint.id);
 
           if (parserResponse.duplicate && parserResponse.parsed) {
-            // If already parsed, update the blueprint immediately with parsed data
+            // Validate and sanitize parsed data before saving
+            const validatedParsed = validateParsedData(parserResponse.parsed);
             console.log("Blueprint already parsed, updating database...");
             await supabase
               .from("blueprints")
               .update({
-                parsed: parserResponse.parsed,
+                parsed: validatedParsed,
                 filehash: parserResponse.fileHash,
-                materials: parserResponse.parsed.Materials || {},
-                buildings: parserResponse.parsed.Buildings || {},
-                skills: parserResponse.parsed.SupplyItems || {},
               })
               .eq("id", blueprint.id);
 

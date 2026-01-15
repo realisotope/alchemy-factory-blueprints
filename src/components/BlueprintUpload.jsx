@@ -13,6 +13,7 @@ import JSZip from "jszip";
 import { m } from "framer-motion";
 import { sendBlueprintToParser } from "../lib/blueprintParser";
 import { transformParsedMaterials, transformParsedBuildings } from "../lib/blueprintMappings";
+import { validateParsedData } from "../lib/parsedDataValidator";
 import { ClientRateLimiter, checkServerRateLimit } from "../lib/rateLimiter";
 import { extractBlueprintFromPng, isPngBlueprint, formatBytes } from "../lib/pngBlueprintExtractor";
 import { AVAILABLE_TAGS } from "../lib/tags";
@@ -707,19 +708,15 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
           const parserResponse = await sendBlueprintToParser(blueprintFile, insertedBlueprint.id);
 
           if (parserResponse.duplicate && parserResponse.parsed) {
-            // If already parsed, update the blueprint immediately with parsed data
+            // Validate and sanitize parsed data before saving
+            const validatedParsed = validateParsedData(parserResponse.parsed);
             console.log("Blueprint already parsed, updating database...");
-            const materials = transformParsedMaterials(parserResponse.parsed.Materials);
-            const buildings = transformParsedBuildings(parserResponse.parsed.Buildings);
 
             await supabase
               .from("blueprints")
               .update({
-                parsed: parserResponse.parsed,
+                parsed: validatedParsed,
                 filehash: parserResponse.fileHash,
-                materials: parserResponse.parsed.Materials || {},
-                buildings: parserResponse.parsed.Buildings || {},
-                skills: parserResponse.parsed.SupplyItems || {},
               })
               .eq("id", insertedBlueprint.id);
 

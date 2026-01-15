@@ -85,7 +85,7 @@ export function BlueprintFolderProvider({ children }) {
         const keys = Array.from(blueprintMap.entries()).map(([key, file]) => 
           `${key} (local: ${file.serverTimestamp}, file: ${file.filename})`
         );
-        console.log('📍 Blueprint mapping:', keys.join(', '));
+        //console.log('📍 Blueprint mapping:', keys.join(', '));
       }
       
       setLocalBlueprints(blueprintMap);
@@ -134,14 +134,14 @@ export function BlueprintFolderProvider({ children }) {
     // Direct lookup using actual filename from file_url
     if (remoteKey && localBlueprints.has(remoteKey)) {
       const localFile = localBlueprints.get(remoteKey);
-      console.log(`[getInstallStatus] "${blueprint.title}" matched by filename. local: ${localFile.serverTimestamp}, remote: ${remoteTimestamp}`);
+      //console.log(`[getInstallStatus] "${blueprint.title}" matched by filename. local: ${localFile.serverTimestamp}, remote: ${remoteTimestamp}`);
       
       if (remoteTimestamp > localFile.serverTimestamp) {
-        console.log(`✓ "${blueprint.title}": Update available (remote: ${remoteTimestamp}, local: ${localFile.serverTimestamp})`);
+        //console.log(`✓ "${blueprint.title}": Update available (remote: ${remoteTimestamp}, local: ${localFile.serverTimestamp})`);
         return 'update-available';
       }
       
-      console.log(`✓ "${blueprint.title}": Installed`);
+      //console.log(`✓ "${blueprint.title}": Installed`);
       return 'installed';
     }
 
@@ -150,14 +150,14 @@ export function BlueprintFolderProvider({ children }) {
     
     if (localBlueprints.has(expectedKey)) {
       const localFile = localBlueprints.get(expectedKey);
-      console.log(`[getInstallStatus] "${blueprint.title}" matched by title. local: ${localFile.serverTimestamp}, remote: ${remoteTimestamp}`);
+      //console.log(`[getInstallStatus] "${blueprint.title}" matched by title. local: ${localFile.serverTimestamp}, remote: ${remoteTimestamp}`);
       
       if (remoteTimestamp > localFile.serverTimestamp) {
-        console.log(`✓ "${blueprint.title}": Update available (remote: ${remoteTimestamp}, local: ${localFile.serverTimestamp})`);
+        //console.log(`✓ "${blueprint.title}": Update available (remote: ${remoteTimestamp}, local: ${localFile.serverTimestamp})`);
         return 'update-available';
       }
       
-      console.log(`✓ "${blueprint.title}": Installed`);
+      //console.log(`✓ "${blueprint.title}": Installed`);
       return 'installed';
     }
 
@@ -167,14 +167,14 @@ export function BlueprintFolderProvider({ children }) {
       const keyNormalized = key.replace(/[-_\s]/g, '');
       
       if (keyNormalized === expectedKeyNormalized) {
-        console.log(`[getInstallStatus] "${blueprint.title}" matched via fuzzy match. local: ${file.serverTimestamp}, remote: ${remoteTimestamp}`);
+        //console.log(`[getInstallStatus] "${blueprint.title}" matched via fuzzy match. local: ${file.serverTimestamp}, remote: ${remoteTimestamp}`);
         
         if (remoteTimestamp > file.serverTimestamp) {
-          console.log(`✓ "${blueprint.title}": Update available (remote: ${remoteTimestamp}, local: ${file.serverTimestamp})`);
+          //console.log(`✓ "${blueprint.title}": Update available (remote: ${remoteTimestamp}, local: ${file.serverTimestamp})`);
           return 'update-available';
         }
         
-        console.log(`✓ "${blueprint.title}": Installed`);
+        //console.log(`✓ "${blueprint.title}": Installed`);
         return 'installed';
       }
     }

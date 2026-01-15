@@ -6,6 +6,7 @@ import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { sanitizeCreatorName } from "../lib/sanitization";
 import { getThumbnailUrl, prefetchImage } from "../lib/imageOptimization";
 import { transformParsedMaterials, transformParsedBuildings } from "../lib/blueprintMappings";
+import { validateParsedData } from "../lib/parsedDataValidator";
 import { useTheme } from "../lib/ThemeContext";
 import { deleteCloudinaryImage } from "../lib/cloudinaryDelete";
 import { AVAILABLE_TAGS } from "../lib/tags";
@@ -98,14 +99,19 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         // Transform materials and buildings from parsed data objects to arrays
         let materials = [];
         let buildings = [];
+        let validatedParsed = null;
         
         try {
-          if (bp.materials && typeof bp.materials === 'object' && !Array.isArray(bp.materials)) {
-            materials = transformParsedMaterials(bp.materials);
+          // Validate parsed data before using it
+          // Always returns a safe object with empty defaults if parsing failed
+          validatedParsed = validateParsedData(bp.parsed);
+          
+          if (validatedParsed.Materials && typeof validatedParsed.Materials === 'object' && !Array.isArray(validatedParsed.Materials)) {
+            materials = transformParsedMaterials(validatedParsed.Materials);
           }
           
-          if (bp.buildings && typeof bp.buildings === 'object' && !Array.isArray(bp.buildings)) {
-            buildings = transformParsedBuildings(bp.buildings);
+          if (validatedParsed.Buildings && typeof validatedParsed.Buildings === 'object' && !Array.isArray(validatedParsed.Buildings)) {
+            buildings = transformParsedBuildings(validatedParsed.Buildings);
           }
         } catch (error) {
           console.error(`Error transforming parsed data for blueprint ${bp.id}:`, error);
@@ -118,7 +124,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
           downloads: bp.downloads ?? 0,
           materials: materials,
           buildings: buildings,
-          skills: bp.skills || []
+          skills: validatedParsed?.SupplyItems || {}
         };
       });
       
@@ -178,12 +184,16 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
       let materials = [];
       let buildings = [];
       
-      if (updatedBlueprint.materials && typeof updatedBlueprint.materials === 'object') {
-        materials = transformParsedMaterials(updatedBlueprint.materials);
-      }
-      
-      if (updatedBlueprint.buildings && typeof updatedBlueprint.buildings === 'object') {
-        buildings = transformParsedBuildings(updatedBlueprint.buildings);
+      // Extract from parsed JSON with validation
+      const validatedParsed = validateParsedData(updatedBlueprint.parsed);
+      if (validatedParsed) {
+        if (validatedParsed.Materials && typeof validatedParsed.Materials === 'object') {
+          materials = transformParsedMaterials(validatedParsed.Materials);
+        }
+        
+        if (validatedParsed.Buildings && typeof validatedParsed.Buildings === 'object') {
+          buildings = transformParsedBuildings(validatedParsed.Buildings);
+        }
       }
       
       // Normalize the data and preserve materials/buildings/skills from the existing blueprint
@@ -193,7 +203,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         downloads: updatedBlueprint?.downloads ?? 0,
         materials: materials.length > 0 ? materials : (selectedBlueprint?.materials ?? []),
         buildings: buildings.length > 0 ? buildings : (selectedBlueprint?.buildings ?? []),
-        skills: updatedBlueprint?.skills ?? selectedBlueprint?.skills ?? []
+        skills: validatedParsed?.SupplyItems ?? selectedBlueprint?.skills ?? {}
       };
       
       // Update blueprints array - preserve materials/buildings/skills from existing data
@@ -203,7 +213,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
             ...normalizedBp,
             materials: bp.materials ?? normalizedBp.materials ?? [],
             buildings: bp.buildings ?? normalizedBp.buildings ?? [],
-            skills: bp.skills ?? normalizedBp.skills ?? []
+            skills: bp.skills ?? normalizedBp.skills ?? {}
           } : bp
         )
       );
@@ -243,12 +253,16 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
       let materials = [];
       let buildings = [];
       
-      if (updatedBlueprint.materials && typeof updatedBlueprint.materials === 'object') {
-        materials = transformParsedMaterials(updatedBlueprint.materials);
-      }
-      
-      if (updatedBlueprint.buildings && typeof updatedBlueprint.buildings === 'object') {
-        buildings = transformParsedBuildings(updatedBlueprint.buildings);
+      // Extract from parsed JSON with validation
+      const validatedParsed = validateParsedData(updatedBlueprint.parsed);
+      if (validatedParsed) {
+        if (validatedParsed.Materials && typeof validatedParsed.Materials === 'object') {
+          materials = transformParsedMaterials(validatedParsed.Materials);
+        }
+        
+        if (validatedParsed.Buildings && typeof validatedParsed.Buildings === 'object') {
+          buildings = transformParsedBuildings(validatedParsed.Buildings);
+        }
       }
       
       // Normalize the data and preserve materials/buildings/skills from the existing blueprint
@@ -258,7 +272,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         downloads: updatedBlueprint?.downloads ?? 0,
         materials: materials.length > 0 ? materials : (selectedBlueprint?.materials ?? []),
         buildings: buildings.length > 0 ? buildings : (selectedBlueprint?.buildings ?? []),
-        skills: updatedBlueprint?.skills ?? selectedBlueprint?.skills ?? []
+        skills: validatedParsed?.SupplyItems ?? selectedBlueprint?.skills ?? {}
       };
       
       // Update blueprints array - preserve materials/buildings/skills from existing data
@@ -268,7 +282,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
             ...normalizedBp,
             materials: bp.materials ?? normalizedBp.materials ?? [],
             buildings: bp.buildings ?? normalizedBp.buildings ?? [],
-            skills: bp.skills ?? normalizedBp.skills ?? []
+            skills: bp.skills ?? normalizedBp.skills ?? {}
           } : bp
         )
       );
