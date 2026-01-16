@@ -11,6 +11,7 @@ const ALLOWED_URL_DOMAINS = [
   'joejoesgit.github.io',
   'alchemyfactorytools.com',
   'alchemy-factory-blueprints.vercel.app',
+  "medal.tv"
 ];
 
 export function isAllowedUrl(url) {

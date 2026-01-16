@@ -98,6 +98,16 @@ export default function BlueprintCard({
               </div>
             )}
 
+            {/* Multi-Part Badge */}
+            {blueprint.is_multi_part && blueprint.parts && Array.isArray(blueprint.parts) && (
+              <div className="absolute top-2 right-2 px-3 py-1 rounded text-xs font-semibold" style={{
+                backgroundColor: theme.colors.accentGold,
+                color: theme.colors.buttonText,
+              }}>
+                {blueprint.parts.length}-Part
+              </div>
+            )}
+
             {/* Tint Overlay */}
             <div 
               className="absolute inset-0 w-full h-full pointer-events-none transition-opacity duration-200"

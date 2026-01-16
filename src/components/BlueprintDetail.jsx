@@ -11,6 +11,7 @@ import { useTheme } from "../lib/ThemeContext";
 import { useBlueprintFolder } from "../lib/BlueprintFolderContext";
 import { transformParsedMaterials, transformParsedBuildings } from "../lib/blueprintMappings";
 import { validateParsedData } from "../lib/parsedDataValidator";
+import { getParsedData, getPartByNumber, getPartDownloadInfo } from "../lib/blueprintUtils";
 import EditBlueprint from "./EditBlueprint";
 import BlueprintStats from "./BlueprintStats";
 
@@ -33,6 +34,8 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
   const [isShareHovered, setIsShareHovered] = useState(false);
   const [isEditHovered, setIsEditHovered] = useState(false);
   const [navigationDirection, setNavigationDirection] = useState(0);
+  const [selectedPart, setSelectedPart] = useState(0);
+  const [showDownloadMenu, setShowDownloadMenu] = useState(false);
 
   // Get available images
   const availableImages = [
@@ -138,7 +141,9 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
   };
 
   const handleDownloadClick = async () => {
-    onDownload?.(blueprint);
+    // If multi-part and on a specific part tab (not Combined), pass the part number
+    const partNumber = (blueprint.is_multi_part && selectedPart > 0) ? selectedPart : null;
+    onDownload?.(blueprint, partNumber);
     cacheDownloadedBlueprint(blueprint);
   };
 
@@ -443,25 +448,128 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           )}
 
           {/* Materials and Buildings */}
-          {(() => {
-            // Validate parsed data before using it
-            // Always returns a safe object (with empty defaults if parsing failed on upload)
-            const validatedParsed = validateParsedData(blueprint.parsed);
-            
-            return (
-              <BlueprintStats 
-                key={`${blueprint.id}-stats`}
-                materials={transformParsedMaterials(validatedParsed.Materials)} 
-                buildings={transformParsedBuildings(validatedParsed.Buildings)}
-                parsedBuildings={validatedParsed.Buildings || {}}
-                minTier={validatedParsed.MinTierRequired}
-                inventorySlots={validatedParsed.InventorySlotsRequired}
-                gridSize={validatedParsed.GridArea}
-                productionRate={blueprint.production_rate}
-                buildingBreakdownCost={validatedParsed.BuildingBreakdownCost || {}}
-              />
-            );
-          })()}
+          {blueprint.is_multi_part && blueprint.parts && Array.isArray(blueprint.parts) ? (
+            // Multi-part blueprint
+            (() => {
+              const parsedData = getParsedData(blueprint);
+              const validatedParsed = validateParsedData(parsedData);
+
+              return (
+                <div>
+                  {/* Part Selector Tabs */}
+                  <div>
+                    <div className="flex gap-2 mb-2 flex-wrap">
+                      <button
+                        onClick={() => setSelectedPart(0)}
+                        style={{
+                          backgroundColor: selectedPart === 0 ? theme.colors.accentYellow : `${theme.colors.cardBg}33`,
+                          color: selectedPart === 0 ? theme.colors.buttonText : theme.colors.textPrimary,
+                          borderColor: theme.colors.cardBorder,
+                        }}
+                        className="px-4 py-2 border rounded-lg font-medium transition hover:opacity-80"
+                      >
+                        Combined Stats
+                      </button>
+                      {blueprint.parts.map((part, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setSelectedPart(idx + 1)}
+                          style={{
+                            backgroundColor: selectedPart === idx + 1 ? theme.colors.accentYellow : `${theme.colors.cardBg}33`,
+                            color: selectedPart === idx + 1 ? theme.colors.buttonText : theme.colors.textPrimary,
+                            borderColor: theme.colors.cardBorder,
+                          }}
+                          className="px-4 py-2 border rounded-lg font-medium transition hover:opacity-80"
+                        >
+                          Part {part.part_number}
+                        </button>
+                      ))}
+                    </div>
+                    <p style={{ color: theme.colors.textSecondary }} className="text-sm mb-4">
+                      Download individual parts by selecting their tab, or download all parts together using the Combined Stats tab
+                    </p>
+                  </div>
+
+                  {/* Display stats for selected part or combined */}
+                  {selectedPart === 0 ? (
+                    <BlueprintStats 
+                      key="combined-stats"
+                      materials={transformParsedMaterials(validatedParsed.Materials)} 
+                      buildings={transformParsedBuildings(validatedParsed.Buildings)}
+                      parsedBuildings={validatedParsed.Buildings || {}}
+                      minTier={validatedParsed.MinTierRequired}
+                      inventorySlots={validatedParsed.InventorySlotsRequired}
+                      gridSize={validatedParsed.GridArea}
+                      productionRate={blueprint.production_rate}
+                      buildingBreakdownCost={validatedParsed.BuildingBreakdownCost || {}}
+                      multiPartLabel="Combined (All Parts)"
+                    />
+                  ) : (() => {
+                      const part = blueprint.parts[selectedPart - 1];
+                      if (!part || !part.parsed) {
+                        return <p style={{ color: theme.colors.textSecondary }}>Part data not yet parsed</p>;
+                      }
+                      const partParsed = validateParsedData(part.parsed);
+                      return (
+                        <div>
+                          <BlueprintStats 
+                            key={`part-${selectedPart}-stats`}
+                            materials={transformParsedMaterials(partParsed.Materials)} 
+                            buildings={transformParsedBuildings(partParsed.Buildings)}
+                            parsedBuildings={partParsed.Buildings || {}}
+                            minTier={partParsed.MinTierRequired}
+                            inventorySlots={partParsed.InventorySlotsRequired}
+                            gridSize={partParsed.GridArea}
+                            productionRate={blueprint.production_rate}
+                            buildingBreakdownCost={partParsed.BuildingBreakdownCost || {}}
+                            multiPartLabel={`Part ${selectedPart} of ${blueprint.parts.length}`}
+                          />
+                          {part.file_hash && (
+                            <div 
+                              style={{ 
+                                backgroundColor: `${theme.colors.cardBg}33`,
+                                borderColor: theme.colors.cardBorder 
+                              }}
+                              className="border rounded-lg p-3 mt-3"
+                            >
+                              <p style={{ color: theme.colors.textSecondary }} className="text-xs font-medium mb-1">
+                                File Hash (SHA-256):
+                              </p>
+                              <p 
+                                style={{ color: theme.colors.textPrimary }}
+                                className="text-xs font-mono break-all"
+                              >
+                                {part.file_hash}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+                </div>
+              );
+            })()
+          ) : (
+            // Single-part blueprint
+            (() => {
+              const parsedData = getParsedData(blueprint);
+              const validatedParsed = validateParsedData(parsedData);
+
+              return (
+                <BlueprintStats 
+                  key={`${blueprint.id}-stats`}
+                  materials={transformParsedMaterials(validatedParsed.Materials)} 
+                  buildings={transformParsedBuildings(validatedParsed.Buildings)}
+                  parsedBuildings={validatedParsed.Buildings || {}}
+                  minTier={validatedParsed.MinTierRequired}
+                  inventorySlots={validatedParsed.InventorySlotsRequired}
+                  gridSize={validatedParsed.GridArea}
+                  productionRate={blueprint.production_rate}
+                  buildingBreakdownCost={validatedParsed.BuildingBreakdownCost || {}}
+                />
+              );
+            })()
+          )}
 
           {/* Skills */}
               {blueprint.skills && blueprint.skills.length > 0 && (
@@ -571,7 +679,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
       </>
     )}
   </div>
-            {blueprint.filehash && (
+            {blueprint.filehash && !blueprint.is_multi_part && (
               <div className="text-xs px-2 py-1 rounded-md -mx-1" style={{color: theme.colors.textTertiary, backgroundColor: 'rgba(0, 0, 0, 0.1)'}}>
                 <div className="opacity-75" style={{ fontStyle: 'italic' }}>Blueprint File Hash: <span className="font-mono break-all pl-1">{blueprint.filehash}</span></div>
               </div>

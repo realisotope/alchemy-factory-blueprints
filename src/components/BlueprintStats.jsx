@@ -13,7 +13,8 @@ const BlueprintStats = memo(function BlueprintStats({
   inventorySlots,
   gridSize,
   productionRate,
-  buildingBreakdownCost = {}
+  buildingBreakdownCost = {},
+  multiPartLabel = null
 }) {
   const { theme } = useTheme();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -33,6 +34,13 @@ const BlueprintStats = memo(function BlueprintStats({
 
   return (
     <div style={{ borderColor: theme.colors.cardBorder }} className="border-2 rounded-md overflow-hidden">
+      {/* Multi-part label */}
+      {multiPartLabel && (
+        <div style={{ backgroundColor: `${theme.colors.cardBg}33`, color: theme.colors.textSecondary, borderColor: theme.colors.cardBorder }} className="px-4 py-2 text-sm border-b">
+          {multiPartLabel}
+        </div>
+      )}
+      
       {/* Header with tabs */}
       <div
         style={{

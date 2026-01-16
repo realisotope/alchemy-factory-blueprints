@@ -7,6 +7,7 @@ import { sanitizeCreatorName } from "../lib/sanitization";
 import { getThumbnailUrl, prefetchImage } from "../lib/imageOptimization";
 import { transformParsedMaterials, transformParsedBuildings } from "../lib/blueprintMappings";
 import { validateParsedData } from "../lib/parsedDataValidator";
+import { getParsedData } from "../lib/blueprintUtils";
 import { useTheme } from "../lib/ThemeContext";
 import { deleteCloudinaryImage } from "../lib/cloudinaryDelete";
 import { AVAILABLE_TAGS } from "../lib/tags";
@@ -102,9 +103,12 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         let validatedParsed = null;
         
         try {
+          // Get parsed data (combined for multi-part, or single for regular)
+          const parsedData = getParsedData(bp);
+          
           // Validate parsed data before using it
           // Always returns a safe object with empty defaults if parsing failed
-          validatedParsed = validateParsedData(bp.parsed);
+          validatedParsed = validateParsedData(parsedData);
           
           if (validatedParsed.Materials && typeof validatedParsed.Materials === 'object' && !Array.isArray(validatedParsed.Materials)) {
             materials = transformParsedMaterials(validatedParsed.Materials);
@@ -184,8 +188,9 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
       let materials = [];
       let buildings = [];
       
-      // Extract from parsed JSON with validation
-      const validatedParsed = validateParsedData(updatedBlueprint.parsed);
+      // Extract from parsed JSON with validation (use getParsedData for multi-part support)
+      const parsedData = getParsedData(updatedBlueprint);
+      const validatedParsed = validateParsedData(parsedData);
       if (validatedParsed) {
         if (validatedParsed.Materials && typeof validatedParsed.Materials === 'object') {
           materials = transformParsedMaterials(validatedParsed.Materials);
@@ -230,7 +235,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
     }
   };
 
-  const handleDownload = async (blueprint) => {
+  const handleDownload = async (blueprint, selectedPartNumber = null) => {
     setDownloadingId(blueprint.id);
     try {
       // Increment download count via secure function
@@ -253,8 +258,9 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
       let materials = [];
       let buildings = [];
       
-      // Extract from parsed JSON with validation
-      const validatedParsed = validateParsedData(updatedBlueprint.parsed);
+      // Extract from parsed JSON with validation (use getParsedData for multi-part support)
+      const parsedData = getParsedData(updatedBlueprint);
+      const validatedParsed = validateParsedData(parsedData);
       if (validatedParsed) {
         if (validatedParsed.Materials && typeof validatedParsed.Materials === 'object') {
           materials = transformParsedMaterials(validatedParsed.Materials);
@@ -294,35 +300,110 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         );
       }
 
-      // Trigger download
-      // For PNG files, fetch as blob to force download instead of opening in browser
-      const urlParts = blueprint.file_url.split('/');
-      const filename = urlParts[urlParts.length - 1];
-      
-      try {
-        const response = await fetch(blueprint.file_url);
-        const blob = await response.blob();
-        const blobUrl = URL.createObjectURL(blob);
+      // Handle multi-part downloads
+      if (updatedBlueprint.is_multi_part && updatedBlueprint.parts && Array.isArray(updatedBlueprint.parts)) {
+        if (selectedPartNumber !== null) {
+          // Download specific part
+          const part = updatedBlueprint.parts.find(p => p.part_number === selectedPartNumber);
+          if (!part) {
+            throw new Error("Part not found");
+          }
+
+          const publicUrl = supabase.storage
+            .from("blueprints")
+            .getPublicUrl(`${updatedBlueprint.user_id}/${part.filename}`).data.publicUrl;
+
+          try {
+            const response = await fetch(publicUrl);
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            
+            const a = document.createElement("a");
+            a.href = blobUrl;
+            a.download = part.filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+          } catch (fetchError) {
+            console.error("Error fetching part for download:", fetchError);
+            const a = document.createElement("a");
+            a.href = publicUrl;
+            a.download = part.filename;
+            a.target = "_blank";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+          }
+        } else {
+          // Download all parts in sequence
+          for (const part of updatedBlueprint.parts) {
+            const publicUrl = supabase.storage
+              .from("blueprints")
+              .getPublicUrl(`${updatedBlueprint.user_id}/${part.filename}`).data.publicUrl;
+
+            try {
+              const response = await fetch(publicUrl);
+              const blob = await response.blob();
+              const blobUrl = URL.createObjectURL(blob);
+              
+              const a = document.createElement("a");
+              a.href = blobUrl;
+              a.download = part.filename;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              
+              setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+              
+              // Small delay between downloads
+              await new Promise(resolve => setTimeout(resolve, 200));
+            } catch (fetchError) {
+              console.error(`Error fetching part ${part.part_number} for download:`, fetchError);
+              const a = document.createElement("a");
+              a.href = publicUrl;
+              a.download = part.filename;
+              a.target = "_blank";
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+            }
+          }
+        }
+      } else {
+        // Single-part download
+        if (!updatedBlueprint.file_url) {
+          alert("Blueprint file is not available for download");
+          return;
+        }
+
+        const urlParts = updatedBlueprint.file_url.split('/');
+        const filename = urlParts[urlParts.length - 1];
         
-        const a = document.createElement("a");
-        a.href = blobUrl;
-        a.download = filename; // Use actual filename to preserve extension
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        
-        // Clean up the blob URL after a short delay
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-      } catch (fetchError) {
-        console.error("Error fetching file for download:", fetchError);
-        // Fallback to direct link if fetch fails
-        const a = document.createElement("a");
-        a.href = blueprint.file_url;
-        a.download = filename;
-        a.target = "_blank";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        try {
+          const response = await fetch(updatedBlueprint.file_url);
+          const blob = await response.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          
+          const a = document.createElement("a");
+          a.href = blobUrl;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+        } catch (fetchError) {
+          console.error("Error fetching file for download:", fetchError);
+          const a = document.createElement("a");
+          a.href = updatedBlueprint.file_url;
+          a.download = filename;
+          a.target = "_blank";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
       }
     } catch (err) {
       console.error("Error downloading:", err);
