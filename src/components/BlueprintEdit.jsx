@@ -86,7 +86,7 @@ const validateBlueprintFile = async (file) => {
     console.warn("Could not validate file content:", e);
   }
 
-  return { valid: true };
+  return { valid: true, isPng: false };
 };
 
 // Validate image file
@@ -134,22 +134,27 @@ export default function BlueprintEdit({ blueprint, isOpen, onClose, user, onUpda
   const [tagInput, setTagInput] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [blueprintFile, setBlueprintFile] = useState(null);
-  const [imageFiles, setImageFiles] = useState([null, null, null]);
+  const [imageFiles, setImageFiles] = useState([null, null, null, null]);
   const [imagePreviews, setImagePreviews] = useState([
     blueprint?.image_url || null,
     blueprint?.image_url_2 || null,
-    blueprint?.image_url_3 || null
+    blueprint?.image_url_3 || null,
+    blueprint?.image_url_4 || null
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [imageDragActive, setImageDragActive] = useState([false, false, false]);
+  const [imageDragActive, setImageDragActive] = useState([false, false, false, false]);
   const [rateLimitInfo, setRateLimitInfo] = useState(null);
   const [processingPng, setProcessingPng] = useState(false);
   const [compressionInfo, setCompressionInfo] = useState(null);
   const [blueprintFileExtension, setBlueprintFileExtension] = useState(".af");
   const [processingState, setProcessingState] = useState(""); // Track current processing stage
-  const [imageCompressionInfo, setImageCompressionInfo] = useState([null, null, null]); // Track compression info for each image
+  const [imageCompressionInfo, setImageCompressionInfo] = useState([null, null, null, null]); // Track compression info for each image
+  const [selectedPartIndex, setSelectedPartIndex] = useState(null); // For multi-part: which part to edit
+  const [multiPartFiles, setMultiPartFiles] = useState([null, null, null, null]); // For multi-part editing
+  const [multiPartCompressionInfo, setMultiPartCompressionInfo] = useState([null, null, null, null]); // Compression info for multi-part files
   const fileInputRef = useRef(null);
+  const multiPartFileInputRef = useRef(null);
   const imageInputRef = useRef(null);
   const scrollableRef = useRef(null);
 
@@ -241,6 +246,80 @@ export default function BlueprintEdit({ blueprint, isOpen, onClose, user, onUpda
         setError(null);
         setProcessingPng(false);
         setProcessingState("");
+      }
+    }
+  };
+
+  const handleMultiPartFileSelect = async (e, partIndex) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const validation = await validateBlueprintFile(file);
+      
+      if (!validation.valid) {
+        setError(validation.error);
+        const newFiles = [...multiPartFiles];
+        newFiles[partIndex] = null;
+        setMultiPartFiles(newFiles);
+      } else {
+        let fileToUse = file;
+        
+        if (validation.isPng) {
+          // For PNG blueprints, use stripped file
+          fileToUse = new File([validation.strippedFile], file.name, { type: 'image/png' });
+          
+          // Auto-populate preview image for this part if needed
+          if (validation.imageBlob) {
+            try {
+              const imageFile = new File([validation.imageBlob], `part${partIndex + 1}-preview.png`, { type: 'image/png' });
+              const options = {
+                maxSizeMB: 0.3,
+                maxWidthOrHeight: 1500,
+                useWebWorker: true,
+                initialQuality: 0.55,
+              };
+              const compressedImage = await imageCompression(imageFile, options);
+              
+              const newImageFiles = [...imageFiles];
+              const newImagePreviews = [...imagePreviews];
+              const newImageCompressionInfo = [...imageCompressionInfo];
+              
+              // Find first empty slot for the extracted image
+              const emptySlotIndex = newImageFiles.findIndex(f => f === null);
+              const targetIndex = emptySlotIndex !== -1 ? emptySlotIndex : partIndex;
+              
+              newImageFiles[targetIndex] = compressedImage;
+              newImagePreviews[targetIndex] = URL.createObjectURL(compressedImage);
+              newImageCompressionInfo[targetIndex] = {
+                originalSize: validation.imageBlob.size,
+                compressedSize: compressedImage.size,
+                fromPng: true
+              };
+              setImageFiles(newImageFiles);
+              setImagePreviews(newImagePreviews);
+              setImageCompressionInfo(newImageCompressionInfo);
+            } catch (compressionError) {
+              console.error('Image compression failed:', compressionError);
+            }
+          }
+        }
+        
+        const newFiles = [...multiPartFiles];
+        newFiles[partIndex] = fileToUse;
+        setMultiPartFiles(newFiles);
+        
+        const newCompressionInfo = [...multiPartCompressionInfo];
+        newCompressionInfo[partIndex] = validation.isPng ? {
+          originalSize: validation.compressionInfo.originalSize,
+          strippedSize: validation.compressionInfo.strippedSize,
+          savedSpace: validation.compressionInfo.savedSpace,
+          fromPng: true
+        } : {
+          originalSize: file.size,
+          processedSize: fileToUse.size,
+          fromPng: false
+        };
+        setMultiPartCompressionInfo(newCompressionInfo);
+        setError(null);
       }
     }
   };
@@ -497,10 +576,11 @@ export default function BlueprintEdit({ blueprint, isOpen, onClose, user, onUpda
       let imageUrl2 = blueprint.image_url_2;
       let imageUrl3 = blueprint.image_url_3;
 
-      // Upload new images if provided (up to 3)
-      for (let i = 0; i < 3; i++) {
+      // Upload new images if provided (up to 4 for multi-part, up to 3 for single)
+      const maxImages = blueprint?.is_multi_part ? 4 : 3;
+      for (let i = 0; i < maxImages; i++) {
         const imageFile = imageFiles[i];
-        const existingUrl = [blueprint.image_url, blueprint.image_url_2, blueprint.image_url_3][i];
+        const existingUrl = [blueprint.image_url, blueprint.image_url_2, blueprint.image_url_3, blueprint.image_url_4][i];
         
         if (imageFile) {
           // Delete old image if replacing
@@ -522,26 +602,109 @@ export default function BlueprintEdit({ blueprint, isOpen, onClose, user, onUpda
         }
       }
 
+      // Prepare image URL 4 for multi-part blueprints
+      let imageUrl4 = blueprint?.image_url_4;
+      if (blueprint?.is_multi_part && imageFiles[3]) {
+        if (blueprint.image_url_4) {
+          await deleteCloudinaryImage(blueprint.image_url_4);
+        }
+        try {
+          imageUrl4 = await uploadToCloudinary(imageFiles[3], user.id);
+        } catch (imageError) {
+          throw new Error(`Image 4 upload failed: ${imageError.message}`);
+        }
+      }
+
       // Update blueprint record
+      const updateData = {
+        description: descriptionValidation.sanitized || null,
+        production_rate: validatedProductionRate,
+        file_url: fileUrl,
+        image_url: imageUrl,
+        image_url_2: imageUrl2,
+        image_url_3: imageUrl3,
+        tags: tags.length > 0 ? tags : null,
+        changelog: changelogValidation.sanitized,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (blueprint?.is_multi_part) {
+        updateData.image_url_4 = imageUrl4;
+      }
+
       const { error: dbError } = await supabase
         .from("blueprints")
-        .update({
-          description: descriptionValidation.sanitized || null,
-          production_rate: validatedProductionRate,
-          file_url: fileUrl,
-          image_url: imageUrl,
-          image_url_2: imageUrl2,
-          image_url_3: imageUrl3,
-          tags: tags.length > 0 ? tags : null,
-          changelog: changelogValidation.sanitized,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updateData)
         .eq("id", blueprint.id);
 
       if (dbError) throw dbError;
 
-      // If a new blueprint file was uploaded, send it to the parser to update materials/buildings
-      if (blueprintFile) {
+      // Handle multi-part file updates
+      if (blueprint?.is_multi_part && selectedPartIndex !== null) {
+        // Upload updated part file to storage
+        const partFileName = `${sanitizeTitleForFilename(title)}_part${selectedPartIndex + 1}_${Date.now()}${multiPartFiles[selectedPartIndex]?.name.endsWith('.png') ? '.png' : '.af'}`;
+        const partPath = `${user.id}/${partFileName}`;
+        
+        try {
+          const { error: uploadError } = await supabase.storage
+            .from("blueprints")
+            .upload(partPath, multiPartFiles[selectedPartIndex]);
+          
+          if (uploadError) throw uploadError;
+
+          // Calculate file hash for the updated part
+          const fileBuffer = await multiPartFiles[selectedPartIndex].arrayBuffer();
+          const hashBuffer = await crypto.subtle.digest('SHA-256', fileBuffer);
+          const fileHash = Array.from(new Uint8Array(hashBuffer))
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('');
+
+          // Update the specific part in the database
+          const currentData = await supabase
+            .from("blueprints")
+            .select("parts")
+            .eq("id", blueprint.id)
+            .single();
+
+          const updatedParts = currentData.data.parts.map(part => {
+            if (part.part_number === selectedPartIndex + 1) {
+              return {
+                ...part,
+                filename: partFileName,
+                file_hash: fileHash,
+                parsed: null // Reset parsed data since we have a new file
+              };
+            }
+            return part;
+          });
+
+          await supabase
+            .from("blueprints")
+            .update({ parts: updatedParts })
+            .eq("id", blueprint.id);
+
+          // Send updated part file to parser
+          try {
+            console.log(`Sending updated part ${selectedPartIndex + 1} to parser...`);
+            const parserResponse = await sendBlueprintToParser(multiPartFiles[selectedPartIndex], blueprint.id);
+
+            if (parserResponse.queued || (parserResponse.duplicate && parserResponse.parsed)) {
+              console.log(`Part ${selectedPartIndex + 1} sent to parser, fileHash:`, parserResponse.fileHash);
+            }
+          } catch (parserError) {
+            console.error("Parser error for part update:", parserError);
+          }
+
+          setSelectedPartIndex(null);
+          setMultiPartFiles([null, null, null, null]);
+          setMultiPartCompressionInfo([null, null, null, null]);
+        } catch (err) {
+          throw new Error(`Failed to update blueprint part: ${err.message}`);
+        }
+      }
+
+      // If a new blueprint file was uploaded (for single-part), send it to the parser to update materials/buildings
+      if (blueprintFile && !blueprint?.is_multi_part) {
         try {
           console.log("Sending updated blueprint to parser...");
           const parserResponse = await sendBlueprintToParser(blueprintFile, blueprint.id);
@@ -747,49 +910,113 @@ export default function BlueprintEdit({ blueprint, isOpen, onClose, user, onUpda
             />
           </div> */}
 
-          {/* Blueprint File */}
-          <div>
-            <label className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
-              Blueprint File (.af or .png)
-            </label>
-            <p className="text-xs mb-2" style={{ color: theme.colors.textSecondary }}>
-              {blueprintFile ? "New file selected" : "Keep existing file or upload a new one"}
-            </p>
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isLoading || processingPng}
-              style={{ borderColor: theme.colors.accentYellow, color: theme.colors.accentYellow }}
-              className="w-full px-4 py-3 border-2 border-dashed rounded-lg transition font-medium disabled:opacity-50 hover:opacity-60"
-            >
-              {processingPng
-                ? "Processing PNG blueprint..."
-                : blueprintFile
-                ? `✓ ${blueprintFile.name}`
-                : "Click to select or upload .af/.png file"}
-            </button>
-            {compressionInfo && (
-              <p style={{ color: theme.colors.textSecondary }} className="text-xs mt-1">
-                PNG optimized: {formatBytes(compressionInfo.originalSize)} → {formatBytes(compressionInfo.strippedSize)} ({compressionInfo.savedSpace})
+          {/* Blueprint File - Only for single-part */}
+          {!blueprint?.is_multi_part && (
+            <div>
+              <label className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
+                Blueprint File (.af or .png)
+              </label>
+              <p className="text-xs mb-2" style={{ color: theme.colors.textSecondary }}>
+                {blueprintFile ? "New file selected" : "Keep existing file or upload a new one"}
               </p>
-            )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".af,.png"
-              onChange={handleBlueprintSelect}
-              className="hidden"
-              disabled={isLoading}
-            />
-          </div>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isLoading || processingPng}
+                style={{ borderColor: theme.colors.accentYellow, color: theme.colors.accentYellow }}
+                className="w-full px-4 py-3 border-2 border-dashed rounded-lg transition font-medium disabled:opacity-50 hover:opacity-60"
+              >
+                {processingPng
+                  ? "Processing PNG blueprint..."
+                  : blueprintFile
+                  ? `✓ ${blueprintFile.name}`
+                  : "Click to select or upload .af/.png file"}
+              </button>
+              {compressionInfo && (
+                <p style={{ color: theme.colors.textSecondary }} className="text-xs mt-1">
+                  PNG optimized: {formatBytes(compressionInfo.originalSize)} → {formatBytes(compressionInfo.strippedSize)} ({compressionInfo.savedSpace})
+                </p>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".af,.png"
+                onChange={handleBlueprintSelect}
+                className="hidden"
+                disabled={isLoading}
+              />
+            </div>
+          )}
 
-          {/* Images - 3 slots */}
+          {/* Multi-Part Blueprint Files */}
+          {blueprint?.is_multi_part && blueprint?.parts && (
+            <div>
+              <label className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
+                Update Blueprint Part (optional)
+              </label>
+              <p className="text-xs mb-2" style={{ color: theme.colors.textSecondary }}>
+                Select a specific part to update with a modified version
+              </p>
+              <div className={`grid grid-cols-${blueprint.parts.length <= 2 ? blueprint.parts.length : '2'} gap-2 mb-3`}>
+                {blueprint.parts.map((part, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setSelectedPartIndex(selectedPartIndex === idx ? null : idx)}
+                    style={{
+                      backgroundColor: selectedPartIndex === idx ? `${theme.colors.accentYellow}33` : `${theme.colors.cardBg}66`,
+                      borderColor: selectedPartIndex === idx ? theme.colors.accentYellow : theme.colors.cardBorder,
+                      color: theme.colors.textPrimary
+                    }}
+                    className="px-3 py-2 border-2 rounded-lg transition text-sm font-medium"
+                    disabled={isLoading}
+                  >
+                    Part {part.part_number}
+                    {multiPartFiles[idx] && <span className="ml-1">✓</span>}
+                  </button>
+                ))}
+              </div>
+
+              {selectedPartIndex !== null && (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => multiPartFileInputRef.current?.click()}
+                    disabled={isLoading}
+                    style={{ borderColor: theme.colors.accentYellow, color: theme.colors.accentYellow }}
+                    className="w-full px-4 py-3 border-2 border-dashed rounded-lg transition font-medium disabled:opacity-50 hover:opacity-60"
+                  >
+                    {multiPartFiles[selectedPartIndex]
+                      ? `✓ ${multiPartFiles[selectedPartIndex].name}`
+                      : `Click to select new file for Part ${selectedPartIndex + 1}`}
+                  </button>
+                  {multiPartCompressionInfo[selectedPartIndex] && (
+                    <p style={{ color: theme.colors.textSecondary }} className="text-xs mt-1">
+                      {multiPartCompressionInfo[selectedPartIndex].fromPng
+                        ? `PNG optimized: ${formatBytes(multiPartCompressionInfo[selectedPartIndex].originalSize)} → ${formatBytes(multiPartCompressionInfo[selectedPartIndex].strippedSize)}`
+                        : `File size: ${formatBytes(multiPartCompressionInfo[selectedPartIndex].originalSize)}`}
+                    </p>
+                  )}
+                  <input
+                    ref={multiPartFileInputRef}
+                    type="file"
+                    accept=".af,.png"
+                    onChange={(e) => handleMultiPartFileSelect(e, selectedPartIndex)}
+                    className="hidden"
+                    disabled={isLoading}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Images - 3 slots for single-part, 4 for multi-part */}
           <div>
             <label className="block text-sm font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
-              Preview Images (PNG/JPG) - Up to 3
+              Preview Images (PNG/JPG) - Up to {blueprint?.is_multi_part ? "4" : "3"}
             </label>
-            <div className="grid grid-cols-3 gap-3">
-              {[0, 1, 2].map((index) => (
+            <div className={`grid ${blueprint?.is_multi_part ? "grid-cols-4" : "grid-cols-3"} gap-3`}>
+              {(blueprint?.is_multi_part ? [0, 1, 2, 3] : [0, 1, 2]).map((index) => (
                 <div key={index}>
                   {imagePreviews[index] ? (
                     <div className="relative">
