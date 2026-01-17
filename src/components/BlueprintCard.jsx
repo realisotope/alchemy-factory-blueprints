@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Download, Trash2, Loader, Heart, X, ChevronLeft, ChevronRight, Check, AlertCircle } from "lucide-react";
 import { useTheme } from "../lib/ThemeContext";
@@ -7,7 +7,7 @@ import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { sanitizeCreatorName } from "../lib/sanitization";
 import { useBlueprintFolder } from "../lib/BlueprintFolderContext";
 
-export default function BlueprintCard({
+function BlueprintCardComponent({
   blueprint,
   isLiked,
   downloadingId,
@@ -31,7 +31,8 @@ export default function BlueprintCard({
   const availableImages = [
     blueprint.image_url,
     blueprint.image_url_2,
-    blueprint.image_url_3
+    blueprint.image_url_3,
+    blueprint.image_url_4
   ].filter(Boolean);
 
   const hasMultipleImages = availableImages.length > 1;
@@ -244,7 +245,7 @@ export default function BlueprintCard({
             const isDownloading = downloadingId === blueprint.id;
             
             if (installStatus !== 'not-installed') {
-              console.log(`[BlueprintCard] "${blueprint.title}" status: ${installStatus}`);
+              //console.log(`[BlueprintCard] "${blueprint.title}" status: ${installStatus}`);
             }
 
             const statusConfig = {
@@ -336,3 +337,21 @@ export default function BlueprintCard({
     </motion.div>
   );
 }
+
+export default memo(BlueprintCardComponent, (prevProps, nextProps) => {
+  // Return true if props are the same (don't re-render)
+  // Return false if props are different (re-render)
+  return (
+    prevProps.blueprint.id === nextProps.blueprint.id &&
+    prevProps.isLiked === nextProps.isLiked &&
+    prevProps.downloadingId === nextProps.downloadingId &&
+    prevProps.deleting === nextProps.deleting &&
+    prevProps.user?.id === nextProps.user?.id &&
+    prevProps.onSelect === nextProps.onSelect &&
+    prevProps.onDownload === nextProps.onDownload &&
+    prevProps.onLike === nextProps.onLike &&
+    prevProps.onDelete === nextProps.onDelete &&
+    prevProps.onSearchByCreator === nextProps.onSearchByCreator &&
+    prevProps.isFirstPage === nextProps.isFirstPage
+  );
+});

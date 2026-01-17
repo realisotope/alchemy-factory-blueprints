@@ -64,15 +64,50 @@ export default async function handler(req, res) {
     const buildings = parsed.Buildings || {};
     const skills = parsed.SupplyItems || {};
 
-    const { error: updateError } = await supabase
+    // Check if this is a multi-part blueprint
+    const { data: blueprintData, error: selectError } = await supabase
       .from("blueprints")
-      .update({ 
+      .select("is_multi_part, parts")
+      .eq("id", blueprint.id)
+      .single();
+
+    if (selectError) {
+      console.error("Error fetching blueprint details:", selectError);
+      return res.status(500).json({ error: "Failed to fetch blueprint details" });
+    }
+
+    let updateData;
+
+    if (blueprintData.is_multi_part && blueprintData.parts) {
+      // Multi-part blueprint - update the specific part's parsed data
+      const updatedParts = blueprintData.parts.map(part => {
+        if (part.file_hash === fileHash) {
+          return { ...part, parsed: parsed };
+        }
+        return part;
+      });
+
+      updateData = {
+        parts: updatedParts,
+        filehash: fileHash,
+        materials: materials,
+        buildings: buildings,
+        skills: skills,
+      };
+    } else {
+      // Single-part blueprint - update parsed directly
+      updateData = {
         parsed: parsed,
         filehash: fileHash,
         materials: materials,
         buildings: buildings,
         skills: skills,
-      })
+      };
+    }
+
+    const { error: updateError } = await supabase
+      .from("blueprints")
+      .update(updateData)
       .eq("id", blueprint.id);
 
     if (updateError) {

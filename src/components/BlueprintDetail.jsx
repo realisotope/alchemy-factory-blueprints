@@ -1,4 +1,4 @@
-import { X, Download, Heart, Calendar, User, Maximize2, Share2, Check, Edit2, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Download, Heart, Calendar, User, Maximize2, Share2, Check, Edit2, ChevronDown, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,7 +12,8 @@ import { useBlueprintFolder } from "../lib/BlueprintFolderContext";
 import { transformParsedMaterials, transformParsedBuildings } from "../lib/blueprintMappings";
 import { validateParsedData } from "../lib/parsedDataValidator";
 import { getParsedData, getPartByNumber, getPartDownloadInfo } from "../lib/blueprintUtils";
-import EditBlueprint from "./EditBlueprint";
+import { checkBlueprintCompatibility, checkRecipesAndSupplyUnlocks, hasSaveData } from "../lib/saveManager";
+import BlueprintEdit from "./BlueprintEdit";
 import BlueprintStats from "./BlueprintStats";
 
 export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange, onSearchByCreator, onBlueprintUpdate, onDownload, userLikes = new Set(), blueprints = [], currentBlueprintIndex = -1, onNavigate }) {
@@ -41,7 +42,8 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
   const availableImages = [
     blueprint?.image_url,
     blueprint?.image_url_2,
-    blueprint?.image_url_3
+    blueprint?.image_url_3,
+    blueprint?.image_url_4
   ].filter(Boolean);
 
   const hasMultipleImages = availableImages.length > 1;
@@ -453,6 +455,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
             (() => {
               const parsedData = getParsedData(blueprint);
               const validatedParsed = validateParsedData(parsedData);
+              const compatibility = hasSaveData() ? checkBlueprintCompatibility(blueprint) : { missingMaterials: {} };
 
               return (
                 <div>
@@ -503,6 +506,11 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                       productionRate={blueprint.production_rate}
                       buildingBreakdownCost={validatedParsed.BuildingBreakdownCost || {}}
                       multiPartLabel="Combined (All Parts)"
+                      missingMaterials={compatibility.missingMaterials}
+                      recipes={validatedParsed.Recipes || {}}
+                      supplyItems={validatedParsed.SupplyItems || {}}
+                      recipeUnlocks={hasSaveData() ? checkRecipesAndSupplyUnlocks(validatedParsed.Recipes || {}, validatedParsed.SupplyItems || {}).recipes : {}}
+                      supplyUnlocks={hasSaveData() ? checkRecipesAndSupplyUnlocks(validatedParsed.Recipes || {}, validatedParsed.SupplyItems || {}).supplyItems : {}}
                     />
                   ) : (() => {
                       const part = blueprint.parts[selectedPart - 1];
@@ -510,6 +518,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                         return <p style={{ color: theme.colors.textSecondary }}>Part data not yet parsed</p>;
                       }
                       const partParsed = validateParsedData(part.parsed);
+                      const partCompatibility = hasSaveData() ? checkBlueprintCompatibility({ parsed: partParsed }) : { missingMaterials: {} };
                       return (
                         <div>
                           <BlueprintStats 
@@ -523,6 +532,11 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                             productionRate={blueprint.production_rate}
                             buildingBreakdownCost={partParsed.BuildingBreakdownCost || {}}
                             multiPartLabel={`Part ${selectedPart} of ${blueprint.parts.length}`}
+                            missingMaterials={partCompatibility.missingMaterials}
+                            recipes={partParsed.Recipes || {}}
+                            supplyItems={partParsed.SupplyItems || {}}
+                            recipeUnlocks={hasSaveData() ? checkRecipesAndSupplyUnlocks(partParsed.Recipes || {}, partParsed.SupplyItems || {}).recipes : {}}
+                            supplyUnlocks={hasSaveData() ? checkRecipesAndSupplyUnlocks(partParsed.Recipes || {}, partParsed.SupplyItems || {}).supplyItems : {}}
                           />
                           {part.file_hash && (
                             <div 
@@ -554,6 +568,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
             (() => {
               const parsedData = getParsedData(blueprint);
               const validatedParsed = validateParsedData(parsedData);
+              const compatibility = hasSaveData() ? checkBlueprintCompatibility(blueprint) : { missingMaterials: {} };
 
               return (
                 <BlueprintStats 
@@ -566,6 +581,11 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                   gridSize={validatedParsed.GridArea}
                   productionRate={blueprint.production_rate}
                   buildingBreakdownCost={validatedParsed.BuildingBreakdownCost || {}}
+                  missingMaterials={compatibility.missingMaterials}
+                  recipes={validatedParsed.Recipes || {}}
+                  supplyItems={validatedParsed.SupplyItems || {}}
+                  recipeUnlocks={hasSaveData() ? checkRecipesAndSupplyUnlocks(validatedParsed.Recipes || {}, validatedParsed.SupplyItems || {}).recipes : {}}
+                  supplyUnlocks={hasSaveData() ? checkRecipesAndSupplyUnlocks(validatedParsed.Recipes || {}, validatedParsed.SupplyItems || {}).supplyItems : {}}
                 />
               );
             })()
@@ -849,7 +869,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
           </div>
 
       {/* Edit Blueprint Modal */}
-      <EditBlueprint
+      <BlueprintEdit
         blueprint={blueprint}
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}

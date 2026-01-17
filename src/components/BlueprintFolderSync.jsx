@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { FolderOpen, X, Check } from 'lucide-react';
 import { useTheme } from '../lib/ThemeContext';
 import { useBlueprintFolder } from '../lib/BlueprintFolderContext';
+import { time } from 'framer-motion';
 
 export default function BlueprintFolderSync() {
   const { theme } = useTheme();
@@ -63,12 +64,12 @@ export default function BlueprintFolderSync() {
         }}
         data-tooltip={hasFolderSelected 
           ? `${localBlueprints.size} blueprints synced. Click to update or press the X to clear.` 
-          : 'Select your blueprints folder to sync their install/version with the site. (This just runs a name match.)'}
+          : 'Select your blueprints folder to sync all your blueprints install/version with the site.'}
         data-tooltip-position="bottom"
       >
         <FolderOpen className="w-4 h-4" />
         <span className="text-sm font-medium">
-          {isScanning ? 'Scanning...' : hasFolderSelected ? `${localBlueprints.size}` : 'Sync'}
+          {isScanning ? 'Scanning...' : hasFolderSelected ? `${localBlueprints.size}` : 'Sync BPs'}
         </span>
         {hasFolderSelected && (
           <X 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "../lib/supabase";
 import { Search, Download, Trash2, Loader, Heart, X, User, Filter } from "lucide-react";
@@ -11,6 +11,7 @@ import { getParsedData } from "../lib/blueprintUtils";
 import { useTheme } from "../lib/ThemeContext";
 import { deleteCloudinaryImage } from "../lib/cloudinaryDelete";
 import { AVAILABLE_TAGS } from "../lib/tags";
+import { ClientRateLimiter } from "../lib/rateLimiter";
 import BlueprintDetail from "./BlueprintDetail";
 import BlueprintCard from "./BlueprintCard";
 import CreatorCard from "./CreatorCard";
@@ -28,6 +29,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
   const [selectedBlueprint, setSelectedBlueprint] = useState(null);
   const [userLikes, setUserLikes] = useState(new Set());
   const [downloadingId, setDownloadingId] = useState(null);
+  const [downloadError, setDownloadError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const initialBlueprintAppliedRef = useRef(false);
   const [selectedCreator, setSelectedCreator] = useState(null);
@@ -71,7 +73,8 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
     }
   }, [initialBlueprintId, blueprints]);
 
-  const fetchUserLikes = async () => {
+  const fetchUserLikes = useCallback(async () => {
+    if (!user) return;
     try {
       const { data, error } = await supabase
         .from("blueprint_likes")
@@ -83,9 +86,9 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
     } catch (err) {
       console.error("Error fetching likes:", err);
     }
-  };
+  }, [user]);
 
-  const fetchBlueprints = async () => {
+  const fetchBlueprints = useCallback(async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -138,9 +141,9 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleLike = async (blueprintId, currentlyLiked) => {
+  const handleLike = useCallback(async (blueprintId, currentlyLiked) => {
     if (!user) {
       alert("Please login to like blueprints");
       return;
@@ -175,69 +178,48 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         setUserLikes((prev) => new Set(prev).add(blueprintId));
       }
       
-      // Refetch the updated blueprint to ensure we have the latest like count
-      const { data: updatedBlueprint, error: fetchError } = await supabase
-        .from("blueprints")
-        .select("*")
-        .eq("id", blueprintId)
-        .single();
-      
-      if (fetchError) throw fetchError;
-      
-      // Transform materials and buildings from database objects to arrays
-      let materials = [];
-      let buildings = [];
-      
-      // Extract from parsed JSON with validation (use getParsedData for multi-part support)
-      const parsedData = getParsedData(updatedBlueprint);
-      const validatedParsed = validateParsedData(parsedData);
-      if (validatedParsed) {
-        if (validatedParsed.Materials && typeof validatedParsed.Materials === 'object') {
-          materials = transformParsedMaterials(validatedParsed.Materials);
-        }
-        
-        if (validatedParsed.Buildings && typeof validatedParsed.Buildings === 'object') {
-          buildings = transformParsedBuildings(validatedParsed.Buildings);
-        }
-      }
-      
-      // Normalize the data and preserve materials/buildings/skills from the existing blueprint
-      const normalizedBp = {
-        ...updatedBlueprint,
-        likes: updatedBlueprint?.likes ?? 0,
-        downloads: updatedBlueprint?.downloads ?? 0,
-        materials: materials.length > 0 ? materials : (selectedBlueprint?.materials ?? []),
-        buildings: buildings.length > 0 ? buildings : (selectedBlueprint?.buildings ?? []),
-        skills: validatedParsed?.SupplyItems ?? selectedBlueprint?.skills ?? {}
-      };
-      
-      // Update blueprints array - preserve materials/buildings/skills from existing data
+      // Optimistically update the local blueprint state without refetching
+      // The like count is already managed by the database trigger, we just update our local state
       setBlueprints((prev) =>
         prev.map((bp) =>
-          bp.id === blueprintId ? {
-            ...normalizedBp,
-            materials: bp.materials ?? normalizedBp.materials ?? [],
-            buildings: bp.buildings ?? normalizedBp.buildings ?? [],
-            skills: bp.skills ?? normalizedBp.skills ?? {}
-          } : bp
+          bp.id === blueprintId 
+            ? { ...bp, likes: (bp.likes ?? 0) + (currentlyLiked ? -1 : 1) }
+            : bp
         )
       );
-      
-      // Update selected blueprint
+
       if (selectedBlueprint?.id === blueprintId) {
         setSelectedBlueprint((prev) => 
-          prev ? { ...prev, likes: normalizedBp.likes } : null
+          prev ? { ...prev, likes: (prev.likes ?? 0) + (currentlyLiked ? -1 : 1) } : null
         );
       }
     } catch (err) {
       console.error("Error updating like:", err);
       alert("Failed to update like");
     }
-  };
+  }, [user]);
 
-  const handleDownload = async (blueprint, selectedPartNumber = null) => {
+  const handleDownload = useCallback(async (blueprint, selectedPartNumber = null) => {
+    // Rate limiting check for downloads
+    const downloadLimiter = new ClientRateLimiter(user?.id || 'anonymous', 'downloads');
+    const limitStatus = downloadLimiter.checkLimit();
+
+    if (!limitStatus.allowed) {
+      const errorMsg = limitStatus.reason === 'cooldown' 
+        ? `Please wait ${limitStatus.resetTime} second${limitStatus.resetTime !== 1 ? 's' : ''} before downloading again`
+        : `You've exceeded your download limit (${limitStatus.maxAttempts} per hour). Try again in ${Math.ceil(limitStatus.resetTime / 60)} minutes`;
+      setDownloadError(errorMsg);
+      setTimeout(() => setDownloadError(null), 5000);
+      return;
+    }
+
     setDownloadingId(blueprint.id);
+    setDownloadError(null);
+    
     try {
+      // Record the download attempt for rate limiting
+      downloadLimiter.recordAttempt();
+
       // Increment download count via secure function
       const { error } = await supabase.rpc('increment_blueprint_downloads', {
         blueprint_id: blueprint.id
@@ -245,73 +227,34 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
 
       if (error) throw error;
       
-      // Refetch the updated blueprint to ensure we have the latest download count
-      const { data: updatedBlueprint, error: fetchError } = await supabase
-        .from("blueprints")
-        .select("*")
-        .eq("id", blueprint.id)
-        .single();
-      
-      if (fetchError) throw fetchError;
-      
-      // Transform materials and buildings from database objects to arrays
-      let materials = [];
-      let buildings = [];
-      
-      // Extract from parsed JSON with validation (use getParsedData for multi-part support)
-      const parsedData = getParsedData(updatedBlueprint);
-      const validatedParsed = validateParsedData(parsedData);
-      if (validatedParsed) {
-        if (validatedParsed.Materials && typeof validatedParsed.Materials === 'object') {
-          materials = transformParsedMaterials(validatedParsed.Materials);
-        }
-        
-        if (validatedParsed.Buildings && typeof validatedParsed.Buildings === 'object') {
-          buildings = transformParsedBuildings(validatedParsed.Buildings);
-        }
-      }
-      
-      // Normalize the data and preserve materials/buildings/skills from the existing blueprint
-      const normalizedBp = {
-        ...updatedBlueprint,
-        likes: updatedBlueprint?.likes ?? 0,
-        downloads: updatedBlueprint?.downloads ?? 0,
-        materials: materials.length > 0 ? materials : (selectedBlueprint?.materials ?? []),
-        buildings: buildings.length > 0 ? buildings : (selectedBlueprint?.buildings ?? []),
-        skills: validatedParsed?.SupplyItems ?? selectedBlueprint?.skills ?? {}
-      };
-      
-      // Update blueprints array - preserve materials/buildings/skills from existing data
+      // Optimistically update download count without refetching
       setBlueprints((prev) =>
         prev.map((bp) =>
-          bp.id === blueprint.id ? {
-            ...normalizedBp,
-            materials: bp.materials ?? normalizedBp.materials ?? [],
-            buildings: bp.buildings ?? normalizedBp.buildings ?? [],
-            skills: bp.skills ?? normalizedBp.skills ?? {}
-          } : bp
+          bp.id === blueprint.id 
+            ? { ...bp, downloads: (bp.downloads ?? 0) + 1 }
+            : bp
         )
       );
-      
+
       // Update selected blueprint if it's the one being downloaded
       if (selectedBlueprint?.id === blueprint.id) {
         setSelectedBlueprint((prev) => 
-          prev ? { ...prev, downloads: normalizedBp.downloads } : null
+          prev ? { ...prev, downloads: (prev.downloads ?? 0) + 1 } : null
         );
       }
 
       // Handle multi-part downloads
-      if (updatedBlueprint.is_multi_part && updatedBlueprint.parts && Array.isArray(updatedBlueprint.parts)) {
+      if (blueprint.is_multi_part && blueprint.parts && Array.isArray(blueprint.parts)) {
         if (selectedPartNumber !== null) {
           // Download specific part
-          const part = updatedBlueprint.parts.find(p => p.part_number === selectedPartNumber);
+          const part = blueprint.parts.find(p => p.part_number === selectedPartNumber);
           if (!part) {
             throw new Error("Part not found");
           }
 
           const publicUrl = supabase.storage
             .from("blueprints")
-            .getPublicUrl(`${updatedBlueprint.user_id}/${part.filename}`).data.publicUrl;
+            .getPublicUrl(`${blueprint.user_id}/${part.filename}`).data.publicUrl;
 
           try {
             const response = await fetch(publicUrl);
@@ -338,10 +281,10 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
           }
         } else {
           // Download all parts in sequence
-          for (const part of updatedBlueprint.parts) {
+          for (const part of blueprint.parts) {
             const publicUrl = supabase.storage
               .from("blueprints")
-              .getPublicUrl(`${updatedBlueprint.user_id}/${part.filename}`).data.publicUrl;
+              .getPublicUrl(`${blueprint.user_id}/${part.filename}`).data.publicUrl;
 
             try {
               const response = await fetch(publicUrl);
@@ -373,16 +316,16 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         }
       } else {
         // Single-part download
-        if (!updatedBlueprint.file_url) {
-          alert("Blueprint file is not available for download");
+        if (!blueprint.file_url) {
+          setDownloadError("Blueprint file is not available for download");
           return;
         }
 
-        const urlParts = updatedBlueprint.file_url.split('/');
+        const urlParts = blueprint.file_url.split('/');
         const filename = urlParts[urlParts.length - 1];
         
         try {
-          const response = await fetch(updatedBlueprint.file_url);
+          const response = await fetch(blueprint.file_url);
           const blob = await response.blob();
           const blobUrl = URL.createObjectURL(blob);
           
@@ -397,7 +340,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         } catch (fetchError) {
           console.error("Error fetching file for download:", fetchError);
           const a = document.createElement("a");
-          a.href = updatedBlueprint.file_url;
+          a.href = blueprint.file_url;
           a.download = filename;
           a.target = "_blank";
           document.body.appendChild(a);
@@ -407,10 +350,11 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
       }
     } catch (err) {
       console.error("Error downloading:", err);
+      setDownloadError("Failed to download blueprint");
     } finally {
       setDownloadingId(null);
     }
-  };
+  }, [user?.id]);
 
   const handleDelete = async (blueprint) => {
     if (!user) {
@@ -466,46 +410,48 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
     }
   };
 
-  const filteredBlueprints = blueprints
-    .filter((bp) => {
-      // Filter by favorites if active
-      if (showFavoritesOnly && !userLikes.has(bp.id)) {
-        return false;
-      }
-      // Filter by selected tags (all selected tags must be present)
-      if (selectedTags.length > 0) {
-        const bpTags = bp.tags || [];
-        const hasAllSelectedTags = selectedTags.every((tag) =>
-          bpTags.some((bpTag) => bpTag.toLowerCase() === tag.toLowerCase())
-        );
-        if (!hasAllSelectedTags) {
+  const filteredBlueprints = useMemo(() => {
+    return blueprints
+      .filter((bp) => {
+        // Filter by favorites if active
+        if (showFavoritesOnly && !userLikes.has(bp.id)) {
           return false;
         }
-      }
-      // Filter by search term
-      return bp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (bp.description && bp.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (bp.tags && bp.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase()))) ||
-        (bp.creator_name && bp.creator_name.toLowerCase().includes(searchTerm.toLowerCase()));
-    })
-    .sort((a, b) => {
-      if (sortBy === "oldest") {
-        return new Date(a.created_at) - new Date(b.created_at);
-      } else if (sortBy === "alphabetical") {
-        return a.title.localeCompare(b.title);
-      } else if (sortBy === "popular") {
-        return (b.likes || 0) - (a.likes || 0);
-      } else if (sortBy === "updated") {
-        return new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at);
-      } else if (sortBy === "downloaded") {
-        return (b.downloads || 0) - (a.downloads || 0);
-      } else if (sortBy === "ipm-high") {
-        return (b.production_rate || 0) - (a.production_rate || 0);
-      } else if (sortBy === "ipm-low") {
-        return (a.production_rate || 0) - (b.production_rate || 0);
-      }
-      return new Date(b.created_at) - new Date(a.created_at);
-    });
+        // Filter by selected tags (all selected tags must be present)
+        if (selectedTags.length > 0) {
+          const bpTags = bp.tags || [];
+          const hasAllSelectedTags = selectedTags.every((tag) =>
+            bpTags.some((bpTag) => bpTag.toLowerCase() === tag.toLowerCase())
+          );
+          if (!hasAllSelectedTags) {
+            return false;
+          }
+        }
+        // Filter by search term
+        return bp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (bp.description && bp.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (bp.tags && bp.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase()))) ||
+          (bp.creator_name && bp.creator_name.toLowerCase().includes(searchTerm.toLowerCase()));
+      })
+      .sort((a, b) => {
+        if (sortBy === "oldest") {
+          return new Date(a.created_at) - new Date(b.created_at);
+        } else if (sortBy === "alphabetical") {
+          return a.title.localeCompare(b.title);
+        } else if (sortBy === "popular") {
+          return (b.likes || 0) - (a.likes || 0);
+        } else if (sortBy === "updated") {
+          return new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at);
+        } else if (sortBy === "downloaded") {
+          return (b.downloads || 0) - (a.downloads || 0);
+        } else if (sortBy === "ipm-high") {
+          return (b.production_rate || 0) - (a.production_rate || 0);
+        } else if (sortBy === "ipm-low") {
+          return (a.production_rate || 0) - (b.production_rate || 0);
+        }
+        return new Date(b.created_at) - new Date(a.created_at);
+      });
+  }, [blueprints, showFavoritesOnly, userLikes, selectedTags, searchTerm, sortBy]);
 
   // Pagination
   const totalPages = Math.ceil(filteredBlueprints.length / itemsPerPage);
@@ -715,26 +661,6 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
                 onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
               >
                 Most Liked
-              </button>
-              <button
-                type="button"
-                onClick={() => { handleSort("ipm-high"); setSortDropdownOpen(false); }}
-                style={{ color: theme.colors.textPrimary, borderColor: `${theme.colors.cardBorder}33` }}
-                className="w-full text-left px-4 py-2.5 transition border-b"
-                onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
-                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-              >
-                Highest IPM
-              </button>
-              <button
-                type="button"
-                onClick={() => { handleSort("ipm-low"); setSortDropdownOpen(false); }}
-                style={{ color: theme.colors.textPrimary, borderColor: `${theme.colors.cardBorder}33` }}
-                className="w-full text-left px-4 py-2.5 transition last:rounded-b-lg last:border-b-0"
-                onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
-                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-              >
-                Lowest IPM
               </button>
             </div>
           )}

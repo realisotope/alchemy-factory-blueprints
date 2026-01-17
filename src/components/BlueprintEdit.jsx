@@ -124,7 +124,7 @@ const validateImageFile = async (file) => {
   });
 };
 
-export default function EditBlueprint({ blueprint, isOpen, onClose, user, onUpdate }) {
+export default function BlueprintEdit({ blueprint, isOpen, onClose, user, onUpdate }) {
   const { theme } = useTheme();
   const [title, setTitle] = useState(blueprint?.title || "");
   const [description, setDescription] = useState(blueprint?.description || "");

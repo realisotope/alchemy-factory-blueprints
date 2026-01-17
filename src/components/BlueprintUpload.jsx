@@ -536,6 +536,66 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         let fileToUse = file;
         if (validation.isPng) {
           fileToUse = new File([validation.strippedFile], file.name, { type: 'image/png' });
+          
+          // Auto-populate preview image for this part
+          if (validation.imageBlob) {
+            const imageFile = new File([validation.imageBlob], `part${partIndex + 1}-preview.png`, { type: 'image/png' });
+            
+            // Compress the extracted image
+            (async () => {
+              try {
+                const options = {
+                  maxSizeMB: 0.3,
+                  maxWidthOrHeight: 1500,
+                  useWebWorker: true,
+                  initialQuality: 0.55,
+                };
+                const compressedImage = await imageCompression(imageFile, options);
+                
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                  const newImageFiles = [...imageFiles];
+                  newImageFiles[partIndex] = compressedImage;
+                  setImageFiles(newImageFiles);
+                  
+                  const newImagePreviews = [...imagePreviews];
+                  newImagePreviews[partIndex] = event.target.result;
+                  setImagePreviews(newImagePreviews);
+                  
+                  const newImageCompressionInfo = [...imageCompressionInfo];
+                  newImageCompressionInfo[partIndex] = {
+                    originalSize: validation.imageBlob.size,
+                    compressedSize: compressedImage.size,
+                    fromPng: true
+                  };
+                  setImageCompressionInfo(newImageCompressionInfo);
+                };
+                reader.readAsDataURL(compressedImage);
+              } catch (compressionError) {
+                console.error('Image compression failed:', compressionError);
+                // Fall back to uncompressed
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                  const newImageFiles = [...imageFiles];
+                  newImageFiles[partIndex] = imageFile;
+                  setImageFiles(newImageFiles);
+                  
+                  const newImagePreviews = [...imagePreviews];
+                  newImagePreviews[partIndex] = event.target.result;
+                  setImagePreviews(newImagePreviews);
+                  
+                  const newImageCompressionInfo = [...imageCompressionInfo];
+                  newImageCompressionInfo[partIndex] = {
+                    originalSize: validation.imageBlob.size,
+                    compressedSize: imageFile.size,
+                    fromPng: true
+                  };
+                  setImageCompressionInfo(newImageCompressionInfo);
+                };
+                reader.readAsDataURL(imageFile);
+              }
+            })();
+          }
         }
 
         const newFiles = [...multiPartFiles];
@@ -543,10 +603,15 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         setMultiPartFiles(newFiles);
 
         const newCompressionInfo = [...multiPartCompressionInfo];
-        newCompressionInfo[partIndex] = {
+        newCompressionInfo[partIndex] = validation.isPng ? {
+          originalSize: validation.compressionInfo.originalSize,
+          strippedSize: validation.compressionInfo.strippedSize,
+          savedSpace: validation.compressionInfo.savedSpace,
+          fromPng: true
+        } : {
           originalSize: file.size,
           processedSize: fileToUse.size,
-          fromPng: validation.isPng
+          fromPng: false
         };
         setMultiPartCompressionInfo(newCompressionInfo);
         setError(null);
@@ -600,6 +665,66 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         let fileToUse = file;
         if (validation.isPng) {
           fileToUse = new File([validation.strippedFile], file.name, { type: 'image/png' });
+          
+          // Auto-populate preview image for this part
+          if (validation.imageBlob) {
+            const imageFile = new File([validation.imageBlob], `part${partIndex + 1}-preview.png`, { type: 'image/png' });
+            
+            // Compress the extracted image
+            (async () => {
+              try {
+                const options = {
+                  maxSizeMB: 0.3,
+                  maxWidthOrHeight: 1500,
+                  useWebWorker: true,
+                  initialQuality: 0.55,
+                };
+                const compressedImage = await imageCompression(imageFile, options);
+                
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                  const newImageFiles = [...imageFiles];
+                  newImageFiles[partIndex] = compressedImage;
+                  setImageFiles(newImageFiles);
+                  
+                  const newImagePreviews = [...imagePreviews];
+                  newImagePreviews[partIndex] = event.target.result;
+                  setImagePreviews(newImagePreviews);
+                  
+                  const newImageCompressionInfo = [...imageCompressionInfo];
+                  newImageCompressionInfo[partIndex] = {
+                    originalSize: validation.imageBlob.size,
+                    compressedSize: compressedImage.size,
+                    fromPng: true
+                  };
+                  setImageCompressionInfo(newImageCompressionInfo);
+                };
+                reader.readAsDataURL(compressedImage);
+              } catch (compressionError) {
+                console.error('Image compression failed:', compressionError);
+                // Fall back to uncompressed
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                  const newImageFiles = [...imageFiles];
+                  newImageFiles[partIndex] = imageFile;
+                  setImageFiles(newImageFiles);
+                  
+                  const newImagePreviews = [...imagePreviews];
+                  newImagePreviews[partIndex] = event.target.result;
+                  setImagePreviews(newImagePreviews);
+                  
+                  const newImageCompressionInfo = [...imageCompressionInfo];
+                  newImageCompressionInfo[partIndex] = {
+                    originalSize: validation.imageBlob.size,
+                    compressedSize: imageFile.size,
+                    fromPng: true
+                  };
+                  setImageCompressionInfo(newImageCompressionInfo);
+                };
+                reader.readAsDataURL(imageFile);
+              }
+            })();
+          }
         }
 
         const newFiles = [...multiPartFiles];
@@ -607,10 +732,15 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         setMultiPartFiles(newFiles);
 
         const newCompressionInfo = [...multiPartCompressionInfo];
-        newCompressionInfo[partIndex] = {
+        newCompressionInfo[partIndex] = validation.isPng ? {
+          originalSize: validation.compressionInfo.originalSize,
+          strippedSize: validation.compressionInfo.strippedSize,
+          savedSpace: validation.compressionInfo.savedSpace,
+          fromPng: true
+        } : {
           originalSize: file.size,
           processedSize: fileToUse.size,
-          fromPng: validation.isPng
+          fromPng: false
         };
         setMultiPartCompressionInfo(newCompressionInfo);
         setError(null);
@@ -1289,7 +1419,10 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
                       </div>
                       {multiPartCompressionInfo[index] && (
                         <p style={{ color: theme.colors.textSecondary }} className="text-xs mt-1">
-                          {formatBytes(multiPartCompressionInfo[index].originalSize)}
+                          {multiPartCompressionInfo[index].fromPng 
+                            ? `PNG optimized: ${formatBytes(multiPartCompressionInfo[index].originalSize)} → ${formatBytes(multiPartCompressionInfo[index].strippedSize)} (${multiPartCompressionInfo[index].savedSpace}%)`
+                            : `File size: ${formatBytes(multiPartCompressionInfo[index].originalSize)}`
+                          }
                         </p>
                       )}
                     </div>
@@ -1370,9 +1503,9 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
                     </button>
                     {imageCompressionInfo[index] && (
                       <div className="mt-1 text-xs" style={{ color: theme.colors.textSecondary }}>
-                        {imageCompressionInfo[index].fromPng ? (
+                        {imageCompressionInfo[index].compressedSize && imageCompressionInfo[index].compressedSize < imageCompressionInfo[index].originalSize ? (
                           <span>
-                            Stripped: {formatBytes(imageCompressionInfo[index].originalSize)} → {formatBytes(imageCompressionInfo[index].compressedSize)}
+                            {imageCompressionInfo[index].fromPng ? 'Extracted: ' : ''}{formatBytes(imageCompressionInfo[index].originalSize)} → {formatBytes(imageCompressionInfo[index].compressedSize)} ({Math.round((1 - imageCompressionInfo[index].compressedSize / imageCompressionInfo[index].originalSize) * 100)}%)
                           </span>
                         ) : imageCompressionInfo[index].compressedSize ? (
                           <span>

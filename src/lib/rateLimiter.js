@@ -11,6 +11,16 @@ const RATE_LIMIT_CONFIG = {
     windowMs: 60 * 60 * 1000,
     cooldownMs: 60 * 1000,
   },
+  downloads: {
+    maxAttempts: 30,
+    windowMs: 60 * 60 * 1000,
+    cooldownMs: 6 * 1000,
+  },
+  auth: {
+    maxAttempts: 5,
+    windowMs: 30 * 60 * 1000,
+    cooldownMs: 30 * 1000,
+  },
 };
 
 export class ClientRateLimiter {

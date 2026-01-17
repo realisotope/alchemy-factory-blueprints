@@ -14,12 +14,18 @@ const BlueprintStats = memo(function BlueprintStats({
   gridSize,
   productionRate,
   buildingBreakdownCost = {},
-  multiPartLabel = null
+  multiPartLabel = null,
+  missingMaterials = {},
+  recipes = {},
+  supplyItems = {},
+  recipeUnlocks = {},
+  supplyUnlocks = {}
 }) {
   const { theme } = useTheme();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
   const [activeTab, setActiveTab] = useState("materials"); // materials/buildings/breakdown tabs.
+  const [showOnlyMissing, setShowOnlyMissing] = useState(false);
   const buildingNameToParserKey = {};
   Object.entries(BUILDING_MAPPINGS).forEach(([parserKey, mapping]) => {
     buildingNameToParserKey[mapping.name] = parserKey;
@@ -203,7 +209,7 @@ const BlueprintStats = memo(function BlueprintStats({
         </div>
       )}
 
-      {/* Content */}
+      {/* Expanded Materials/Buildings Content */}
       {isExpanded && (
         <div style={{ backgroundImage: `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)` }} className="p-3">
           {activeTab === "materials" ? (
@@ -234,10 +240,10 @@ const BlueprintStats = memo(function BlueprintStats({
                         <span style={{ color: theme.colors.textSecondary }} className="text-xs">No icon</span>
                       )}
                     </div>
-                    <div className="font-bold -mt-0.5" style={{ color: theme.colors.accentYellow }}>
+                    <div className="font-bold -mt-0.5" style={{ color: missingMaterials[material.name] ? '#b31f1f' : theme.colors.accentYellow }}>
                       {material.quantity}
                     </div>
-                    <div style={{ color: theme.colors.textSecondary }} className="text-xs truncate leading-none w-full px-0.5 -mt-0.5">
+                    <div style={{ color: missingMaterials[material.name] ? '#b31f1f' : theme.colors.textSecondary }} className="text-xs truncate leading-none w-full px-0.5 -mt-0.5">
                       {material.name}
                     </div>
                   </div>
@@ -272,10 +278,10 @@ const BlueprintStats = memo(function BlueprintStats({
                         <span style={{ color: theme.colors.textSecondary }} className="text-xs">No icon</span>
                       )}
                     </div>
-                    <div style={{ color: theme.colors.accentYellow }} className="font-bold -mt-0.5">
+                    <div style={{ color: missingMaterials[building.name] ? '#b31f1f' : theme.colors.accentYellow }} className="font-bold -mt-0.5">
                       {building.quantity}
                     </div>
-                    <div style={{ color: theme.colors.textSecondary }} className="text-xs truncate leading-none w-full px-0.5 -mt-0.5">
+                    <div style={{ color: missingMaterials[building.name] ? '#b31f1f' : theme.colors.textSecondary }} className="text-xs truncate leading-none w-full px-0.5 -mt-0.5">
                       {building.name}
                     </div>
                   </div>
@@ -284,7 +290,6 @@ const BlueprintStats = memo(function BlueprintStats({
             </div>
           ) : (
             <div className="space-y-3">
-              {/* View Toggle Button */}
               <div className="flex justify-end px-1 mb-2">
                 <button
                   onClick={() => setIsCompact(!isCompact)}
@@ -300,7 +305,141 @@ const BlueprintStats = memo(function BlueprintStats({
                 </button>
               </div>
 
-              {buildings.map((building) => {
+              {/* Locked/Missing Items Summary */}
+              {(Object.keys(missingMaterials).length > 0 || Object.keys(recipes).length > 0 || Object.keys(supplyItems).length > 0) && (
+                <div 
+                  style={{
+                    backgroundColor: `rgba(0, 0, 0, 0.12)`,
+                    borderColor: 'rgb(239, 68, 68, 0.2)',
+                  }}
+                  className="border-2 rounded-lg p-4 space-y-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <h4 style={{ color: theme.colors.accentYellow }} className="font-bold text-sm">
+                      🔒 Locked/Missing Items Summary
+                    </h4>
+                    <button
+                      onClick={() => setShowOnlyMissing(!showOnlyMissing)}
+                      className="px-2.5 py-1 rounded text-xs font-semibold transition-all border"
+                      style={{
+                        borderColor: showOnlyMissing ? '#d83b3b' : theme.colors.cardBorder,
+                        backgroundColor: showOnlyMissing ? '#ef444420' : `${theme.colors.cardBg}40`,
+                        color: showOnlyMissing ? '#ca3030' : theme.colors.textSecondary,
+                      }}
+                    >
+                      {showOnlyMissing ? 'Show All' : 'Show Only Missing'}
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {(() => {
+                      const lockedMaterials = materials.filter(m => missingMaterials[m.name]);
+                      const lockedBuildings = buildings.filter(b => missingMaterials[b.name]);
+                      const lockedRecipes = Object.keys(recipes).filter(recipe => !recipeUnlocks[recipe]);
+                      const lockedSupply = Object.keys(supplyItems).filter(supply => !supplyUnlocks[supply]);
+                      
+                      return (
+                        <>
+                          {lockedMaterials.length > 0 && (
+                            <div className="flex flex-col">
+                              <span style={{ color: theme.colors.accentYellow }} className="text-s">Materials Locked</span>
+                              <span style={{ color: '#bb2c2c' }} className="text-lg font-bold">
+                                {lockedMaterials.length} / {materials.length}
+                              </span>
+                            </div>
+                          )}
+                          {lockedBuildings.length > 0 && (
+                            <div className="flex flex-col">
+                              <span style={{ color: theme.colors.accentYellow }} className="text-s">Buildings Locked</span>
+                              <span style={{ color: '#bb2c2c' }} className="text-lg font-bold">
+                                {lockedBuildings.length} / {buildings.length}
+                              </span>
+                            </div>
+                          )}
+                          {lockedRecipes.length > 0 && (
+                            <div className="flex flex-col">
+                              <span style={{ color: theme.colors.accentYellow }} className="text-s">Recipes Locked</span>
+                              <span style={{ color: '#bb2c2c' }} className="text-lg font-bold">
+                                {lockedRecipes.length}
+                              </span>
+                            </div>
+                          )}
+                          {lockedSupply.length > 0 && (
+                            <div className="flex flex-col">
+                              <span style={{ color: theme.colors.accentYellow }} className="text-s">Supply Locked</span>
+                              <span style={{ color: '#bb2c2c' }} className="text-lg font-bold">
+                                {lockedSupply.length}
+                              </span>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
+
+                  {/* Recipes and Supply Items Lists */}
+                  <div className="space-y-3 pt-3 border-t" style={{ borderTopColor: `${theme.colors.cardBorder}80` }}>
+                    {(() => {
+                      const lockedRecipes = Object.keys(recipes).filter(recipe => !recipeUnlocks[recipe]);
+                      const lockedSupply = Object.keys(supplyItems).filter(supply => !supplyUnlocks[supply]);
+                      
+                      return (
+                        <>
+                          {lockedRecipes.length > 0 && (
+                            <div>
+                              <h5 style={{ color: theme.colors.accentYellow }} className="text-xs font-semibold mb-2 flex items-center gap-1">
+                                <span>📋 Locked Recipes ({lockedRecipes.length})</span>
+                              </h5>
+                              <div className="flex flex-wrap gap-2">
+                                {lockedRecipes.map((recipe) => (
+                                  <div
+                                    key={recipe}
+                                    style={{
+                                      backgroundColor: `#ef444420`,
+                                      borderColor: 'rgba(167, 11, 11, 0.57)',
+                                      color: theme.colors.textSecondary,
+                                    }}
+                                    className="text-xs px-2.5 py-1.5 rounded-md border flex items-center gap-1.5"
+                                  >
+                                    <span style={{ color: '#ca2323' }}>✗</span>
+                                    <span className="font-medium">{recipe}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {lockedSupply.length > 0 && (
+                            <div>
+                              <h5 style={{ color: theme.colors.accentYellow }} className="text-xs font-semibold mb-2 flex items-center gap-1">
+                                <span>📦 Locked Supply Items ({lockedSupply.length})</span>
+                              </h5>
+                              <div className="flex flex-wrap gap-2">
+                                {lockedSupply.map((supply) => (
+                                  <div
+                                    key={supply}
+                                    style={{
+                                      backgroundColor: `#ef444420`,
+                                      borderColor: 'rgba(167, 11, 11, 0.57)',
+                                      color: theme.colors.textSecondary,
+                                    }}
+                                    className="text-xs px-2.5 py-1.5 rounded-md border flex items-center gap-1.5"
+                                  >
+                                    <span style={{ color: '#ca2323' }}>✗</span>
+                                    <span className="font-medium">{supply}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+              )}
+
+              {buildings
+                .filter(building => !showOnlyMissing || missingMaterials[building.name])
+                .map((building) => {
                 const sprite = getBuildingSprite(building.id);
                 const parserKey = buildingNameToParserKey[building.name];
                 const buildingMapping = BUILDING_MAPPINGS[parserKey];
@@ -345,7 +484,7 @@ const BlueprintStats = memo(function BlueprintStats({
                           <div style={{ color: theme.colors.accentYellow }} className="font-bold font-mono text-sm">
                             {building.quantity}×
                           </div>
-                          <div style={{ color: theme.colors.textPrimary }} className="text-sm truncate opacity-90">
+                          <div style={{ color: showOnlyMissing && missingMaterials[building.name] ? '#b31f1f' : theme.colors.textPrimary }} className="text-sm truncate opacity-90">
                             {building.name}
                           </div>
                         </div>
@@ -370,10 +509,10 @@ const BlueprintStats = memo(function BlueprintStats({
                                </div>
                                <div className="flex flex-col">
                                  <div className="flex items-baseline gap-1">
-                                   <span style={{ color: theme.colors.accentYellow }} className="font-bold text-sm">
+                                   <span style={{ color: showOnlyMissing && missingMaterials[building.name] ? '#b31f1f' : theme.colors.accentYellow }} className="font-bold text-sm">
                                      {totalQuantity}
                                    </span>
-                                   <span style={{ color: theme.colors.textSecondary }} className="text-xs opacity-75">
+                                   <span style={{ color: showOnlyMissing && missingMaterials[building.name] ? '#b31f1f' : theme.colors.textSecondary }} className="text-xs opacity-75">
                                      {materialMapping?.name || materialName}
                                    </span>
                                  </div>
@@ -418,7 +557,7 @@ const BlueprintStats = memo(function BlueprintStats({
                          <span style={{ color: theme.colors.accentYellow }} className="font-bold font-mono text-lg">
                           {building.quantity}×
                         </span>
-                        <span style={{ color: theme.colors.textPrimary }} className="font-bold text-base truncate opacity-90">
+                        <span style={{ color: showOnlyMissing && missingMaterials[building.name] ? '#b31f1f' : theme.colors.textPrimary }} className="font-bold text-base truncate opacity-90">
                            {building.name}
                         </span>
                       </div>
@@ -451,10 +590,10 @@ const BlueprintStats = memo(function BlueprintStats({
                               </div>
                               <div className="flex-1 min-w-0 flex flex-col justify-center">
                                 <div className="flex items-baseline gap-1.5 truncate">
-                                  <span style={{ color: theme.colors.accentYellow }} className="font-bold text-base leading-none">
+                                  <span style={{ color: showOnlyMissing && missingMaterials[building.name] ? '#b31f1f' : theme.colors.accentYellow }} className="font-bold text-base leading-none">
                                     {totalQuantity}
                                   </span>
-                                  <span style={{ color: theme.colors.textPrimary }} className="text-xs font-medium truncate opacity-90">
+                                  <span style={{ color: showOnlyMissing && missingMaterials[building.name] ? '#b31f1f' : theme.colors.textPrimary }} className="text-xs font-medium truncate opacity-90">
                                     {materialMapping?.name || materialName}
                                   </span>
                                 </div>
