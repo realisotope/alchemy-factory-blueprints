@@ -492,12 +492,22 @@ const BlueprintStats = memo(function BlueprintStats({
 
                       {/* Right: Inline Materials */}
                       <div className="flex-1 flex flex-wrap gap-x-4 gap-y-2 items-center">
-                        {buildingMaterialEntries.map(([materialName, totalQuantity]) => {
+                        {buildingMaterialEntries
+                          .filter(([materialName]) => {
+                            if (!showOnlyMissing) return true;
+                            const materialMapping = MATERIAL_MAPPINGS[materialName];
+                            const materialDisplayName = materialMapping?.name || materialName;
+                            return missingMaterials[materialDisplayName];
+                          })
+                          .map(([materialName, totalQuantity]) => {
                            const materialMapping = MATERIAL_MAPPINGS[materialName];
                            const spriteId = materialMapping?.id;
                            const materialSprite = spriteId ? getMaterialSprite(spriteId) : null;
                            const perUnitQuantity = (totalQuantity / building.quantity).toFixed(2);
                            const displayPerUnit = parseFloat(perUnitQuantity) === Math.round(parseFloat(perUnitQuantity)) ? Math.round(parseFloat(perUnitQuantity)).toString() : parseFloat(perUnitQuantity).toString();
+                           // Check if THIS SPECIFIC MATERIAL is missing using display name, not the building
+                           const materialDisplayName = materialMapping?.name || materialName;
+                           const isMaterialMissing = missingMaterials[materialDisplayName];
 
                            return (
                              <div 
@@ -508,11 +518,11 @@ const BlueprintStats = memo(function BlueprintStats({
                                  {materialSprite && <Sprite sprite={materialSprite} alt={materialMapping?.name || materialName} className="w-full h-full" size={0.38} />}
                                </div>
                                <div className="flex flex-col">
-                                 <div className="flex items-baseline gap-1">
-                                   <span style={{ color: showOnlyMissing && missingMaterials[building.name] ? '#b31f1f' : theme.colors.accentYellow }} className="font-bold text-sm">
+                               <div className="flex items-baseline gap-1">
+                                   <span style={{ color: isMaterialMissing ? '#b31f1f' : theme.colors.accentYellow }} className="font-bold text-sm">
                                      {totalQuantity}
                                    </span>
-                                   <span style={{ color: showOnlyMissing && missingMaterials[building.name] ? '#b31f1f' : theme.colors.textSecondary }} className="text-xs opacity-75">
+                                   <span style={{ color: isMaterialMissing ? '#b31f1f' : theme.colors.textSecondary }} className="text-xs opacity-75">
                                      {materialMapping?.name || materialName}
                                    </span>
                                  </div>
@@ -565,13 +575,22 @@ const BlueprintStats = memo(function BlueprintStats({
                     
                     {buildingMaterialEntries.length > 0 ? (
                       <div className="p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                        {buildingMaterialEntries.map(([materialName, totalQuantity]) => {
+                        {buildingMaterialEntries
+                          .filter(([materialName]) => {
+                            if (!showOnlyMissing) return true;
+                            const materialMapping = MATERIAL_MAPPINGS[materialName];
+                            const materialDisplayName = materialMapping?.name || materialName;
+                            return missingMaterials[materialDisplayName];
+                          })
+                          .map(([materialName, totalQuantity]) => {
                           const materialMapping = MATERIAL_MAPPINGS[materialName];
                           const spriteId = materialMapping?.id;
                           const materialSprite = spriteId ? getMaterialSprite(spriteId) : null;
                           const material = materials.find(m => m.name === materialMapping?.name);
                           const perUnitQuantity = (totalQuantity / building.quantity).toFixed(2);
                           const displayPerUnit = parseFloat(perUnitQuantity) === Math.round(parseFloat(perUnitQuantity)) ? Math.round(parseFloat(perUnitQuantity)).toString() : parseFloat(perUnitQuantity).toString();
+                          const materialDisplayName = materialMapping?.name || materialName;
+                          const isMaterialMissing = missingMaterials[materialDisplayName];
                           
                           return (
                             <div
@@ -590,10 +609,10 @@ const BlueprintStats = memo(function BlueprintStats({
                               </div>
                               <div className="flex-1 min-w-0 flex flex-col justify-center">
                                 <div className="flex items-baseline gap-1.5 truncate">
-                                  <span style={{ color: showOnlyMissing && missingMaterials[building.name] ? '#b31f1f' : theme.colors.accentYellow }} className="font-bold text-base leading-none">
+                                  <span style={{ color: isMaterialMissing ? '#b31f1f' : theme.colors.accentYellow }} className="font-bold text-base leading-none">
                                     {totalQuantity}
                                   </span>
-                                  <span style={{ color: showOnlyMissing && missingMaterials[building.name] ? '#b31f1f' : theme.colors.textPrimary }} className="text-xs font-medium truncate opacity-90">
+                                  <span style={{ color: isMaterialMissing ? '#b31f1f' : theme.colors.textPrimary }} className="text-xs font-medium truncate opacity-90">
                                     {materialMapping?.name || materialName}
                                   </span>
                                 </div>
