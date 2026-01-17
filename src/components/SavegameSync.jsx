@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { X, Upload, CheckCircle } from 'lucide-react';
 import { useTheme } from '../lib/ThemeContext';
 import { saveSaveData, getSaveMetadata, clearSaveData, hasSaveData } from '../lib/saveManager';
@@ -7,8 +7,9 @@ export default function SavegameSync() {
   const { theme } = useTheme();
   const fileInputRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const hasSave = hasSaveData();
+  const [error, setError] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [hasSave, setHasSave] = useState(() => hasSaveData());
   const metadata = getSaveMetadata();
 
   const handleFileSelect = async (e) => {
@@ -91,6 +92,36 @@ export default function SavegameSync() {
             console.log('📡 SSE event:', currentEvent);
           }
 
+          if (line.startsWith('data: ')) {
+            console.log('📊 SSE data line:', line.slice(0, 50));
+          }
+
+          // Handle parser progress events
+          if (currentEvent === 'parser' && line.startsWith('data: ')) {
+            try {
+              const progressData = JSON.parse(line.slice(6));
+              if (progressData.progress !== undefined) {
+                const progressPercent = Math.round(progressData.progress);
+                console.log('⏳ Progress:', progressPercent + '%');
+                setProgress(progressPercent);
+              }
+            } catch (e) {
+              console.log('⚠️ Failed to parse parser event:', e.message);
+            }
+          }
+
+          // Handle progress events (backup, in case format changes)
+          if (currentEvent === 'progress' && line.startsWith('data: ')) {
+            try {
+              const progressData = JSON.parse(line.slice(6));
+              const progressPercent = Math.round(progressData.progress || 0);
+              console.log('⏳ Progress:', progressPercent + '%');
+              setProgress(progressPercent);
+            } catch (e) {
+              console.log('⚠️ Failed to parse progress:', e.message);
+            }
+          }
+
           if (currentEvent === 'save-data' && line.startsWith('data: ')) {
             try {
               const jsonStr = line.slice(6);
@@ -127,6 +158,8 @@ export default function SavegameSync() {
       if (result.success) {
         console.log('✅ Save data stored successfully');
         setError(null);
+        setProgress(0);
+        setHasSave(true);
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
@@ -136,6 +169,7 @@ export default function SavegameSync() {
     } catch (err) {
       console.error('❌ Error:', err);
       setError(err.message || 'Failed to process save file');
+      setProgress(0);
     } finally {
       setIsLoading(false);
     }
@@ -145,6 +179,7 @@ export default function SavegameSync() {
     const result = clearSaveData();
     if (result.success) {
       setError(null);
+      setHasSave(false);
     }
   };
 
@@ -170,7 +205,7 @@ export default function SavegameSync() {
         type="file"
         onChange={handleFileSelect}
         className="hidden"
-        accept=".dat,.sav"
+        accept=".sav"
         disabled={isLoading}
       />
 
@@ -189,7 +224,7 @@ export default function SavegameSync() {
           }}
           className="inline-flex items-center gap-2 px-3 py-2.5 rounded-lg transition disabled:opacity-50 group shadow-lg hover:shadow-xl hover:scale-105 hover:opacity-70"
           data-tooltip-position="bottom"
-          data-tooltip={`${displayName} - S${timeAgo}ynced `}
+          data-tooltip={`${displayName} - Synced ${timeAgo}`}
         >
           <CheckCircle className="w-4 h-4" />
           <span className="text-sm font-medium">Synced</span>
@@ -202,22 +237,44 @@ export default function SavegameSync() {
           />
         </button>
       ) : (
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isLoading}
-          style={{
-            backgroundColor: `${theme.colors.tertiary}80`,
-            borderWidth: '2px',
-            borderStyle: 'solid',
-            borderColor: theme.colors.headerBorder,
-            color: theme.colors.textPrimary,
-          }}
-          className="inline-flex items-center gap-2 px-3 py-2.5 rounded-lg transition disabled:opacity-50 shadow-lg hover:shadow-xl hover:scale-105 hover:opacity-70"
-          title="Upload save file to check blueprint compatibility"
-        >
-          <Upload className="w-4 h-4" />
-          <span className="text-sm font-medium">Sync Save</span>
-        </button>
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isLoading}
+            style={{
+              backgroundColor: `${theme.colors.tertiary}80`,
+              borderWidth: '2px',
+              borderStyle: 'solid',
+              borderColor: theme.colors.headerBorder,
+              color: theme.colors.textPrimary,
+            }}
+            className="inline-flex items-center gap-2 px-3 py-2.5 rounded-lg transition disabled:opacity-50 shadow-lg hover:shadow-xl hover:scale-105 hover:opacity-70 relative z-10"
+            title="Upload save file to check blueprint compatibility"
+          >
+            <span className="text-sm font-medium">
+              {isLoading && progress > 0 ? `⌛ Parsing ${progress}%` : 'Sync Save'}
+            </span>
+          </button>
+          
+          {/* Progress bar overlay */}
+          {isLoading && progress > 0 && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                height: '100%',
+                width: `${progress}%`,
+                backgroundColor: `${theme.colors.accentYellow}40`,
+                borderRadius: '6px',
+                borderTopLeftRadius: '6px',
+                borderBottomLeftRadius: '6px',
+                zIndex: 0,
+                transition: 'width 0.2s ease-out',
+              }}
+            />
+          )}
+        </div>
       )}
 
       {error && (
