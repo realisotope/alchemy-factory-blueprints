@@ -290,7 +290,27 @@ const BlueprintStats = memo(function BlueprintStats({
             </div>
           ) : (
             <div className="space-y-3">
-              <div className="flex justify-end px-1 mb-2">
+              <div className="flex justify-end items-center gap-3 px-1 mb-2">
+                {(() => {
+                  const lockedMaterials = materials.filter(m => missingMaterials[m.name]);
+                  const lockedBuildings = buildings.filter(b => missingMaterials[b.name]);
+                  const lockedRecipes = Object.keys(recipes).filter(recipe => !recipeUnlocks[recipe]);
+                  const lockedSupply = Object.keys(supplyItems).filter(supply => !supplyUnlocks[supply]);
+                  const hasAnyLocked = lockedMaterials.length > 0 || lockedBuildings.length > 0 || lockedRecipes.length > 0 || lockedSupply.length > 0;
+                  
+                  const isCompatible = !hasAnyLocked;
+                  const bgColor = isCompatible ? '#22c55e27' : '#ef444427';
+                  const borderColor = isCompatible ? '#22c55e52' : '#ef444452';
+                  const textColor = isCompatible ? '#22c55e' : '#bb3434';
+                  const text = isCompatible ? '✓ Compatible with your save' : '⚠ Not compatible with your save';
+                  
+                  return (
+                    <span style={{ color: textColor, backgroundColor: bgColor, borderColor: borderColor }} className="text-sm px-2.5 py-1.5 rounded-md border flex items-center gap-1.5">
+                      {text}
+                    </span>
+                  );
+                })()}
+
                 <button
                   onClick={() => setIsCompact(!isCompact)}
                   className="flex items-center gap-2 px-3 py-1.5 rounded text-sm font-bold transition-colors border"
@@ -306,36 +326,39 @@ const BlueprintStats = memo(function BlueprintStats({
               </div>
 
               {/* Locked/Missing Items Summary */}
-              {(Object.keys(missingMaterials).length > 0 || Object.keys(recipes).length > 0 || Object.keys(supplyItems).length > 0) && (
-                <div 
-                  style={{
-                    backgroundColor: `rgba(0, 0, 0, 0.12)`,
-                    borderColor: 'rgb(239, 68, 68, 0.2)',
-                  }}
-                  className="border-2 rounded-lg p-4 space-y-3"
-                >
-                  <div className="flex items-center justify-between">
-                    <h4 style={{ color: theme.colors.accentYellow }} className="font-bold text-sm">
-                      🔒 Locked/Missing Items Summary
-                    </h4>
-                    <button
-                      onClick={() => setShowOnlyMissing(!showOnlyMissing)}
-                      className="px-2.5 py-1 rounded text-xs font-semibold transition-all border"
-                      style={{
-                        borderColor: showOnlyMissing ? '#d83b3b' : theme.colors.cardBorder,
-                        backgroundColor: showOnlyMissing ? '#ef444420' : `${theme.colors.cardBg}40`,
-                        color: showOnlyMissing ? '#ca3030' : theme.colors.textSecondary,
-                      }}
-                    >
-                      {showOnlyMissing ? 'Show All' : 'Show Only Missing'}
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    {(() => {
-                      const lockedMaterials = materials.filter(m => missingMaterials[m.name]);
-                      const lockedBuildings = buildings.filter(b => missingMaterials[b.name]);
-                      const lockedRecipes = Object.keys(recipes).filter(recipe => !recipeUnlocks[recipe]);
-                      const lockedSupply = Object.keys(supplyItems).filter(supply => !supplyUnlocks[supply]);
+              {(() => {
+                const lockedMaterials = materials.filter(m => missingMaterials[m.name]);
+                const lockedBuildings = buildings.filter(b => missingMaterials[b.name]);
+                const lockedRecipes = Object.keys(recipes).filter(recipe => !recipeUnlocks[recipe]);
+                const lockedSupply = Object.keys(supplyItems).filter(supply => !supplyUnlocks[supply]);
+                const hasAnyLocked = lockedMaterials.length > 0 || lockedBuildings.length > 0 || lockedRecipes.length > 0 || lockedSupply.length > 0;
+                
+                return hasAnyLocked && (
+                  <div 
+                    style={{
+                      backgroundColor: `rgba(0, 0, 0, 0.12)`,
+                      borderColor: 'rgb(239, 68, 68, 0.2)',
+                    }}
+                    className="border-2 rounded-lg p-4 space-y-3"
+                  >
+                    <div className="flex items-center justify-between">
+                      <h4 style={{ color: theme.colors.accentYellow }} className="font-bold text-sm">
+                        🔒 Locked/Missing Items Summary
+                      </h4>
+                      <button
+                        onClick={() => setShowOnlyMissing(!showOnlyMissing)}
+                        className="px-2.5 py-1 rounded text-xs font-semibold transition-all border"
+                        style={{
+                          borderColor: showOnlyMissing ? '#d83b3b' : theme.colors.cardBorder,
+                          backgroundColor: showOnlyMissing ? '#ef444420' : `${theme.colors.cardBg}40`,
+                          color: showOnlyMissing ? '#ca3030' : theme.colors.textSecondary,
+                        }}
+                      >
+                        {showOnlyMissing ? 'Show All' : 'Show Only Missing'}
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {(() => {
                       
                       return (
                         <>
@@ -435,7 +458,8 @@ const BlueprintStats = memo(function BlueprintStats({
                     })()}
                   </div>
                 </div>
-              )}
+                );
+              })()}
 
               {buildings
                 .filter(building => !showOnlyMissing || missingMaterials[building.name])
@@ -484,7 +508,7 @@ const BlueprintStats = memo(function BlueprintStats({
                           <div style={{ color: theme.colors.accentYellow }} className="font-bold font-mono text-sm">
                             {building.quantity}×
                           </div>
-                          <div style={{ color: showOnlyMissing && missingMaterials[building.name] ? '#b31f1f' : theme.colors.textPrimary }} className="text-sm truncate opacity-90">
+                          <div style={{ color: missingMaterials[building.name] ? '#b31f1f' : theme.colors.textPrimary }} className="text-sm truncate opacity-90">
                             {building.name}
                           </div>
                         </div>
@@ -567,7 +591,7 @@ const BlueprintStats = memo(function BlueprintStats({
                          <span style={{ color: theme.colors.accentYellow }} className="font-bold font-mono text-lg">
                           {building.quantity}×
                         </span>
-                        <span style={{ color: showOnlyMissing && missingMaterials[building.name] ? '#b31f1f' : theme.colors.textPrimary }} className="font-bold text-base truncate opacity-90">
+                        <span style={{ color: missingMaterials[building.name] ? '#b31f1f' : theme.colors.textPrimary }} className="font-bold text-base truncate opacity-90">
                            {building.name}
                         </span>
                       </div>
