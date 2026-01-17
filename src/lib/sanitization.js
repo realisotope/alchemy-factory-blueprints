@@ -47,7 +47,7 @@ export function validateAndSanitizeTitle(title, maxLength = 60) {
 }
 
 // Validate and sanitize description input
-export function validateAndSanitizeDescription(description, maxLength = 1400) {
+export function validateAndSanitizeDescription(description, maxLength = 2000) {
   if (!description) {
     return { valid: true, sanitized: '' };
   }

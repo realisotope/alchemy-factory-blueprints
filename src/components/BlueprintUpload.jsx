@@ -172,7 +172,7 @@ const validateBlueprintFile = async (file) => {
     return { valid: false, error: "Failed to validate file format. Please try again" };
   }
 
-  return { valid: true };
+  return { valid: true, isPng: false };
 };
 
 // Validate image file
@@ -224,21 +224,21 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
   const [multiPartDragActive, setMultiPartDragActive] = useState([false, false, false, false]);
   const [multiPartProcessing, setMultiPartProcessing] = useState([false, false, false, false]);
   const [multiPartCompressionInfo, setMultiPartCompressionInfo] = useState([null, null, null, null]);
-  const [imageFiles, setImageFiles] = useState([null, null, null]);
-  const [imagePreviews, setImagePreviews] = useState([null, null, null]);
+  const [imageFiles, setImageFiles] = useState([null, null, null, null]);
+  const [imagePreviews, setImagePreviews] = useState([null, null, null, null]);
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [blueprintDragActive, setBlueprintDragActive] = useState(false);
-  const [imageDragActive, setImageDragActive] = useState([false, false, false]);
+  const [imageDragActive, setImageDragActive] = useState([false, false, false, false]);
   const [rateLimitInfo, setRateLimitInfo] = useState(null);
   const [processingPng, setProcessingPng] = useState(false);
   const [compressionInfo, setCompressionInfo] = useState(null);
   const [blueprintFileExtension, setBlueprintFileExtension] = useState(".af");
   const [processingState, setProcessingState] = useState("");
-  const [imageCompressionInfo, setImageCompressionInfo] = useState([null, null, null]);
+  const [imageCompressionInfo, setImageCompressionInfo] = useState([null, null, null, null]);
 
   const handleImageSelect = async (e, index) => {
     const file = e.target.files?.[0];
@@ -529,12 +529,14 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         const newFiles = [...multiPartFiles];
         newFiles[partIndex] = null;
         setMultiPartFiles(newFiles);
-        const newStates = [...multiPartProcessing];
-        newStates[partIndex] = false;
-        setMultiPartProcessing(newStates);
+        const newStates2 = [...multiPartProcessing];
+        newStates2[partIndex] = false;
+        setMultiPartProcessing(newStates2);
       } else {
         let fileToUse = file;
+        
         if (validation.isPng) {
+          // For PNG blueprints, use stripped file (image data removed)
           fileToUse = new File([validation.strippedFile], file.name, { type: 'image/png' });
           
           // Auto-populate preview image for this part
@@ -1002,7 +1004,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         };
       }
 
-      // Upload images if provided (up to 3)
+      // Upload images if provided (up to 4 for multi-part, up to 3 for single)
       const imageUploadPromises = imageFiles.map(async (imageFile, index) => {
         if (!imageFile) return null;
 
@@ -1018,6 +1020,9 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       insertData.image_url = uploadedUrls[0];
       insertData.image_url_2 = uploadedUrls[1];
       insertData.image_url_3 = uploadedUrls[2];
+      if (isMultiPart && uploadedUrls[3]) {
+        insertData.image_url_4 = uploadedUrls[3];
+      }
 
       // Insert blueprint record into database
       setProcessingState("Creating blueprint record...");
@@ -1032,7 +1037,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       // Send files to parser API (non-blocking)
       if (insertedBlueprint?.id && filesToParse.length > 0) {
         try {
-          console.log("Sending blueprint(s) to parser...");
+          console.log(`Sending ${filesToParse.length} file(s) to parser for blueprint:`, insertedBlueprint.id);
 
           // Keep track of current parts state for multi-part blueprints
           let currentParts = isMultiPart ? insertedBlueprint.parts : null;
@@ -1113,8 +1118,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       setIsMultiPart(false);
       setMultiPartFiles([null, null, null, null]);
       setMultiPartCompressionInfo([null, null, null, null]);
-      setImageFiles([null, null, null]);
-      setImagePreviews([null, null, null]);
+      setImageFiles([null, null, null, null]);
+      setImagePreviews([null, null, null, null]);
       setTags([]);
       setTagInput("");
       setRateLimitInfo(null);
