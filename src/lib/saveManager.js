@@ -72,7 +72,7 @@ export function checkBlueprintCompatibility(blueprint, saveData = null) {
   const save = saveData || getSaveData();
   
   if (!save) {
-    console.warn('⚠️ No save data loaded for compatibility check');
+    //console.warn('⚠️ No save data loaded for compatibility check');
     return {
       compatible: false,
       reason: 'No save data loaded',
@@ -82,15 +82,15 @@ export function checkBlueprintCompatibility(blueprint, saveData = null) {
     };
   }
 
-  console.log('🔍 Checking blueprint compatibility...');
-  console.log('📦 Blueprint:', blueprint.name);
+  //console.log('🔍 Checking blueprint compatibility...');
+  //console.log('📦 Blueprint:', blueprint.name);
 
   const { parsed } = blueprint.is_multi_part
     ? { parsed: getParsedDataForCompatibility(blueprint) }
     : { parsed: blueprint.parsed };
 
   if (!parsed || !parsed.Materials) {
-    console.log('✅ No materials required for this blueprint');
+    //console.log('✅ No materials required for this blueprint');
     return {
       compatible: true,
       reason: 'All items unlocked',
@@ -105,8 +105,8 @@ export function checkBlueprintCompatibility(blueprint, saveData = null) {
   const unlockedMaterials = new Set(unlockedData.CraftingOptionList || []);
   const unlockedBuildings = new Set(unlockedData.ConstructOptionList || []);
 
-  console.log('🔓 Unlocked materials count:', unlockedMaterials.size);
-  console.log('🔓 Unlocked buildings count:', unlockedBuildings.size);
+  //console.log('🔓 Unlocked materials count:', unlockedMaterials.size);
+  //console.log('🔓 Unlocked buildings count:', unlockedBuildings.size);
 
   const blueprintMaterials = parsed.Materials || {};
   const blueprintBuildings = parsed.Buildings || {};
@@ -154,7 +154,7 @@ export function checkBlueprintCompatibility(blueprint, saveData = null) {
     unlockedBuildings
   };
 
-  console.log('📊 Compatibility result:', result.reason);
+  //console.log('📊 Compatibility result:', result.reason);
   //console.log('📋 Missing/Locked items:', Object.keys(missingMaterialsByDisplay));
 
   return result;

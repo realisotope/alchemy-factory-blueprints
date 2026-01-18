@@ -1,11 +1,12 @@
-import { useState, memo } from "react";
+import { useState, memo, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Trash2, Loader, Heart, X, ChevronLeft, ChevronRight, Check, AlertCircle } from "lucide-react";
+import { Download, Trash2, Loader, Heart, X, ChevronLeft, ChevronRight, Check, AlertCircle, Save } from "lucide-react";
 import { useTheme } from "../lib/ThemeContext";
 import { getThumbnailUrl, getDetailViewUrl, prefetchImage } from "../lib/imageOptimization";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { sanitizeCreatorName } from "../lib/sanitization";
 import { useBlueprintFolder } from "../lib/BlueprintFolderContext";
+import { checkBlueprintCompatibility } from "../lib/saveManager";
 
 function BlueprintCardComponent({
   blueprint,
@@ -26,6 +27,11 @@ function BlueprintCardComponent({
   const [imageError, setImageError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { getInstallStatus, cacheDownloadedBlueprint } = useBlueprintFolder();
+
+  const blueprintCompatibility = useMemo(
+    () => blueprint ? checkBlueprintCompatibility(blueprint) : { compatible: true, missingMaterials: {} },
+    [blueprint?.id]
+  );
 
   // Get available images
   const availableImages = [
@@ -123,6 +129,25 @@ function BlueprintCardComponent({
             <span className="text-4xl">⚗️</span>
           </div>
         )}
+
+        {/* Compatibility Badge */}
+        {(() => {
+          const isCompatible = blueprintCompatibility.compatible;
+          const bgColor = isCompatible ? '#1464119f' : '#6411119f';
+          const borderColor = isCompatible ? '#22c00d91' : '#c5222252';
+          const textColor = isCompatible ? '#00d134' : '#d83434';
+          const IconComponent = isCompatible ? Save : Save;
+          
+          return (
+            <div className="absolute top-2 left-2 py-1 px-1 rounded-md text-sm font-semibold border flex items-center gap-1" style={{
+              backgroundColor: bgColor,
+              borderColor: borderColor,
+              color: textColor,
+            }}>
+              <IconComponent size={16} />
+            </div>
+          );
+        })()}
 
         {/* Image Navigation */}
         {hasMultipleImages && !imageError && (

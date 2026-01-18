@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "./lib/supabase";
 import { isValidUUID } from "./lib/sanitization";
 import { isUUID } from "./lib/slugUtils";
-import { Upload, X, BookOpen, ChevronDown } from "lucide-react";
+import { Upload, X, BookOpen, Info, ChevronDown } from "lucide-react";
 import { useTheme } from "./lib/ThemeContext";
 import DiscordLogin from "./components/DiscordLogin";
 import UploadModal from "./components/UploadModal";
@@ -368,7 +368,7 @@ export default function App() {
                 }}
                 className="flex items-center gap-2 text-sm sm:text-base border-2 font-semibold py-2 px-3 sm:px-4 rounded-lg transition shadow-lg hover:shadow-xl hover:scale-105 hover:opacity-70 whitespace-nowrap"
               >
-                <BookOpen className="w-4 h-4 flex-shrink-0" />
+                <Info className="w-4 h-4 flex-shrink-0" />
                 <span className="hidden sm:inline" data-tooltip="More Information & Changelog" data-tooltip-position="bottom">Info</span>
                 <span className="sm:hidden">More Information</span>
               </button>

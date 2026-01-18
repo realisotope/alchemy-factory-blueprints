@@ -1,5 +1,5 @@
 import { X, Download, Heart, Calendar, User, Maximize2, Share2, Check, Edit2, ChevronDown, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
@@ -47,6 +47,18 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
   ].filter(Boolean);
 
   const hasMultipleImages = availableImages.length > 1;
+
+  const blueprintCompatibility = useMemo(
+    () => blueprint && hasSaveData() ? checkBlueprintCompatibility(blueprint) : { missingMaterials: {} },
+    [blueprint?.id]
+  );
+
+  const partCompatibility = useMemo(() => {
+    if (!blueprint || !blueprint.is_multi_part || !blueprint.parts) return { missingMaterials: {} };
+    const part = blueprint.parts[selectedPart - 1];
+    if (!part || !part.parsed) return { missingMaterials: {} };
+    return hasSaveData() ? checkBlueprintCompatibility({ parsed: part.parsed }) : { missingMaterials: {} };
+  }, [blueprint?.id, selectedPart]);
 
   useEffect(() => {
     setLikeCount(blueprint?.likes ?? 0);
@@ -455,7 +467,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
             (() => {
               const parsedData = getParsedData(blueprint);
               const validatedParsed = validateParsedData(parsedData);
-              const compatibility = hasSaveData() ? checkBlueprintCompatibility(blueprint) : { missingMaterials: {} };
+              const compatibility = blueprintCompatibility;
 
               return (
                 <div>
@@ -518,7 +530,6 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
                         return <p style={{ color: theme.colors.textSecondary }}>Part data not yet parsed</p>;
                       }
                       const partParsed = validateParsedData(part.parsed);
-                      const partCompatibility = hasSaveData() ? checkBlueprintCompatibility({ parsed: partParsed }) : { missingMaterials: {} };
                       return (
                         <div>
                           <BlueprintStats 
@@ -568,7 +579,7 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
             (() => {
               const parsedData = getParsedData(blueprint);
               const validatedParsed = validateParsedData(parsedData);
-              const compatibility = hasSaveData() ? checkBlueprintCompatibility(blueprint) : { missingMaterials: {} };
+              const compatibility = blueprintCompatibility;
 
               return (
                 <BlueprintStats 

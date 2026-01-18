@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { X, Upload, CheckCircle } from 'lucide-react';
+import { X, Upload, Save } from 'lucide-react';
 import { useTheme } from '../lib/ThemeContext';
 import { saveSaveData, getSaveMetadata, clearSaveData, hasSaveData } from '../lib/saveManager';
 
@@ -17,7 +17,9 @@ export default function SavegameSync() {
     if (!file) return;
 
     setIsLoading(true);
-    setError(null);
+    setError(false);
+    setProgress(0);
+    setHasSave(false);
 
     try {
       console.log('📁 Save file selected:', file.name, 'Size:', file.size, 'bytes');
@@ -51,7 +53,7 @@ export default function SavegameSync() {
 
       console.log('📡 Opening SSE stream for events...');
       const sseResp = fetch(`${PARSER_HOST}${streamUrl}`);
-      
+
       console.log('📤 Uploading file with stream ID:', id);
       const fd = new FormData();
       fd.append('file', file);
@@ -73,7 +75,7 @@ export default function SavegameSync() {
       const actualSseResp = await sseResp;
       const reader = actualSseResp.body.getReader();
       const decoder = new TextDecoder();
-      
+
       let parsedData = null;
       let buffer = '';
       let currentEvent = null;
@@ -186,16 +188,16 @@ export default function SavegameSync() {
   const displayName = metadata?.saveName || 'Save Data';
   const timeAgo = metadata
     ? (() => {
-        const loadedAt = new Date(metadata.loadedAt);
-        const hoursAgo = Math.floor(
-          (Date.now() - loadedAt.getTime()) / (1000 * 60 * 60)
-        );
+      const loadedAt = new Date(metadata.loadedAt);
+      const hoursAgo = Math.floor(
+        (Date.now() - loadedAt.getTime()) / (1000 * 60 * 60)
+      );
 
-        if (hoursAgo === 0) return 'just now';
-        if (hoursAgo < 24) return `${hoursAgo}h ago`;
-        const daysAgo = Math.floor(hoursAgo / 24);
-        return `${daysAgo}d ago`;
-      })()
+      if (hoursAgo === 0) return 'just now';
+      if (hoursAgo < 24) return `${hoursAgo}h ago`;
+      const daysAgo = Math.floor(hoursAgo / 24);
+      return `${daysAgo}d ago`;
+    })()
     : '';
 
   return (
@@ -214,8 +216,8 @@ export default function SavegameSync() {
           onClick={() => fileInputRef.current?.click()}
           disabled={isLoading}
           style={{
-            backgroundColor: hasSave 
-              ? `${theme.colors.tertiary}40` 
+            backgroundColor: hasSave
+              ? `${theme.colors.tertiary}40`
               : `${theme.colors.tertiary}80`,
             borderWidth: '2px',
             borderStyle: 'solid',
@@ -226,7 +228,7 @@ export default function SavegameSync() {
           data-tooltip-position="bottom"
           data-tooltip={`${displayName} - Synced ${timeAgo}`}
         >
-          <CheckCircle className="w-4 h-4" />
+          <Save className="w-4 h-4" />
           <span className="text-sm font-medium">Synced</span>
           <X
             className="w-4 h-4 ml-1 opacity-70 group-hover:opacity-100 transition"
@@ -252,10 +254,17 @@ export default function SavegameSync() {
             title="Upload save file to check blueprint compatibility"
           >
             <span className="text-sm font-medium">
-              {isLoading && progress > 0 ? `⌛ Parsing ${progress}%` : 'Sync Save'}
+              {isLoading && progress > 0 ? (
+                `⌛ Parsing ${progress}%`
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <Save className="w-4 h-4" />
+                  <span style={{ marginLeft: '0.5rem' }}>Sync Save</span>
+                </div>
+              )}
             </span>
           </button>
-          
+
           {/* Progress bar overlay */}
           {isLoading && progress > 0 && (
             <div
