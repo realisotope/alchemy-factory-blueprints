@@ -12,6 +12,7 @@ import { useTheme } from "../lib/ThemeContext";
 import { deleteCloudinaryImage } from "../lib/cloudinaryDelete";
 import { AVAILABLE_TAGS } from "../lib/tags";
 import { ClientRateLimiter } from "../lib/rateLimiter";
+import { hasSaveData, checkBlueprintCompatibility } from "../lib/saveManager";
 import BlueprintDetail from "./BlueprintDetail";
 import BlueprintCard from "./BlueprintCard";
 import CreatorCard from "./CreatorCard";
@@ -34,6 +35,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
   const initialBlueprintAppliedRef = useRef(false);
   const [selectedCreator, setSelectedCreator] = useState(null);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [compatibilityFilter, setCompatibilityFilter] = useState("all"); // "all", "compatible", "incompatible"
   
   // Responsive items per page: 8 for desktop (4 cols, 2 rows), 12 for 4K (6 cols, 2 rows)
   const getItemsPerPage = () => {
@@ -427,6 +429,17 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
             return false;
           }
         }
+        // Filter by compatibility if save is loaded
+        if (hasSaveData() && compatibilityFilter !== "all") {
+          const compatibility = checkBlueprintCompatibility(bp);
+          const isCompatible = Object.keys(compatibility.missingMaterials).length === 0;
+          
+          if (compatibilityFilter === "compatible" && !isCompatible) {
+            return false;
+          } else if (compatibilityFilter === "incompatible" && isCompatible) {
+            return false;
+          }
+        }
         // Filter by search term
         return bp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
           (bp.description && bp.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -451,7 +464,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         }
         return new Date(b.created_at) - new Date(a.created_at);
       });
-  }, [blueprints, showFavoritesOnly, userLikes, selectedTags, searchTerm, sortBy]);
+  }, [blueprints, showFavoritesOnly, userLikes, selectedTags, searchTerm, sortBy, compatibilityFilter]);
 
   // Pagination
   const totalPages = Math.ceil(filteredBlueprints.length / itemsPerPage);
@@ -662,6 +675,51 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
               >
                 Most Liked
               </button>
+
+              {/* Compatibility Filter - Only show if save is loaded */}
+              {hasSaveData() && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => { setCompatibilityFilter("all"); setSortDropdownOpen(false); setCurrentPage(1); }}
+                    style={{ 
+                      color: compatibilityFilter === "all" ? theme.colors.accentYellow : theme.colors.textPrimary,
+                      borderColor: `${theme.colors.cardBorder}33`
+                    }}
+                    className="w-full text-left px-4 py-2.5 transition border-b"
+                    onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                  >
+                    All Blueprints
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setCompatibilityFilter("compatible"); setSortDropdownOpen(false); setCurrentPage(1); }}
+                    style={{ 
+                      color: compatibilityFilter === "compatible" ? theme.colors.accentYellow : theme.colors.textPrimary,
+                      borderColor: `${theme.colors.cardBorder}33`
+                    }}
+                    className="w-full text-left px-4 py-2.5 transition border-b"
+                    onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                  >
+                    ✓ Compatible
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setCompatibilityFilter("incompatible"); setSortDropdownOpen(false); setCurrentPage(1); }}
+                    style={{ 
+                      color: compatibilityFilter === "incompatible" ? theme.colors.accentYellow : theme.colors.textPrimary,
+                      borderColor: `${theme.colors.cardBorder}33`
+                    }}
+                    className="w-full text-left px-4 py-2.5 transition last:rounded-b-lg"
+                    onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                  >
+                    ⚠ Not Compatible
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -730,6 +788,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
             </div>
           )}
         </div>
+        
         {user && (
           <>
             <button
