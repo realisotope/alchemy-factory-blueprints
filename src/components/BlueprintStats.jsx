@@ -401,63 +401,62 @@ const BlueprintStats = memo(function BlueprintStats({
                   </div>
 
                   {/* Recipes and Supply Items Lists */}
-                  <div className="space-y-3 pt-3 border-t" style={{ borderTopColor: `${theme.colors.cardBorder}80` }}>
-                    {(() => {
-                      const lockedRecipes = Object.keys(recipes).filter(recipe => !recipeUnlocks[recipe]);
-                      const lockedSupply = Object.keys(supplyItems).filter(supply => !supplyUnlocks[supply]);
-                      
-                      return (
-                        <>
-                          {lockedRecipes.length > 0 && (
-                            <div>
-                              <h5 style={{ color: theme.colors.accentYellow }} className="text-xs font-semibold mb-2 flex items-center gap-1">
-                                <span>📋 Locked Recipes ({lockedRecipes.length})</span>
-                              </h5>
-                              <div className="flex flex-wrap gap-2">
-                                {lockedRecipes.map((recipe) => (
-                                  <div
-                                    key={recipe}
-                                    style={{
-                                      backgroundColor: `#ef444420`,
-                                      borderColor: 'rgba(167, 11, 11, 0.57)',
-                                      color: theme.colors.textSecondary,
-                                    }}
-                                    className="text-xs px-2.5 py-1.5 rounded-md border flex items-center gap-1.5"
-                                  >
-                                    <span style={{ color: '#ca2323' }}>✗</span>
-                                    <span className="font-medium">{recipe}</span>
-                                  </div>
-                                ))}
-                              </div>
+                  {(() => {
+                    const lockedRecipes = Object.keys(recipes).filter(recipe => !recipeUnlocks[recipe]);
+                    const lockedSupply = Object.keys(supplyItems).filter(supply => !supplyUnlocks[supply]);
+                    const hasLockedItems = lockedRecipes.length > 0 || lockedSupply.length > 0;
+
+                    return hasLockedItems && (
+                      <div className="space-y-3 pt-3 border-t" style={{ borderTopColor: `${theme.colors.cardBorder}80` }}>
+                        {lockedRecipes.length > 0 && (
+                          <div>
+                            <h5 style={{ color: theme.colors.accentYellow }} className="text-xs font-semibold mb-2 flex items-center gap-1">
+                              <span>📋 Locked Recipes ({lockedRecipes.length})</span>
+                            </h5>
+                            <div className="flex flex-wrap gap-2">
+                              {lockedRecipes.map((recipe) => (
+                                <div
+                                  key={recipe}
+                                  style={{
+                                    backgroundColor: `#ef444420`,
+                                    borderColor: 'rgba(167, 11, 11, 0.57)',
+                                    color: theme.colors.textSecondary,
+                                  }}
+                                  className="text-xs px-2.5 py-1.5 rounded-md border flex items-center gap-1.5"
+                                >
+                                  <span style={{ color: '#ca2323' }}>✗</span>
+                                  <span className="font-medium">{recipe}</span>
+                                </div>
+                              ))}
                             </div>
-                          )}
-                          {lockedSupply.length > 0 && (
-                            <div>
-                              <h5 style={{ color: theme.colors.accentYellow }} className="text-xs font-semibold mb-2 flex items-center gap-1">
-                                <span>📦 Locked Supply Items ({lockedSupply.length})</span>
-                              </h5>
-                              <div className="flex flex-wrap gap-2">
-                                {lockedSupply.map((supply) => (
-                                  <div
-                                    key={supply}
-                                    style={{
-                                      backgroundColor: `#ef444420`,
-                                      borderColor: 'rgba(167, 11, 11, 0.57)',
-                                      color: theme.colors.textSecondary,
-                                    }}
-                                    className="text-xs px-2.5 py-1.5 rounded-md border flex items-center gap-1.5"
-                                  >
-                                    <span style={{ color: '#ca2323' }}>✗</span>
-                                    <span className="font-medium">{supply}</span>
-                                  </div>
-                                ))}
-                              </div>
+                          </div>
+                        )}
+                        {lockedSupply.length > 0 && (
+                          <div>
+                            <h5 style={{ color: theme.colors.accentYellow }} className="text-xs font-semibold mb-2 flex items-center gap-1">
+                              <span>📦 Locked Supply Items ({lockedSupply.length})</span>
+                            </h5>
+                            <div className="flex flex-wrap gap-2">
+                              {lockedSupply.map((supply) => (
+                                <div
+                                  key={supply}
+                                  style={{
+                                    backgroundColor: `#ef444420`,
+                                    borderColor: 'rgba(167, 11, 11, 0.57)',
+                                    color: theme.colors.textSecondary,
+                                  }}
+                                  className="text-xs px-2.5 py-1.5 rounded-md border flex items-center gap-1.5"
+                                >
+                                  <span style={{ color: '#ca2323' }}>✗</span>
+                                  <span className="font-medium">{supply}</span>
+                                </div>
+                              ))}
                             </div>
-                          )}
-                        </>
-                      );
-                    })()}
-                  </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
                 );
               })()}

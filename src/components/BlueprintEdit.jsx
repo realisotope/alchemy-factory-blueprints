@@ -150,11 +150,10 @@ export default function BlueprintEdit({ blueprint, isOpen, onClose, user, onUpda
   const [blueprintFileExtension, setBlueprintFileExtension] = useState(".af");
   const [processingState, setProcessingState] = useState(""); // Track current processing stage
   const [imageCompressionInfo, setImageCompressionInfo] = useState([null, null, null, null]); // Track compression info for each image
-  const [selectedPartIndex, setSelectedPartIndex] = useState(null); // For multi-part: which part to edit
   const [multiPartFiles, setMultiPartFiles] = useState([null, null, null, null]); // For multi-part editing
   const [multiPartCompressionInfo, setMultiPartCompressionInfo] = useState([null, null, null, null]); // Compression info for multi-part files
+  const [multiPartDragActive, setMultiPartDragActive] = useState([false, false, false, false]); // Drag state for multi-part uploads
   const fileInputRef = useRef(null);
-  const multiPartFileInputRef = useRef(null);
   const imageInputRef = useRef(null);
   const scrollableRef = useRef(null);
 
@@ -640,67 +639,97 @@ export default function BlueprintEdit({ blueprint, isOpen, onClose, user, onUpda
       if (dbError) throw dbError;
 
       // Handle multi-part file updates
-      if (blueprint?.is_multi_part && selectedPartIndex !== null) {
-        // Upload updated part file to storage
-        const partFileName = `${sanitizeTitleForFilename(title)}_part${selectedPartIndex + 1}_${Date.now()}${multiPartFiles[selectedPartIndex]?.name.endsWith('.png') ? '.png' : '.af'}`;
-        const partPath = `${user.id}/${partFileName}`;
-        
-        try {
-          const { error: uploadError } = await supabase.storage
-            .from("blueprints")
-            .upload(partPath, multiPartFiles[selectedPartIndex]);
+      if (blueprint?.is_multi_part && blueprint?.parts) {
+        // Find which parts have been updated
+        const partsToUpdate = blueprint.parts
+          .map((part, idx) => multiPartFiles[idx] ? idx : null)
+          .filter(idx => idx !== null);
+
+        // Update each selected part
+        for (const idx of partsToUpdate) {
+          const partNumber = idx + 1;
+          const partFileName = `${sanitizeTitleForFilename(title)}_part${partNumber}_${Date.now()}${multiPartFiles[idx]?.name.endsWith('.png') ? '.png' : '.af'}`;
+          const partPath = `${user.id}/${partFileName}`;
           
-          if (uploadError) throw uploadError;
-
-          // Calculate file hash for the updated part
-          const fileBuffer = await multiPartFiles[selectedPartIndex].arrayBuffer();
-          const hashBuffer = await crypto.subtle.digest('SHA-256', fileBuffer);
-          const fileHash = Array.from(new Uint8Array(hashBuffer))
-            .map(b => b.toString(16).padStart(2, '0'))
-            .join('');
-
-          // Update the specific part in the database
-          const currentData = await supabase
-            .from("blueprints")
-            .select("parts")
-            .eq("id", blueprint.id)
-            .single();
-
-          const updatedParts = currentData.data.parts.map(part => {
-            if (part.part_number === selectedPartIndex + 1) {
-              return {
-                ...part,
-                filename: partFileName,
-                file_hash: fileHash,
-                parsed: null // Reset parsed data since we have a new file
-              };
-            }
-            return part;
-          });
-
-          await supabase
-            .from("blueprints")
-            .update({ parts: updatedParts })
-            .eq("id", blueprint.id);
-
-          // Send updated part file to parser
           try {
-            console.log(`Sending updated part ${selectedPartIndex + 1} to parser...`);
-            const parserResponse = await sendBlueprintToParser(multiPartFiles[selectedPartIndex], blueprint.id);
+            const { error: uploadError } = await supabase.storage
+              .from("blueprints")
+              .upload(partPath, multiPartFiles[idx]);
+            
+            if (uploadError) throw uploadError;
 
-            if (parserResponse.queued || (parserResponse.duplicate && parserResponse.parsed)) {
-              console.log(`Part ${selectedPartIndex + 1} sent to parser, fileHash:`, parserResponse.fileHash);
+            // Calculate file hash for the updated part
+            const fileBuffer = await multiPartFiles[idx].arrayBuffer();
+            const hashBuffer = await crypto.subtle.digest('SHA-256', fileBuffer);
+            const fileHash = Array.from(new Uint8Array(hashBuffer))
+              .map(b => b.toString(16).padStart(2, '0'))
+              .join('');
+
+            // Update the specific part in the database
+            const currentData = await supabase
+              .from("blueprints")
+              .select("parts")
+              .eq("id", blueprint.id)
+              .single();
+
+            const updatedParts = currentData.data.parts.map(part => {
+              if (part.part_number === partNumber) {
+                return {
+                  ...part,
+                  filename: partFileName,
+                  file_hash: fileHash,
+                  parsed: null // Reset parsed data since we have a new file
+                };
+              }
+              return part;
+            });
+
+            await supabase
+              .from("blueprints")
+              .update({ parts: updatedParts })
+              .eq("id", blueprint.id);
+
+            // Send updated part file to parser
+            try {
+              console.log(`Sending updated part ${partNumber} to parser...`);
+              const parserResponse = await sendBlueprintToParser(multiPartFiles[idx], blueprint.id);
+
+              if (parserResponse.duplicate && parserResponse.parsed) {
+                // Parser has already processed this file, update it immediately
+                const validatedParsed = validateParsedData(parserResponse.parsed);
+                console.log(`Part ${partNumber} already parsed, updating database...`);
+                
+                const updatedParts2 = updatedParts.map(part => {
+                  if (part.part_number === partNumber) {
+                    return {
+                      ...part,
+                      parsed: validatedParsed
+                    };
+                  }
+                  return part;
+                });
+
+                await supabase
+                  .from("blueprints")
+                  .update({ parts: updatedParts2 })
+                  .eq("id", blueprint.id);
+
+                console.log(`Part ${partNumber} updated with new parsed data`);
+              } else if (parserResponse.queued) {
+                // Will be updated via webhook callback
+                console.log(`Part ${partNumber} queued for parsing, fileHash:`, parserResponse.fileHash);
+              }
+            } catch (parserError) {
+              console.error(`Parser error for part ${partNumber}:`, parserError);
             }
-          } catch (parserError) {
-            console.error("Parser error for part update:", parserError);
+          } catch (err) {
+            throw new Error(`Failed to update blueprint part ${partNumber}: ${err.message}`);
           }
-
-          setSelectedPartIndex(null);
-          setMultiPartFiles([null, null, null, null]);
-          setMultiPartCompressionInfo([null, null, null, null]);
-        } catch (err) {
-          throw new Error(`Failed to update blueprint part: ${err.message}`);
         }
+
+        // Clear the multi-part files after update
+        setMultiPartFiles([null, null, null, null]);
+        setMultiPartCompressionInfo([null, null, null, null]);
       }
 
       // If a new blueprint file was uploaded (for single-part), send it to the parser to update materials/buildings
@@ -952,61 +981,114 @@ export default function BlueprintEdit({ blueprint, isOpen, onClose, user, onUpda
           {blueprint?.is_multi_part && blueprint?.parts && (
             <div>
               <label className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
-                Update Blueprint Part (optional)
+                Update Blueprint Parts (optional)
               </label>
-              <p className="text-xs mb-2" style={{ color: theme.colors.textSecondary }}>
-                Select a specific part to update with a modified version
+              <p className="text-xs mb-3" style={{ color: theme.colors.textSecondary }}>
+                Update any part files here. Only updated parts will be reprocessed.
               </p>
-              <div className={`grid grid-cols-${blueprint.parts.length <= 2 ? blueprint.parts.length : '2'} gap-2 mb-3`}>
+              <div className="grid grid-cols-2 gap-3">
                 {blueprint.parts.map((part, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setSelectedPartIndex(selectedPartIndex === idx ? null : idx)}
-                    style={{
-                      backgroundColor: selectedPartIndex === idx ? `${theme.colors.accentYellow}33` : `${theme.colors.cardBg}66`,
-                      borderColor: selectedPartIndex === idx ? theme.colors.accentYellow : theme.colors.cardBorder,
-                      color: theme.colors.textPrimary
-                    }}
-                    className="px-3 py-2 border-2 rounded-lg transition text-sm font-medium"
-                    disabled={isLoading}
-                  >
-                    Part {part.part_number}
-                    {multiPartFiles[idx] && <span className="ml-1">✓</span>}
-                  </button>
+                  <div key={idx}>
+                    {multiPartFiles[idx] ? (
+                      <div className="relative">
+                        <div
+                          style={{
+                            backgroundColor: `${theme.colors.cardBg}33`,
+                            borderColor: theme.colors.cardBorder,
+                            color: theme.colors.textPrimary
+                          }}
+                          className="w-full px-4 py-3 border rounded-lg"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm truncate">
+                                Part {part.part_number}
+                              </p>
+                              <p className="text-xs" style={{ color: theme.colors.textSecondary }}>
+                                {multiPartFiles[idx].name.substring(0, 20)}...
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newFiles = [...multiPartFiles];
+                                const newCompressionInfo = [...multiPartCompressionInfo];
+                                newFiles[idx] = null;
+                                newCompressionInfo[idx] = null;
+                                setMultiPartFiles(newFiles);
+                                setMultiPartCompressionInfo(newCompressionInfo);
+                              }}
+                              className="ml-2 text-red-500 hover:text-red-600"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                          {multiPartCompressionInfo[idx] && (
+                            <p style={{ color: theme.colors.textSecondary }} className="text-xs mt-1">
+                              {multiPartCompressionInfo[idx].fromPng
+                                ? `PNG optimized: ${formatBytes(multiPartCompressionInfo[idx].originalSize)} → ${formatBytes(multiPartCompressionInfo[idx].strippedSize)}`
+                                : `File size: ${formatBytes(multiPartCompressionInfo[idx].originalSize)}`}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        className="relative"
+                        onDragEnter={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          const newDragActive = [...multiPartDragActive];
+                          newDragActive[idx] = true;
+                          setMultiPartDragActive(newDragActive);
+                        }}
+                        onDragLeave={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          const newDragActive = [...multiPartDragActive];
+                          newDragActive[idx] = false;
+                          setMultiPartDragActive(newDragActive);
+                        }}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          const newDragActive = [...multiPartDragActive];
+                          newDragActive[idx] = false;
+                          setMultiPartDragActive(newDragActive);
+                          handleMultiPartFileSelect({ target: { files: e.dataTransfer.files } }, idx);
+                        }}
+                      >
+                        <input
+                          type="file"
+                          accept=".af,.png"
+                          onChange={(e) => handleMultiPartFileSelect(e, idx)}
+                          className="hidden"
+                          id={`multipart-edit-input-${idx}`}
+                          disabled={isLoading}
+                        />
+                        <label
+                          htmlFor={`multipart-edit-input-${idx}`}
+                          style={{
+                            borderColor: multiPartDragActive[idx] ? theme.colors.cardBorder : `${theme.colors.accentYellow}`,
+                            backgroundColor: multiPartDragActive[idx] ? `${theme.colors.cardBorder}20` : `${theme.colors.cardBorder}20`,
+                            color: theme.colors.textPrimary
+                          }}
+                          className="flex flex-col items-center justify-center w-full px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition hover:opacity-60 text-center"
+                        >
+                          <Upload className="w-5 h-5 mb-2" style={{ color: theme.colors.accentYellow }} />
+                          <span className="text-sm">
+                            Part {part.part_number}
+                          </span>
+                        </label>
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
-
-              {selectedPartIndex !== null && (
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => multiPartFileInputRef.current?.click()}
-                    disabled={isLoading}
-                    style={{ borderColor: theme.colors.accentYellow, color: theme.colors.accentYellow }}
-                    className="w-full px-4 py-3 border-2 border-dashed rounded-lg transition font-medium disabled:opacity-50 hover:opacity-60"
-                  >
-                    {multiPartFiles[selectedPartIndex]
-                      ? `✓ ${multiPartFiles[selectedPartIndex].name}`
-                      : `Click to select new file for Part ${selectedPartIndex + 1}`}
-                  </button>
-                  {multiPartCompressionInfo[selectedPartIndex] && (
-                    <p style={{ color: theme.colors.textSecondary }} className="text-xs mt-1">
-                      {multiPartCompressionInfo[selectedPartIndex].fromPng
-                        ? `PNG optimized: ${formatBytes(multiPartCompressionInfo[selectedPartIndex].originalSize)} → ${formatBytes(multiPartCompressionInfo[selectedPartIndex].strippedSize)}`
-                        : `File size: ${formatBytes(multiPartCompressionInfo[selectedPartIndex].originalSize)}`}
-                    </p>
-                  )}
-                  <input
-                    ref={multiPartFileInputRef}
-                    type="file"
-                    accept=".af,.png"
-                    onChange={(e) => handleMultiPartFileSelect(e, selectedPartIndex)}
-                    className="hidden"
-                    disabled={isLoading}
-                  />
-                </div>
-              )}
             </div>
           )}
 
