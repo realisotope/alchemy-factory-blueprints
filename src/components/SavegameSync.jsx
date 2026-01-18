@@ -91,11 +91,11 @@ export default function SavegameSync() {
         for (const line of lines) {
           if (line.startsWith('event: ')) {
             currentEvent = line.slice(7).trim();
-            console.log('📡 SSE event:', currentEvent);
+            //console.log('📡 SSE event:', currentEvent);
           }
 
           if (line.startsWith('data: ')) {
-            console.log('📊 SSE data line:', line.slice(0, 50));
+            //console.log('📊 SSE data line:', line.slice(0, 50));
           }
 
           // Handle parser progress events
@@ -104,7 +104,7 @@ export default function SavegameSync() {
               const progressData = JSON.parse(line.slice(6));
               if (progressData.progress !== undefined) {
                 const progressPercent = Math.round(progressData.progress);
-                console.log('⏳ Progress:', progressPercent + '%');
+                //console.log('⏳ Progress:', progressPercent + '%');
                 setProgress(progressPercent);
               }
             } catch (e) {
@@ -117,7 +117,7 @@ export default function SavegameSync() {
             try {
               const progressData = JSON.parse(line.slice(6));
               const progressPercent = Math.round(progressData.progress || 0);
-              console.log('⏳ Progress:', progressPercent + '%');
+              //console.log('⏳ Progress:', progressPercent + '%');
               setProgress(progressPercent);
             } catch (e) {
               console.log('⚠️ Failed to parse progress:', e.message);
@@ -279,7 +279,7 @@ export default function SavegameSync() {
                 borderTopLeftRadius: '6px',
                 borderBottomLeftRadius: '6px',
                 zIndex: 0,
-                transition: 'width 0.2s ease-out',
+                transition: 'width 0.1s linear',
               }}
             />
           )}

@@ -134,8 +134,8 @@ function BlueprintCardComponent({
         {(() => {
           const isCompatible = blueprintCompatibility.compatible;
           const bgColor = isCompatible ? '#1464119f' : '#6411119f';
-          const borderColor = isCompatible ? '#22c00d91' : '#c5222252';
-          const textColor = isCompatible ? '#00d134' : '#d83434';
+          const borderColor = isCompatible ? '#148d0491' : '#8d040491';
+          const textColor = isCompatible ? '#14a137' : '#cc1717';
           const IconComponent = isCompatible ? Save : Save;
           
           return (
