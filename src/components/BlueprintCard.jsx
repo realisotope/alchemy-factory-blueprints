@@ -6,7 +6,7 @@ import { getThumbnailUrl, getDetailViewUrl, prefetchImage } from "../lib/imageOp
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { sanitizeCreatorName } from "../lib/sanitization";
 import { useBlueprintFolder } from "../lib/BlueprintFolderContext";
-import { checkBlueprintCompatibility } from "../lib/saveManager";
+import { checkBlueprintCompatibility, hasSaveData } from "../lib/saveManager";
 
 function BlueprintCardComponent({
   blueprint,
@@ -131,7 +131,7 @@ function BlueprintCardComponent({
         )}
 
         {/* Compatibility Badge */}
-        {(() => {
+        {hasSaveData() && (() => {
           const isCompatible = blueprintCompatibility.compatible;
           const bgColor = isCompatible ? '#1464119f' : '#6411119f';
           const borderColor = isCompatible ? '#148d0491' : '#8d040491';

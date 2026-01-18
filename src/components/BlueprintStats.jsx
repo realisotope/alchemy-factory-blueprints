@@ -4,6 +4,7 @@ import { useTheme } from "../lib/ThemeContext";
 import Sprite from "./Sprite";
 import { getMaterialSprite, getBuildingSprite } from "../lib/spriteData";
 import { BUILDING_MAPPINGS, MATERIAL_MAPPINGS } from "../lib/blueprintMappings";
+import { hasSaveData } from "../lib/saveManager";
 
 const BlueprintStats = memo(function BlueprintStats({ 
   materials = [], 
@@ -291,7 +292,7 @@ const BlueprintStats = memo(function BlueprintStats({
           ) : (
             <div className="space-y-3">
               <div className="flex justify-end items-center gap-3 px-1 mb-2">
-                {(() => {
+                {hasSaveData() && (() => {
                   const lockedMaterials = materials.filter(m => missingMaterials[m.name]);
                   const lockedBuildings = buildings.filter(b => missingMaterials[b.name]);
                   const lockedRecipes = Object.keys(recipes).filter(recipe => !recipeUnlocks[recipe]);
@@ -326,7 +327,7 @@ const BlueprintStats = memo(function BlueprintStats({
               </div>
 
               {/* Locked/Missing Items Summary */}
-              {(() => {
+              {hasSaveData() && (() => {
                 const lockedMaterials = materials.filter(m => missingMaterials[m.name]);
                 const lockedBuildings = buildings.filter(b => missingMaterials[b.name]);
                 const lockedRecipes = Object.keys(recipes).filter(recipe => !recipeUnlocks[recipe]);
