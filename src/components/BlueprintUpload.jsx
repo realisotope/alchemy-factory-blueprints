@@ -1054,14 +1054,15 @@ export default function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
           
           for (const parseTask of filesToParse) {
             console.log(`[Parser Task] File name: ${parseTask.file.name}, Size: ${parseTask.file.size}, Type: ${parseTask.file.type}`);
-            const parserResponse = await sendBlueprintToParser(parseTask.file, insertedBlueprint.id);
+            // Pass waitForParsing=true to make the parser wait for completion
+            const parserResponse = await sendBlueprintToParser(parseTask.file, insertedBlueprint.id, 3, true);
             
             console.log(`[Parser Response] Status: ${parserResponse.queued ? 'QUEUED' : 'PARSED'}`);
             
             if (parserResponse.duplicate && parserResponse.parsed) {
               // Parser immediately returned parsed data
               const validatedParsed = validateParsedData(parserResponse.parsed);
-              console.log("Blueprint parsed immediately, updating database...");
+              console.log("Blueprint parsed, updating database...");
               
               const materials = validatedParsed.Materials || {};
               const buildings = validatedParsed.Buildings || {};
