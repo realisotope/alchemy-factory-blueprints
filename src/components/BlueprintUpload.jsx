@@ -1035,7 +1035,7 @@ export default function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
         insertData.image_url_4 = uploadedUrls[3];
       }
 
-      // Insert blueprint record into database
+      // Insert blueprint record into database FIRST (without parsed data)
       setProcessingState("Creating blueprint record...");
       const { data: insertedBlueprint, error: dbError } = await supabase
         .from("blueprints")
@@ -1045,79 +1045,55 @@ export default function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
 
       if (dbError) throw dbError;
 
-      // Send files to parser API (non-blocking)
+      // Now parse files with the blueprintId so parser knows where to send webhook callbacks
+      let parserWasRateLimited = false;
       if (insertedBlueprint?.id && filesToParse.length > 0) {
         try {
-          console.log(`Sending ${filesToParse.length} file(s) to parser for blueprint:`, insertedBlueprint.id);
-
-          // Keep track of current parts state for multi-part blueprints
-          let currentParts = isMultiPart ? insertedBlueprint.parts : null;
-
+          setProcessingState("Parsing blueprint...");
+          console.log(`Parsing ${filesToParse.length} file(s) for blueprint:`, insertedBlueprint.id);
+          
           for (const parseTask of filesToParse) {
+            console.log(`[Parser Task] File name: ${parseTask.file.name}, Size: ${parseTask.file.size}, Type: ${parseTask.file.type}`);
             const parserResponse = await sendBlueprintToParser(parseTask.file, insertedBlueprint.id);
-
+            
+            console.log(`[Parser Response] Status: ${parserResponse.queued ? 'QUEUED' : 'PARSED'}`);
+            
             if (parserResponse.duplicate && parserResponse.parsed) {
-              // Validate and sanitize parsed data before saving
+              // Parser immediately returned parsed data
               const validatedParsed = validateParsedData(parserResponse.parsed);
-              console.log("Blueprint already parsed, updating database...");
-
-              if (isMultiPart) {
-                // Update the specific part's parsed data using current state
-                const updatedParts = currentParts.map(part => {
-                  if (part.part_number === parseTask.partIndex) {
-                    return { ...part, parsed: validatedParsed };
-                  }
-                  return part;
-                });
-
-                currentParts = updatedParts; // Update local state
-                await supabase
-                  .from("blueprints")
-                  .update({
-                    parts: updatedParts,
-                    filehash: parserResponse.fileHash,
-                  })
-                  .eq("id", insertedBlueprint.id);
-              } else {
-                // Single part - update parsed directly
-                await supabase
-                  .from("blueprints")
-                  .update({
-                    parsed: validatedParsed,
-                    filehash: parserResponse.fileHash,
-                  })
-                  .eq("id", insertedBlueprint.id);
-              }
-
+              console.log("Blueprint parsed immediately, updating database...");
+              
+              const materials = validatedParsed.Materials || {};
+              const buildings = validatedParsed.Buildings || {};
+              const skills = validatedParsed.SupplyItems || {};
+              
+              await supabase
+                .from("blueprints")
+                .update({
+                  parsed: validatedParsed,
+                  filehash: parserResponse.fileHash,
+                  materials: materials,
+                  buildings: buildings,
+                  skills: skills,
+                })
+                .eq("id", insertedBlueprint.id);
+              
               console.log("Blueprint updated with parsed data");
             } else if (parserResponse.queued) {
-              // Store the fileHash for webhook callback
-              console.log("Blueprint queued for parsing, fileHash:", parserResponse.fileHash);
+              // Parser queued the request - will send data via webhook
+              console.log("Parser queued the request. Data will be parsed in background via webhook, fileHash:", parserResponse.fileHash);
+              parserWasRateLimited = true;
               
-              if (isMultiPart) {
-                const updatedParts = currentParts.map(part => {
-                  if (part.part_number === parseTask.partIndex) {
-                    return { ...part, file_hash: parserResponse.fileHash };
-                  }
-                  return part;
-                });
-
-                currentParts = updatedParts; // Update local state
-                await supabase
-                  .from("blueprints")
-                  .update({ parts: updatedParts })
-                  .eq("id", insertedBlueprint.id);
-              } else {
-                await supabase
-                  .from("blueprints")
-                  .update({ filehash: parserResponse.fileHash })
-                  .eq("id", insertedBlueprint.id);
-              }
+              // Store the fileHash for webhook callback
+              await supabase
+                .from("blueprints")
+                .update({ filehash: parserResponse.fileHash })
+                .eq("id", insertedBlueprint.id);
             }
           }
         } catch (parserError) {
           // Parser error is non-blocking - blueprint is already uploaded
-          console.error("Parser API error (non-blocking):", parserError);
+          console.error("Parser error (non-blocking):", parserError);
         }
       }
 
@@ -1135,6 +1111,14 @@ export default function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
       setTagInput("");
       setRateLimitInfo(null);
       setProcessingState("");
+
+      // Show warning if parser was rate-limited
+      if (parserWasRateLimited) {
+        const warningMsg = "⚠️ Parser is busy - your blueprint's data will be parsed in the background. Please refresh in a few minutes to see materials, buildings, and other parsed data.";
+        setError(warningMsg);
+        // Clear the warning after 8 seconds
+        setTimeout(() => setError(null), 8000);
+      }
 
       // Record the upload attempt in client-side rate limiter
       const clientLimiter = new ClientRateLimiter(user.id, 'uploads');

@@ -48,7 +48,7 @@ export const BUILDING_MAPPINGS = {
   "Omni-Machine": { id: "omni-machine", name: "Advanced Assembler" },
   AdvancedAthanor: { id: "advancedathanor", name: "Advanced Athanor" },
   AdvancedShaper: { id: "advancedshaper", name: "Advanced Shaper" },
-  AdvancedBlender: { id: "advancedblender", name: "Advanced Blender" },
+  AdvancedBlender: { id: "advancedblender", name: "Advanced Blender", aliases: ["AdvancedBlender_Sym"] },
   // Row 2
   Alembic: { id: "alembic", name: "Alembic" },
   ArcaneProcessor: { id: "arcaneprocessor", name: "Arcane Processor" },
@@ -135,7 +135,7 @@ export const BUILDING_MAPPINGS = {
   RailTurn: { id: "railturn", name: "Rail Turn" },
   RailUp: { id: "railup", name: "Rail Up" },
   // Row 19
-  SmallPlatform: { id: "smallplatform", name: "Reinforced Platform", aliases: ["MediumPlatform"] },
+  SmallPlatform: { id: "smallplatform", name: "Reinforced Platform", aliases: ["MediumPlatform", "CrossPlatform"] },
   Refiner: { id: "refiner", name: "Refiner" },
   RoofHalf: { id: "roofhalf", name: "Roof Half" },
   SeedPlot: { id: "seedplot", name: "Seed Plot" },
