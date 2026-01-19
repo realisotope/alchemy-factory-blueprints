@@ -311,8 +311,11 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         // If PNG, convert stripped Blob to File with proper filename; otherwise use original
         let fileToUse;
         if (validation.isPng) {
-          // Convert Blob to File with original filename
-          fileToUse = new File([validation.strippedFile], file.name, { type: 'image/png' });
+          // Create an independent File from the stripped blueprint data
+          // Read the blob as an array buffer to ensure a complete copy
+          const strippedBuffer = await validation.strippedFile.arrayBuffer();
+          const strippedBlob = new Blob([strippedBuffer], { type: 'image/png' });
+          fileToUse = new File([strippedBlob], file.name, { type: 'image/png' });
           
           // Compress and populate the extracted PNG image as first preview
           if (validation.imageBlob) {
@@ -396,8 +399,11 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         // If PNG, convert stripped Blob to File with proper filename; otherwise use original
         let fileToUse;
         if (validation.isPng) {
-          // Convert Blob to File with original filename
-          fileToUse = new File([validation.strippedFile], file.name, { type: 'image/png' });
+          // Create an independent File from the stripped blueprint data
+          // Read the blob as an array buffer to ensure a complete copy
+          const strippedBuffer = await validation.strippedFile.arrayBuffer();
+          const strippedBlob = new Blob([strippedBuffer], { type: 'image/png' });
+          fileToUse = new File([strippedBlob], file.name, { type: 'image/png' });
           
           // Compress and populate the extracted PNG image as first preview
           if (validation.imageBlob) {
@@ -536,8 +542,10 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
         let fileToUse = file;
         
         if (validation.isPng) {
-          // For PNG blueprints, use stripped file (image data removed)
-          fileToUse = new File([validation.strippedFile], file.name, { type: 'image/png' });
+          // For PNG blueprints, create independent copy of stripped file (image data removed)
+          const strippedBuffer = await validation.strippedFile.arrayBuffer();
+          const strippedBlob = new Blob([strippedBuffer], { type: 'image/png' });
+          fileToUse = new File([strippedBlob], file.name, { type: 'image/png' });
           
           // Auto-populate preview image for this part
           if (validation.imageBlob) {
@@ -666,7 +674,10 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
       } else {
         let fileToUse = file;
         if (validation.isPng) {
-          fileToUse = new File([validation.strippedFile], file.name, { type: 'image/png' });
+          // Create independent copy of stripped file
+          const strippedBuffer = await validation.strippedFile.arrayBuffer();
+          const strippedBlob = new Blob([strippedBuffer], { type: 'image/png' });
+          fileToUse = new File([strippedBlob], file.name, { type: 'image/png' });
           
           // Auto-populate preview image for this part
           if (validation.imageBlob) {
@@ -1497,7 +1508,16 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
                         const newCompressionInfo = [...imageCompressionInfo];
                         newFiles[index] = null;
                         newPreviews[index] = null;
-                        newCompressionInfo[index] = null;
+                        
+                        // Important: Don't fully clear compression info for extracted PNG images
+                        // Keep the fromPng flag so we know this slot was for an extracted image
+                        if (newCompressionInfo[index]?.fromPng) {
+                          // Preserve the fromPng flag but clear size info
+                          newCompressionInfo[index] = { fromPng: true };
+                        } else {
+                          newCompressionInfo[index] = null;
+                        }
+                        
                         setImageFiles(newFiles);
                         setImagePreviews(newPreviews);
                         setImageCompressionInfo(newCompressionInfo);
