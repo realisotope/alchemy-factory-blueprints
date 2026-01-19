@@ -213,7 +213,7 @@ const validateImageFile = async (file) => {
   });
 };
 
-export default function BlueprintUpload({ user, onUploadSuccess }) {
+export default function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
   const { theme } = useTheme();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -331,8 +331,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
               };
               const compressedFile = await imageCompression(imageFile, options);
               
-              // Populate first image slot if empty
-              if (!imageFiles[0]) {
+              // Only populate extracted image if this specific slot is empty and not in edit mode
+              if (!imageFiles[0] && !isEditMode) {
                 const newFiles = [...imageFiles];
                 const newPreviews = [...imagePreviews];
                 const newCompressionInfo = [...imageCompressionInfo];
@@ -418,8 +418,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
               };
               const compressedFile = await imageCompression(imageFile, options);
               
-              // Populate first image slot if empty
-              if (!imageFiles[0]) {
+              // Only populate extracted image if this specific slot is empty and not in edit mode
+              if (!imageFiles[0] && !isEditMode) {
                 const newFiles = [...imageFiles];
                 const newPreviews = [...imagePreviews];
                 const newCompressionInfo = [...imageCompressionInfo];
@@ -547,8 +547,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
           const strippedBlob = new Blob([strippedBuffer], { type: 'image/png' });
           fileToUse = new File([strippedBlob], file.name, { type: 'image/png' });
           
-          // Auto-populate preview image for this part
-          if (validation.imageBlob) {
+          // Auto-populate preview image for this part only if this specific slot is empty and not in edit mode
+          if (validation.imageBlob && !imageFiles[partIndex] && !isEditMode) {
             const imageFile = new File([validation.imageBlob], `part${partIndex + 1}-preview.png`, { type: 'image/png' });
             
             // Compress the extracted image
@@ -679,8 +679,8 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
           const strippedBlob = new Blob([strippedBuffer], { type: 'image/png' });
           fileToUse = new File([strippedBlob], file.name, { type: 'image/png' });
           
-          // Auto-populate preview image for this part
-          if (validation.imageBlob) {
+          // Auto-populate preview image for this part only if this specific slot is empty and not in edit mode
+          if (validation.imageBlob && !imageFiles[partIndex] && !isEditMode) {
             const imageFile = new File([validation.imageBlob], `part${partIndex + 1}-preview.png`, { type: 'image/png' });
             
             // Compress the extracted image
@@ -1508,15 +1508,7 @@ export default function BlueprintUpload({ user, onUploadSuccess }) {
                         const newCompressionInfo = [...imageCompressionInfo];
                         newFiles[index] = null;
                         newPreviews[index] = null;
-                        
-                        // Important: Don't fully clear compression info for extracted PNG images
-                        // Keep the fromPng flag so we know this slot was for an extracted image
-                        if (newCompressionInfo[index]?.fromPng) {
-                          // Preserve the fromPng flag but clear size info
-                          newCompressionInfo[index] = { fromPng: true };
-                        } else {
-                          newCompressionInfo[index] = null;
-                        }
+                        newCompressionInfo[index] = null;
                         
                         setImageFiles(newFiles);
                         setImagePreviews(newPreviews);

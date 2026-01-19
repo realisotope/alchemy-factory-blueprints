@@ -51,6 +51,7 @@ export default function UploadModal({ isOpen, onClose, user, onUploadSuccess }) 
               onUploadSuccess?.();
               onClose();
             }}
+            isEditMode={false}
           />
         </div>
       </div>

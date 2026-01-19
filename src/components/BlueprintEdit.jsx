@@ -213,25 +213,8 @@ export default function BlueprintEdit({ blueprint, isOpen, onClose, user, onUpda
               };
               const compressedFile = await imageCompression(imageFile, options);
               
-              // Populate first image slot if empty or update existing slots
-              const newFiles = [...imageFiles];
-              const newPreviews = [...imagePreviews];
-              const newCompressionInfo = [...imageCompressionInfo];
-              
-              // Find first empty slot or use slot 0
-              const emptySlotIndex = newFiles.findIndex(f => f === null);
-              const targetIndex = emptySlotIndex !== -1 ? emptySlotIndex : 0;
-              
-              newFiles[targetIndex] = compressedFile;
-              newPreviews[targetIndex] = URL.createObjectURL(compressedFile);
-              newCompressionInfo[targetIndex] = {
-                originalSize: validation.imageBlob.size,
-                compressedSize: compressedFile.size,
-                fromPng: true
-              };
-              setImageFiles(newFiles);
-              setImagePreviews(newPreviews);
-              setImageCompressionInfo(newCompressionInfo);
+              // Don't auto-populate extracted image in edit mode to preserve user's existing screenshots
+              // @!@ Needs to be improved as this is a lazy method. @!@
             } catch (compressionError) {
               console.warn('Failed to compress PNG image:', compressionError);
             }
@@ -278,24 +261,8 @@ export default function BlueprintEdit({ blueprint, isOpen, onClose, user, onUpda
               };
               const compressedImage = await imageCompression(imageFile, options);
               
-              const newImageFiles = [...imageFiles];
-              const newImagePreviews = [...imagePreviews];
-              const newImageCompressionInfo = [...imageCompressionInfo];
-              
-              // Find first empty slot for the extracted image
-              const emptySlotIndex = newImageFiles.findIndex(f => f === null);
-              const targetIndex = emptySlotIndex !== -1 ? emptySlotIndex : partIndex;
-              
-              newImageFiles[targetIndex] = compressedImage;
-              newImagePreviews[targetIndex] = URL.createObjectURL(compressedImage);
-              newImageCompressionInfo[targetIndex] = {
-                originalSize: validation.imageBlob.size,
-                compressedSize: compressedImage.size,
-                fromPng: true
-              };
-              setImageFiles(newImageFiles);
-              setImagePreviews(newImagePreviews);
-              setImageCompressionInfo(newImageCompressionInfo);
+              // Don't auto-populate extracted image in edit mode to preserve user's existing screenshots
+              // @!@ Needs to be improved as this is a lazy method. @!@
             } catch (compressionError) {
               console.error('Image compression failed:', compressionError);
             }
