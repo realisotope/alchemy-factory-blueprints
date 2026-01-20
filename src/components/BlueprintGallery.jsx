@@ -84,7 +84,22 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         .eq("user_id", user.id);
 
       if (error) throw error;
-      setUserLikes(new Set(data?.map((like) => like.blueprint_id) || []));
+      const newLikeIds = data?.map((like) => like.blueprint_id) || [];
+      
+      // Only update state if likes have actually changed
+      setUserLikes((prevLikes) => {
+        const prevArray = Array.from(prevLikes).sort();
+        const newArray = newLikeIds.sort();
+        
+        // Check if the contents are the same
+        if (prevArray.length === newArray.length && prevArray.every((id, i) => id === newArray[i])) {
+          // No change, return same reference
+          return prevLikes;
+        }
+        
+        // Create new Set only if contents changed
+        return new Set(newLikeIds);
+      });
     } catch (err) {
       console.error("Error fetching likes:", err);
     }
@@ -412,6 +427,12 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
     }
   };
 
+  // Memoize tag comparison to avoid reference changes
+  const selectedTagsKey = useMemo(() => selectedTags.join(','), [selectedTags]);
+  
+  // Memoize userLikes size and its entries to avoid Set reference changes
+  const userLikesKey = useMemo(() => Array.from(userLikes).sort().join(','), [userLikes]);
+
   const filteredBlueprints = useMemo(() => {
     return blueprints
       .filter((bp) => {
@@ -464,7 +485,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         }
         return new Date(b.created_at) - new Date(a.created_at);
       });
-  }, [blueprints, showFavoritesOnly, userLikes, selectedTags, searchTerm, sortBy, compatibilityFilter]);
+  }, [blueprints, showFavoritesOnly, userLikesKey, selectedTagsKey, searchTerm, sortBy, compatibilityFilter]);
 
   // Pagination
   const totalPages = Math.ceil(filteredBlueprints.length / itemsPerPage);
