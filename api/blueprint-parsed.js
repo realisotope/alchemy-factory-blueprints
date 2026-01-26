@@ -5,11 +5,11 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const PARSER_SECRET = process.env.VITE_PARSER_SECRET_KEY;
+const PARSER_SECRET = process.env.PARSER_API_KEY;
 
 export default async function handler(req, res) {
   if (!PARSER_SECRET) {
-    console.error("VITE_PARSER_SECRET_KEY environment variable is not set");
+    console.error("Parser API key/environment variable is not set");
     return res.status(500).json({ error: "Server configuration error" });
   }
 
@@ -60,10 +60,6 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: "Blueprint not found" });
     }
 
-    const materials = parsed.Materials || {};
-    const buildings = parsed.Buildings || {};
-    const skills = parsed.SupplyItems || {};
-
     // Check if this is a multi-part blueprint
     const { data: blueprintData, error: selectError } = await supabase
       .from("blueprints")
@@ -89,19 +85,13 @@ export default async function handler(req, res) {
 
       updateData = {
         parts: updatedParts,
-        filehash: fileHash,
-        materials: materials,
-        buildings: buildings,
-        skills: skills,
+        filehash: fileHash
       };
     } else {
       // Single-part blueprint - update parsed directly
       updateData = {
         parsed: parsed,
-        filehash: fileHash,
-        materials: materials,
-        buildings: buildings,
-        skills: skills,
+        filehash: fileHash
       };
     }
 

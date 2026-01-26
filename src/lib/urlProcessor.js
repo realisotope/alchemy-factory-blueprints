@@ -3,15 +3,17 @@
  * Validates, filters, and converts URLs to clickable links
  */
 
-const ALLOWED_URL_DOMAINS = [
+// Allowed domains for URLs in blueprint descriptions
+export const ALLOWED_URL_DOMAINS = [
   'youtube.com',
   'youtu.be',
   'discord.com',
+  'discord.gg',
   'alchemy-factory-codex.com',
   'joejoesgit.github.io',
   'alchemyfactorytools.com',
   'alchemy-factory-blueprints.vercel.app',
-  "medal.tv"
+  'medal.tv'
 ];
 
 export function isAllowedUrl(url) {

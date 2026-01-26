@@ -1,9 +1,10 @@
 import { X } from "lucide-react";
 import { useState, useRef } from "react";
 import { useTheme } from "../lib/ThemeContext";
+import ErrorBoundary from "./ErrorBoundary";
 import BlueprintUpload from "./BlueprintUpload";
 
-export default function UploadModal({ isOpen, onClose, user, onUploadSuccess }) {
+function UploadModalContent({ isOpen, onClose, user, onUploadSuccess }) {
   const { theme } = useTheme();
 
   if (!isOpen) return null;
@@ -56,5 +57,13 @@ export default function UploadModal({ isOpen, onClose, user, onUploadSuccess }) 
         </div>
       </div>
     </div>
+  );
+}
+
+export default function UploadModal({ isOpen, onClose, user, onUploadSuccess }) {
+  return (
+    <ErrorBoundary name="UploadModal">
+      <UploadModalContent isOpen={isOpen} onClose={onClose} user={user} onUploadSuccess={onUploadSuccess} />
+    </ErrorBoundary>
   );
 }

@@ -137,3 +137,62 @@ export const formatBytes = (bytes) => {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 };
+
+/**
+ * Replace the preview image in a blueprint PNG with a watermark/branding image
+ */
+export const replaceBlueprintPreviewImage = async (blueprintPng, replacementImage) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      try {
+        const buffer = e.target.result;
+        validatePngSignature(buffer);
+        
+        const iendIndex = findIendChunk(buffer);
+        const dataAfterIend = buffer.slice(iendIndex + IEND_CHUNK.length);
+        
+        validateBlueprintSignature(dataAfterIend);
+        
+        const imageReader = new FileReader();
+        imageReader.onload = (imageEvent) => {
+          try {
+            const replacementBuffer = imageEvent.target.result;
+            validatePngSignature(replacementBuffer);
+            
+            const replacementIendIndex = findIendChunk(replacementBuffer);
+            const replacementImageData = replacementBuffer.slice(0, replacementIendIndex + IEND_CHUNK.length);
+            
+            const resultSize = replacementImageData.byteLength + dataAfterIend.byteLength;
+            const resultBuffer = new Uint8Array(resultSize);
+            
+            let offset = 0;
+            resultBuffer.set(new Uint8Array(replacementImageData), offset);
+            offset += replacementImageData.byteLength;
+            resultBuffer.set(new Uint8Array(dataAfterIend), offset);
+            
+            const resultBlob = new Blob([resultBuffer], { type: 'image/png' });
+            resolve(resultBlob);
+          } catch (error) {
+            reject(error);
+          }
+        };
+        
+        imageReader.onerror = () => {
+          reject(new Error("Failed to read replacement image"));
+        };
+        
+        imageReader.readAsArrayBuffer(replacementImage);
+      } catch (error) {
+        reject(error);
+      }
+    };
+    
+    reader.onerror = () => {
+      reject(new Error("Failed to read blueprint PNG"));
+    };
+    
+    reader.readAsArrayBuffer(blueprintPng);
+  });
+};

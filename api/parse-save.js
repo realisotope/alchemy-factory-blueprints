@@ -1,5 +1,6 @@
 /**
- * Save Parser
+ * Game Save Parser
+ * Handles parsing of game save files for blueprint compatibility checking
  */
 
 export default async function handler(req, res) {

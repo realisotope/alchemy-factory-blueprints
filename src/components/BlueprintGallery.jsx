@@ -13,18 +13,22 @@ import { deleteCloudinaryImage } from "../lib/cloudinaryDelete";
 import { AVAILABLE_TAGS } from "../lib/tags";
 import { ClientRateLimiter } from "../lib/rateLimiter";
 import { hasSaveData, checkBlueprintCompatibility } from "../lib/saveManager";
+import { fetchAllBlueprints, fetchUserLikes as fetchUserLikesService, likeBlueprint, unlikeBlueprint, deleteBlueprint as deleteBlueprintService } from "../lib/blueprintService";
+import { handleError } from "../lib/errorHandler";
+import { ErrorAlert, SuccessAlert } from "./Alerts";
+import ErrorBoundary from "./ErrorBoundary";
 import BlueprintDetail from "./BlueprintDetail";
 import BlueprintCard from "./BlueprintCard";
 import CreatorCard from "./CreatorCard";
 
-export default function BlueprintGallery({ user, refreshTrigger, initialBlueprintId }) {
+function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId }) {
   const { theme } = useTheme();
   const [blueprints, setBlueprints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
-  const [selectedTags, setSelectedTags] = useState([]); // Track selected tags for filtering
+  const [selectedTags, setSelectedTags] = useState([]);
   const [tagsDropdownOpen, setTagsDropdownOpen] = useState(false);
   const [deleting, setDeleting] = useState(null);
   const [selectedBlueprint, setSelectedBlueprint] = useState(null);
@@ -35,7 +39,9 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
   const initialBlueprintAppliedRef = useRef(false);
   const [selectedCreator, setSelectedCreator] = useState(null);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const [compatibilityFilter, setCompatibilityFilter] = useState("all"); // "all", "compatible", "incompatible"
+  const [compatibilityFilter, setCompatibilityFilter] = useState("all");
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
   
   // Responsive items per page: 8 for desktop (4 cols, 2 rows), 12 for 4K (6 cols, 2 rows)
   const getItemsPerPage = () => {
@@ -78,41 +84,49 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
   const fetchUserLikes = useCallback(async () => {
     if (!user) return;
     try {
-      const { data, error } = await supabase
-        .from("blueprint_likes")
-        .select("blueprint_id")
-        .eq("user_id", user.id);
+      const result = await fetchUserLikesService(user.id);
+      
+      if (!result.success) {
+        throw new Error(result.error?.message || 'Failed to fetch likes');
+      }
 
-      if (error) throw error;
-      setUserLikes(new Set(data?.map((like) => like.blueprint_id) || []));
+      const newLikeIds = result.data || [];
+      
+      setUserLikes((prevLikes) => {
+        const prevArray = Array.from(prevLikes).sort();
+        const newArray = newLikeIds.sort();
+        
+        if (prevArray.length === newArray.length && prevArray.every((id, i) => id === newArray[i])) {
+          return prevLikes;
+        }
+        
+        return new Set(newLikeIds);
+      });
     } catch (err) {
-      console.error("Error fetching likes:", err);
+      const errorResponse = handleError(err, 'FETCH_USER_LIKES', { userId: user?.id });
+      console.error("Error fetching likes:", errorResponse);
     }
   }, [user]);
 
   const fetchBlueprints = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      const { data, error } = await supabase
-        .from("blueprints")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
+      const result = await fetchAllBlueprints();
       
-      // Process blueprints: ensure likes/downloads are set and transform parsed data
+      if (!result.success) {
+        throw new Error(result.error?.message || 'Failed to fetch blueprints');
+      }
+
+      const data = result.data || [];
+      
       const processedData = (data || []).map(bp => {
-        // Transform materials and buildings from parsed data objects to arrays
         let materials = [];
         let buildings = [];
         let validatedParsed = null;
         
         try {
-          // Get parsed data (combined for multi-part, or single for regular)
           const parsedData = getParsedData(bp);
-          
-          // Validate parsed data before using it
-          // Always returns a safe object with empty defaults if parsing failed
           validatedParsed = validateParsedData(parsedData);
           
           if (validatedParsed.Materials && typeof validatedParsed.Materials === 'object' && !Array.isArray(validatedParsed.Materials)) {
@@ -123,8 +137,8 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
             buildings = transformParsedBuildings(validatedParsed.Buildings);
           }
         } catch (error) {
-          console.error(`Error transforming parsed data for blueprint ${bp.id}:`, error);
-          // Continue with empty arrays if transformation fails
+          const errorResponse = handleError(error, 'TRANSFORM_BLUEPRINT_DATA', { blueprintId: bp.id });
+          console.error(errorResponse);
         }
         
         return {
@@ -147,41 +161,36 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
 
   const handleLike = useCallback(async (blueprintId, currentlyLiked) => {
     if (!user) {
-      alert("Please login to like blueprints");
+      setError({ message: "Please login to like blueprints" });
       return;
     }
 
     try {
+      let result;
       if (currentlyLiked) {
-        // Remove like
-
-        const { error } = await supabase
-          .from("blueprint_likes")
-          .delete()
-          .eq("blueprint_id", blueprintId)
-          .eq("user_id", user.id);
-
-        if (error) throw error;
+        result = await unlikeBlueprint(blueprintId, user.id);
+        
+        if (!result.success) {
+          throw new Error(result.error?.message || 'Failed to unlike blueprint');
+        }
+        
         setUserLikes((prev) => {
           const newSet = new Set(prev);
           newSet.delete(blueprintId);
           return newSet;
         });
+        setSuccess('Blueprint unliked');
       } else {
-        // Add like
-        const { error } = await supabase.from("blueprint_likes").insert([
-          {
-            blueprint_id: blueprintId,
-            user_id: user.id,
-          },
-        ]);
-
-        if (error) throw error;
+        result = await likeBlueprint(blueprintId, user.id);
+        
+        if (!result.success) {
+          throw new Error(result.error?.message || 'Failed to like blueprint');
+        }
+        
         setUserLikes((prev) => new Set(prev).add(blueprintId));
+        setSuccess('Blueprint liked');
       }
       
-      // Optimistically update the local blueprint state without refetching
-      // The like count is already managed by the database trigger, we just update our local state
       setBlueprints((prev) =>
         prev.map((bp) =>
           bp.id === blueprintId 
@@ -196,10 +205,10 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         );
       }
     } catch (err) {
-      console.error("Error updating like:", err);
-      alert("Failed to update like");
+      const errorResponse = handleError(err, 'LIKE_BLUEPRINT', { blueprintId });
+      setError(errorResponse.error);
     }
-  }, [user]);
+  }, [user, selectedBlueprint?.id]);
 
   const handleDownload = useCallback(async (blueprint, selectedPartNumber = null) => {
     // Rate limiting check for downloads
@@ -360,13 +369,12 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
 
   const handleDelete = async (blueprint) => {
     if (!user) {
-      alert("You must be logged in to delete blueprints");
+      setError({ message: "You must be logged in to delete blueprints" });
       return;
     }
 
-    // Verify user owns this blueprint
     if (blueprint.user_id !== user.id) {
-      alert("You can only delete your own blueprints");
+      setError({ message: "You can only delete your own blueprints" });
       console.warn(`Unauthorized delete attempt: ${user.id} tried to delete blueprint by ${blueprint.user_id}`);
       return;
     }
@@ -376,8 +384,9 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
     }
 
     setDeleting(blueprint.id);
+    setError(null);
     try {
-      // Delete all Cloudinary images if they exist
+      // Delete all Cloudinary images
       if (blueprint.image_url) {
         await deleteCloudinaryImage(blueprint.image_url);
       }
@@ -387,30 +396,63 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
       if (blueprint.image_url_3) {
         await deleteCloudinaryImage(blueprint.image_url_3);
       }
-
-      // Delete from storage
-      if (blueprint.file_url) {
-        const filePath = blueprint.file_url.split("/").pop();
-        await supabase.storage.from("blueprints").remove([filePath]);
+      if (blueprint.image_url_4) {
+        await deleteCloudinaryImage(blueprint.image_url_4);
       }
 
-      // Delete from database - RLS policy will verify user_id
-      const { error } = await supabase
-        .from("blueprints")
-        .delete()
-        .eq("id", blueprint.id)
-        .eq("user_id", user.id);
+      // Delete blueprint files from Supabase storage
+      const filesToDelete = [];
 
-      if (error) throw error;
+      if (blueprint.is_multi_part && blueprint.parts && Array.isArray(blueprint.parts)) {
+        // For multi-part blueprints, delete all part files
+        for (const part of blueprint.parts) {
+          if (part.filename) {
+            filesToDelete.push(`${blueprint.user_id}/${part.filename}`);
+          }
+        }
+      } else if (blueprint.file_url) {
+        // For single-part blueprints, extract path from URL
+        // URL format: https://...supabase.../storage/v1/object/public/blueprints/USER_ID/filename
+        try {
+          const urlParts = blueprint.file_url.split('/storage/v1/object/public/blueprints/');
+          if (urlParts.length > 1) {
+            filesToDelete.push(urlParts[1]); // Gets USER_ID/filename
+          }
+        } catch (e) {
+          console.warn('Could not parse file URL:', blueprint.file_url);
+        }
+      }
+
+      // Delete all files from storage
+      if (filesToDelete.length > 0) {
+        const { error: storageError } = await supabase.storage
+          .from("blueprints")
+          .remove(filesToDelete);
+        if (storageError) {
+          console.warn('Storage deletion warning:', storageError);
+        }
+      }
+
+      const result = await deleteBlueprintService(blueprint.id);
+      if (!result.success) {
+        throw new Error(result.error?.message || 'Failed to delete blueprint');
+      }
 
       setBlueprints(blueprints.filter((b) => b.id !== blueprint.id));
+      setSuccess("Blueprint deleted successfully");
     } catch (err) {
-      console.error("Error deleting blueprint:", err);
-      alert("Failed to delete blueprint");
+      const errorResponse = handleError(err, 'DELETE_BLUEPRINT', { blueprintId: blueprint.id });
+      setError(errorResponse.error);
     } finally {
       setDeleting(null);
     }
   };
+
+  // Memoize tag comparison to avoid reference changes
+  const selectedTagsKey = useMemo(() => selectedTags.join(','), [selectedTags]);
+  
+  // Memoize userLikes size and its entries to avoid Set reference changes
+  const userLikesKey = useMemo(() => Array.from(userLikes).sort().join(','), [userLikes]);
 
   const filteredBlueprints = useMemo(() => {
     return blueprints
@@ -464,7 +506,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         }
         return new Date(b.created_at) - new Date(a.created_at);
       });
-  }, [blueprints, showFavoritesOnly, userLikes, selectedTags, searchTerm, sortBy, compatibilityFilter]);
+  }, [blueprints, showFavoritesOnly, userLikesKey, selectedTagsKey, searchTerm, sortBy, compatibilityFilter]);
 
   // Pagination
   const totalPages = Math.ceil(filteredBlueprints.length / itemsPerPage);
@@ -543,6 +585,10 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
 
   return (
     <>
+      {/* Error and Success Alerts */}
+      <ErrorAlert error={error} onDismiss={() => setError(null)} />
+      <SuccessAlert message={success} onDismiss={() => setSuccess(null)} />
+
       {/* Stats Dashboard */}
       <div style={{
         backgroundImage: `linear-gradient(to right, ${theme.colors.cardBg}99, ${theme.colors.elementBg}99)`,
@@ -838,7 +884,7 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
         }} className="text-center py-12 rounded-lg border">
           <p style={{ color: theme.colors.accentYellow }} className="text-lg">
             {blueprints.length === 0
-              ? "✨ No blueprints yet. Be the first to upload one!"
+              ? "✨ No blueprints found or could not be loaded."
               : "No blueprints match your search."}
           </p>
         </div>
@@ -982,3 +1028,14 @@ export default function BlueprintGallery({ user, refreshTrigger, initialBlueprin
     </>
   );
 }
+
+// Error boundary wrapperr
+function BlueprintGallery({ user, refreshTrigger, initialBlueprintId }) {
+  return (
+    <ErrorBoundary name="BlueprintGallery">
+      <BlueprintGalleryContent user={user} refreshTrigger={refreshTrigger} initialBlueprintId={initialBlueprintId} />
+    </ErrorBoundary>
+  );
+}
+
+export default BlueprintGallery;

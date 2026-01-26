@@ -1,39 +1,41 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
-import { validateAndSanitizeTitle, validateAndSanitizeDescription, sanitizeTitleForFilename } from "../lib/sanitization";
-import { validateDescriptionUrls } from "../lib/urlProcessor";
+import { validateBlueprintTitle, validateBlueprintDescription, validateDescriptionURLs, sanitizeFilename } from "../lib/validation";
+import { sanitizeTitleForFilename } from "../lib/sanitization";
 import { generateSlug } from "../lib/slugUtils";
 import { useTheme } from "../lib/ThemeContext";
 import { Upload, Loader, X } from "lucide-react";
 import { put } from "@vercel/blob";
 import { uploadToCloudinary } from "../lib/cloudinary";
 import imageCompression from "browser-image-compression";
-import JSZip from "jszip";
 import { m } from "framer-motion";
 import { sendBlueprintToParser } from "../lib/blueprintParser";
 import { transformParsedMaterials, transformParsedBuildings } from "../lib/blueprintMappings";
 import { validateParsedData } from "../lib/parsedDataValidator";
 import { ClientRateLimiter, checkServerRateLimit } from "../lib/rateLimiter";
-import { extractBlueprintFromPng, isPngBlueprint, formatBytes } from "../lib/pngBlueprintExtractor";
+import { extractBlueprintFromPng, isPngBlueprint, formatBytes, replaceBlueprintPreviewImage } from "../lib/pngBlueprintExtractor";
 import { AVAILABLE_TAGS } from "../lib/tags";
 import { validateParts, getPartDisplayName } from "../lib/blueprintUtils";
+import { createIndependentBlueprintFile, populateExtractedImageForPart, processSinglePartExtractedImage } from "../lib/pngBlueprintProcessor";
+import { secureValidateFileUpload } from "../lib/fileSecurityValidation";
+import ErrorBoundary from "./ErrorBoundary";
 
 // Constants for validation
 const MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB
 const MAX_IMAGE_WIDTH = 3840;
 const MAX_IMAGE_HEIGHT = 2160;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const AF_FILE_MAX_SIZE = 10 * 1024 * 1024; // 10MB
 const PNG_BLUEPRINT_MAX_SIZE = 20 * 1024 * 1024; // 20MB
 
-// Validate blueprint file (.af or .png) by checking extension and file structure
+// Validate blueprint file (.png only) by checking extension and file structure
 const validateBlueprintFile = async (file) => {
   const fileName = file.name.toLowerCase();
 
-  // Check extension - must end with .af or .png
-  if (!fileName.endsWith(".af") && !fileName.endsWith(".png")) {
-    return { valid: false, error: "File must have .af or .png extension" };
+  // Check extension - must be .png
+  if (!fileName.endsWith(".png")) {
+    const fileExt = fileName.substring(fileName.lastIndexOf('.'));
+    return { valid: false, error: `Only PNG files are supported. ${fileExt === '.af' ? 'AF files are no longer supported.' : 'Invalid file type: ' + fileExt}` };
   }
 
   // If PNG blueprint, validate and extract
@@ -63,116 +65,8 @@ const validateBlueprintFile = async (file) => {
     }
   }
 
-  // For .af files, continue with existing validation
-  // Check for double extensions or suspicious patterns
-  const nameWithoutExt = fileName.slice(0, -3); // Remove .af
-  const dangerousExtensions = [
-    ".exe", ".bat", ".cmd", ".com", ".scr", ".vbs", ".js", ".jse",
-    ".vbe", ".wsf", ".wsh", ".ps1", ".psc1", ".msh", ".msh1", ".msh1xml",
-    ".mshxml", ".scf", ".pif", ".msi", ".app", ".deb", ".rpm", ".dmg",
-    ".sh", ".bash", ".zsh", ".ksh", ".csh", ".run", ".bin",
-    ".pdf", ".docx", ".doc", ".xls", ".xlsx", ".ppt", ".pptx", ".zip", ".rar",
-    ".7z", ".tar", ".gz", ".jar", ".class", ".pyc", ".pyo"
-  ];
-
-  for (const ext of dangerousExtensions) {
-    if (nameWithoutExt.endsWith(ext)) {
-      return { valid: false, error: `Files with ${ext} extensions disguised as .af are not allowed` };
-    }
-  }
-
-  // Check file size
-  if (file.size > AF_FILE_MAX_SIZE) {
-    return { valid: false, error: "Blueprint file must be smaller than 50MB" };
-  }
-
-  // Check file content (magic number check for known dangerous file types)
-  try {
-    // Read first 512 bytes to check for various file signatures
-    const buffer = await file.slice(0, 512).arrayBuffer();
-    const view = new Uint8Array(buffer);
-
-    if (view.length >= 2) {
-      // MZ header (Windows PE executable: .exe, .dll, .scr, etc.)
-      if (view[0] === 0x4d && view[1] === 0x5a) {
-        return { valid: false, error: "Executable files (.exe, .dll, etc.) are not allowed" };
-      }
-
-      // Shebang (Unix/Linux scripts)
-      if (view[0] === 0x23 && view[1] === 0x21) {
-        return { valid: false, error: "Script files are not allowed" };
-      }
-
-      // ELF header (Linux/Unix executables)
-      if (view[0] === 0x7f && view[1] === 0x45 && view[2] === 0x4c && view[3] === 0x46) {
-        return { valid: false, error: "Executable files are not allowed" };
-      }
-
-      // Mach-O header (macOS executables)
-      if ((view[0] === 0xfe && view[1] === 0xed && view[2] === 0xfa) ||
-        (view[0] === 0xca && view[1] === 0xfe && view[2] === 0xba && view[3] === 0xbe)) {
-        return { valid: false, error: "Executable files are not allowed" };
-      }
-    }
-
-    if (view.length >= 4) {
-      // ZIP header (0x504b0304, 0x504b0506, 0x504b0708)
-      if (view[0] === 0x50 && view[1] === 0x4b) {
-        return { valid: false, error: "Archive files must be saved as .af files" };
-      }
-
-      // RAR header (0x526172)
-      if (view[0] === 0x52 && view[1] === 0x61 && view[2] === 0x72) {
-        return { valid: false, error: "Archive files (RAR) are not allowed" };
-      }
-
-      // 7z header (37 7A BC AF 27 1C)
-      if (view[0] === 0x37 && view[1] === 0x7a && view[2] === 0xbc && view[3] === 0xaf) {
-        return { valid: false, error: "Archive files (7z) are not allowed" };
-      }
-
-      // PDF header (%PDF)
-      if (view[0] === 0x25 && view[1] === 0x50 && view[2] === 0x44 && view[3] === 0x46) {
-        return { valid: false, error: "PDF files are not allowed" };
-      }
-
-      // Office Open XML files (DOCX, XLSX, PPTX - all are ZIP files)
-      if (view[0] === 0x50 && view[1] === 0x4b) {
-        return { valid: false, error: "Office documents and archives are not allowed" };
-      }
-
-      // RTF header ({\rtf)
-      if (view[0] === 0x7b && view[1] === 0x5c && view[2] === 0x72 && view[3] === 0x74) {
-        return { valid: false, error: "Rich text files are not allowed" };
-      }
-
-      // Java class file (CAFEBABE)
-      if (view[0] === 0xca && view[1] === 0xfe && view[2] === 0xba && view[3] === 0xbe) {
-        return { valid: false, error: "Executable files are not allowed" };
-      }
-
-      // gzip header (1f 8b)
-      if (view[0] === 0x1f && view[1] === 0x8b) {
-        return { valid: false, error: "Compressed archive files are not allowed" };
-      }
-
-      // tar header (ustar at offset 257)
-      if (view.length >= 262 && view[257] === 0x75 && view[258] === 0x73 &&
-        view[259] === 0x74 && view[260] === 0x61 && view[261] === 0x72) {
-        return { valid: false, error: "Archive files (tar) are not allowed" };
-      }
-    }
-
-    // Check for NUL bytes at the start, which might indicate binary executables
-    if (view[0] === 0x00 && view[1] === 0x00 && view[2] === 0x00) {
-      return { valid: false, error: "Suspicious binary format detected. Please ensure this is a valid .af file" };
-    }
-  } catch (e) {
-    console.warn("Could not validate file content:", e);
-    return { valid: false, error: "Failed to validate file format. Please try again" };
-  }
-
-  return { valid: true, isPng: false };
+  // Should not reach here - only PNG files are supported
+  return { valid: false, error: "Invalid file format" };
 };
 
 // Validate image file
@@ -213,7 +107,7 @@ const validateImageFile = async (file) => {
   });
 };
 
-export default function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
+function BlueprintUploadContent({ user, onUploadSuccess, isEditMode }) {
   const { theme } = useTheme();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -236,9 +130,26 @@ export default function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
   const [rateLimitInfo, setRateLimitInfo] = useState(null);
   const [processingPng, setProcessingPng] = useState(false);
   const [compressionInfo, setCompressionInfo] = useState(null);
-  const [blueprintFileExtension, setBlueprintFileExtension] = useState(".af");
+  const [blueprintFileExtension, setBlueprintFileExtension] = useState(".png");
   const [processingState, setProcessingState] = useState("");
   const [imageCompressionInfo, setImageCompressionInfo] = useState([null, null, null, null]);
+
+  // Helper function to replace blueprint preview image with blueprint watermark/branding
+  const applyBrandingToBlueprint = async (blueprintFile) => {
+    try {
+      const brandingResponse = await fetch('/blueprintpng.png');
+      if (!brandingResponse.ok) {
+        console.warn('Branding image not found, using original blueprint');
+        return blueprintFile;
+      }
+      const brandingBlob = await brandingResponse.blob();
+      const brandedBlueprint = await replaceBlueprintPreviewImage(blueprintFile, brandingBlob);
+      return new File([brandedBlueprint], blueprintFile.name, { type: 'image/png' });
+    } catch (error) {
+      console.warn('Failed to apply branding:', error.message);
+      return blueprintFile; // Return just the stripped blueprint if watermark fails
+    }
+  };
 
   const handleImageSelect = async (e, index) => {
     const file = e.target.files?.[0];
@@ -297,7 +208,7 @@ export default function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
       setProcessingPng(isPng);
       setProcessingState(isPng ? "Extracting PNG..." : "Processing...");
       
-      // Validate blueprint file (.af or .png)
+      // Validate blueprint file (.png only)
       const validation = await validateBlueprintFile(file);
       
       if (!validation.valid) {
@@ -306,57 +217,48 @@ export default function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
         setError(validation.error);
         setBlueprintFile(null);
         setCompressionInfo(null);
-        setBlueprintFileExtension(".af");
+        setBlueprintFileExtension(".png");
       } else {
-        // If PNG, convert stripped Blob to File with proper filename; otherwise use original
-        let fileToUse;
-        if (validation.isPng) {
-          // Create an independent File from the stripped blueprint data
-          // Read the blob as an array buffer to ensure a complete copy
-          const strippedBuffer = await validation.strippedFile.arrayBuffer();
-          const strippedBlob = new Blob([strippedBuffer], { type: 'image/png' });
-          fileToUse = new File([strippedBlob], file.name, { type: 'image/png' });
-          
-          // Compress and populate the extracted PNG image as first preview
-          if (validation.imageBlob) {
-            try {
-              setProcessingState("Compressing image...");
-              const imageFile = new File([validation.imageBlob], 'preview.png', { type: 'image/png' });
-              const originalSize = imageFile.size;
-              const options = {
-                maxSizeMB: 0.3,
-                maxWidthOrHeight: 1500,
-                useWebWorker: true,
-                initialQuality: 0.55,
-              };
-              const compressedFile = await imageCompression(imageFile, options);
-              
-              // Only populate extracted image if this specific slot is empty and not in edit mode
-              if (!imageFiles[0] && !isEditMode) {
-                const newFiles = [...imageFiles];
-                const newPreviews = [...imagePreviews];
-                const newCompressionInfo = [...imageCompressionInfo];
-                newFiles[0] = compressedFile;
-                newPreviews[0] = URL.createObjectURL(compressedFile);
-                newCompressionInfo[0] = {
-                  originalSize: validation.imageBlob.size,
-                  compressedSize: compressedFile.size,
-                  fromPng: true
-                };
-                setImageFiles(newFiles);
-                setImagePreviews(newPreviews);
-                setImageCompressionInfo(newCompressionInfo);
-              }
-            } catch (compressionError) {
-              console.warn('Failed to compress PNG image:', compressionError);
-            }
-          }
-        } else {
-          fileToUse = file;
+        // Security check: Scan file for threats
+        setProcessingState("Scanning for security threats...");
+        const securityScan = await secureValidateFileUpload(file);
+        
+        if (!securityScan.success) {
+          // Security threat detected
+          setProcessingPng(false);
+          setProcessingState("");
+          setError(`Security check failed: ${securityScan.errors[0]}`);
+          setBlueprintFile(null);
+          setCompressionInfo(null);
+          setBlueprintFileExtension(".png");
+          return;
         }
+        
+        // Log any security warnings
+        if (securityScan.warnings && securityScan.warnings.length > 0) {
+          console.warn('File security warnings:', securityScan.warnings);
+        }
+        
+        // If PNG, create independent file; otherwise use original
+        const fileToUse = await createIndependentBlueprintFile(validation, file);
+        
+        // Process extracted image if available
+        if (validation.isPng) {
+          await processSinglePartExtractedImage(
+            validation,
+            imageFiles,
+            setImageFiles,
+            imagePreviews,
+            setImagePreviews,
+            imageCompressionInfo,
+            setImageCompressionInfo,
+            isEditMode
+          );
+        }
+        
         setBlueprintFile(fileToUse);
         setCompressionInfo(validation.compressionInfo || null);
-        setBlueprintFileExtension(isPng ? ".png" : ".af");
+        setBlueprintFileExtension(".png");
         setError(null);
         setProcessingPng(false);
         setProcessingState("");
@@ -385,7 +287,7 @@ export default function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
       setProcessingPng(isPng);
       setProcessingState(isPng ? "Extracting PNG..." : "Processing...");
       
-      // Validate blueprint file (.af or .png)
+      // Validate blueprint file (.png only)
       const validation = await validateBlueprintFile(file);
       
       if (!validation.valid) {
@@ -394,56 +296,28 @@ export default function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
         setError(validation.error);
         setBlueprintFile(null);
         setCompressionInfo(null);
-        setBlueprintFileExtension(".af");
+        setBlueprintFileExtension(".png");
       } else {
-        // If PNG, convert stripped Blob to File with proper filename; otherwise use original
-        let fileToUse;
-        if (validation.isPng) {
-          // Create an independent File from the stripped blueprint data
-          // Read the blob as an array buffer to ensure a complete copy
-          const strippedBuffer = await validation.strippedFile.arrayBuffer();
-          const strippedBlob = new Blob([strippedBuffer], { type: 'image/png' });
-          fileToUse = new File([strippedBlob], file.name, { type: 'image/png' });
-          
-          // Compress and populate the extracted PNG image as first preview
-          if (validation.imageBlob) {
-            try {
-              setProcessingState("Compressing image...");
-              const imageFile = new File([validation.imageBlob], 'preview.png', { type: 'image/png' });
-              const options = {
-                maxSizeMB: 0.3,
-                maxWidthOrHeight: 1500,
-                useWebWorker: true,
-                initialQuality: 0.55,
-              };
-              const compressedFile = await imageCompression(imageFile, options);
-              
-              // Only populate extracted image if this specific slot is empty and not in edit mode
-              if (!imageFiles[0] && !isEditMode) {
-                const newFiles = [...imageFiles];
-                const newPreviews = [...imagePreviews];
-                const newCompressionInfo = [...imageCompressionInfo];
-                newFiles[0] = compressedFile;
-                newPreviews[0] = URL.createObjectURL(compressedFile);
-                newCompressionInfo[0] = {
-                  originalSize: validation.imageBlob.size,
-                  compressedSize: compressedFile.size,
-                  fromPng: true
-                };
-                setImageFiles(newFiles);
-                setImagePreviews(newPreviews);
-                setImageCompressionInfo(newCompressionInfo);
-              }
-            } catch (compressionError) {
-              console.warn('Failed to compress PNG image:', compressionError);
-            }
-          }
-        } else {
-          fileToUse = file;
+        // Create independent file from PNG
+        const fileToUse = await createIndependentBlueprintFile(validation, file);
+        
+        // Process extracted image
+        if (true) {
+          await processSinglePartExtractedImage(
+            validation,
+            imageFiles,
+            setImageFiles,
+            imagePreviews,
+            setImagePreviews,
+            imageCompressionInfo,
+            setImageCompressionInfo,
+            isEditMode
+          );
         }
+        
         setBlueprintFile(fileToUse);
         setCompressionInfo(validation.compressionInfo || null);
-        setBlueprintFileExtension(isPng ? ".png" : ".af");
+        setBlueprintFileExtension(".png");
         setError(null);
       }
     }
@@ -841,27 +715,27 @@ export default function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
     const validatedProductionRate = null;
 
     // Validate and sanitize title
-    const titleValidation = validateAndSanitizeTitle(title);
+    const titleValidation = validateBlueprintTitle(title);
     if (!titleValidation.valid) {
       setError(titleValidation.error);
       return;
     }
 
     // Validate and sanitize description
-    const descriptionValidation = validateAndSanitizeDescription(description);
+    const descriptionValidation = validateBlueprintDescription(description);
     if (!descriptionValidation.valid) {
       setError(descriptionValidation.error);
       return;
     }
 
     // Validate URLs in description
-    const urlValidation = validateDescriptionUrls(description);
+    const urlValidation = validateDescriptionURLs(description);
     if (!urlValidation.valid) {
       setError(urlValidation.error);
       return;
     }
 
-    // Multi-part or single-part validation
+    // Multi/single-part validation
     if (isMultiPart) {
       // Check that at least 2 parts are selected
       const partCount = multiPartFiles.filter(f => f !== null).length;
@@ -906,12 +780,14 @@ export default function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
           const file = multiPartFiles[i];
           if (!file) continue;
 
+          const brandedFile = await applyBrandingToBlueprint(file);
+
           // Upload part file
-          const partFileName = `${sanitizeTitleForFilename(title)}_part${i + 1}_${Date.now()}${file.name.endsWith('.png') ? '.png' : '.af'}`;
+          const partFileName = `${sanitizeTitleForFilename(title)}_part${i + 1}_${Date.now()}.png`;
           const partPath = `${user.id}/${partFileName}`;
           const { error: uploadError } = await supabase.storage
             .from("blueprints")
-            .upload(partPath, file);
+            .upload(partPath, brandedFile);
 
           if (uploadError) throw uploadError;
 
@@ -928,10 +804,9 @@ export default function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
             file_hash: fileHash
           });
 
-          filesToParse.push({ file, partIndex: i + 1, fileHash });
+          filesToParse.push({ file: brandedFile, partIndex: i + 1, fileHash });
         }
 
-        // For multi-part, we don't set a file_url (it's null)
         fileUrl = null;
 
         insertData = {
@@ -954,41 +829,15 @@ export default function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
         // SINGLE-PART BLUEPRINT HANDLING
         setProcessingState("Uploading blueprint...");
 
-        // Determine if file should be zipped (only for files over 100KB)
-        const shouldZip = blueprintFile.size > 100 * 1024;
+        const brandedFile = await applyBrandingToBlueprint(blueprintFile);
+
         const blueprintFileName = `${sanitizeTitleForFilename(title)}${blueprintFileExtension}`;
 
-        if (shouldZip) {
-          // Create zip file containing the blueprint file with compression
-          const zip = new JSZip();
-          zip.file(blueprintFileName, blueprintFile, { compression: "DEFLATE" });
-          const zipBlob = await zip.generateAsync({
-            type: "blob",
-            compression: "DEFLATE",
-            compressionOptions: { level: 9 }
-          });
-
-          // Upload compressed zip file
-          const zipFileName = `${sanitizeTitleForFilename(title)}_${Date.now()}.zip`;
-          const blueprintPath = `${user.id}/${zipFileName}`;
-          const { error: blueprintError } = await supabase.storage
-            .from("blueprints")
-            .upload(blueprintPath, zipBlob);
-
-          if (blueprintError) throw blueprintError;
-
-          // Get blueprint file URL
-          const { data: blueprintData } = supabase.storage
-            .from("blueprints")
-            .getPublicUrl(blueprintPath);
-          fileUrl = blueprintData?.publicUrl;
-        } else {
-          // For smaller files, just upload the file directly with correct extension
           const blueprintFileNameWithTimestamp = `${sanitizeTitleForFilename(title)}_${Date.now()}${blueprintFileExtension}`;
           const blueprintPath = `${user.id}/${blueprintFileNameWithTimestamp}`;
           const { error: blueprintError } = await supabase.storage
             .from("blueprints")
-            .upload(blueprintPath, blueprintFile);
+            .upload(blueprintPath, brandedFile);
 
           if (blueprintError) throw blueprintError;
 
@@ -997,9 +846,8 @@ export default function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
             .from("blueprints")
             .getPublicUrl(blueprintPath);
           fileUrl = blueprintData?.publicUrl;
-        }
 
-        filesToParse.push({ file: blueprintFile, partIndex: null });
+        filesToParse.push({ file: brandedFile, partIndex: null });
 
         insertData = {
           title: titleValidation.sanitized,
@@ -1052,44 +900,98 @@ export default function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
           setProcessingState("Parsing blueprint...");
           console.log(`Parsing ${filesToParse.length} file(s) for blueprint:`, insertedBlueprint.id);
           
-          for (const parseTask of filesToParse) {
-            console.log(`[Parser Task] File name: ${parseTask.file.name}, Size: ${parseTask.file.size}, Type: ${parseTask.file.type}`);
-            // Pass waitForParsing=true to make the parser wait for completion
-            const parserResponse = await sendBlueprintToParser(parseTask.file, insertedBlueprint.id, 3, true);
+          // For multi-part blueprints, wait for ALL files to be parsed before proceeding
+          const isMultipart = isMultiPart && filesToParse.length > 1;
+          
+          if (isMultipart) {
+            // Multi-part: Parse all files and wait for all to complete
+            console.log(`[Multi-Parse] Waiting for ${filesToParse.length} files to parse...`);
+            const parsePromises = filesToParse.map(async (parseTask) => {
+              console.log(`[Parser Task] File name: ${parseTask.file.name}, Size: ${parseTask.file.size}, Type: ${parseTask.file.type}`);
+              return await sendBlueprintToParser(parseTask.file, insertedBlueprint.id, 3, true);
+            });
             
-            console.log(`[Parser Response] Status: ${parserResponse.queued ? 'QUEUED' : 'PARSED'}`);
+            const parserResponses = await Promise.all(parsePromises);
+            console.log(`[Multi-Parse] All ${parserResponses.length} files parsed`);
             
-            if (parserResponse.duplicate && parserResponse.parsed) {
-              // Parser immediately returned parsed data
-              const validatedParsed = validateParsedData(parserResponse.parsed);
-              console.log("Blueprint parsed, updating database...");
+            // Update parts with parsed data
+            let updatedParts = insertedBlueprint.parts || [];
+            let allParsed = true;
+            
+            for (let i = 0; i < parserResponses.length; i++) {
+              const parserResponse = parserResponses[i];
+              const parseTask = filesToParse[i];
               
-              const materials = validatedParsed.Materials || {};
-              const buildings = validatedParsed.Buildings || {};
-              const skills = validatedParsed.SupplyItems || {};
+              console.log(`[Parser Response] Part ${parseTask.partIndex}: Status: ${parserResponse.queued ? 'QUEUED' : 'PARSED'}`);
               
-              await supabase
-                .from("blueprints")
-                .update({
-                  parsed: validatedParsed,
-                  filehash: parserResponse.fileHash,
-                  materials: materials,
-                  buildings: buildings,
-                  skills: skills,
-                })
-                .eq("id", insertedBlueprint.id);
+              // Find and update the corresponding part
+              const partIndex = updatedParts.findIndex(p => p.part_number === parseTask.partIndex);
+              if (partIndex !== -1) {
+                if (parserResponse.duplicate && parserResponse.parsed) {
+                  const validatedParsed = validateParsedData(parserResponse.parsed);
+                  updatedParts[partIndex] = {
+                    ...updatedParts[partIndex],
+                    parsed: validatedParsed,
+                    file_hash: parserResponse.fileHash
+                  };
+                  console.log(`[Multi-Parse] Part ${parseTask.partIndex} parsed successfully`);
+                } else if (parserResponse.queued) {
+                  // Still queued - will be updated via webhook
+                  allParsed = false;
+                  updatedParts[partIndex] = {
+                    ...updatedParts[partIndex],
+                    file_hash: parserResponse.fileHash
+                  };
+                  console.log(`[Multi-Parse] Part ${parseTask.partIndex} queued for background parsing`);
+                  parserWasRateLimited = true;
+                }
+              }
+            }
+            
+            // Update blueprint with all parts
+            console.log("Updating database with parsed parts...");
+            
+            await supabase
+              .from("blueprints")
+              .update({
+                parts: updatedParts
+              })
+              .eq("id", insertedBlueprint.id);
+            
+            console.log("Blueprint updated with all parsed parts");
+          } else {
+            // Single file or single-part: Parse one at a time
+            for (const parseTask of filesToParse) {
+              console.log(`[Parser Task] File name: ${parseTask.file.name}, Size: ${parseTask.file.size}, Type: ${parseTask.file.type}`);
+              const parserResponse = await sendBlueprintToParser(parseTask.file, insertedBlueprint.id, 3, true);
               
-              console.log("Blueprint updated with parsed data");
-            } else if (parserResponse.queued) {
-              // Parser queued the request - will send data via webhook
-              console.log("Parser queued the request. Data will be parsed in background via webhook, fileHash:", parserResponse.fileHash);
-              parserWasRateLimited = true;
+              console.log(`[Parser Response] Status: ${parserResponse.queued ? 'QUEUED' : 'PARSED'}`);
               
-              // Store the fileHash for webhook callback
-              await supabase
-                .from("blueprints")
-                .update({ filehash: parserResponse.fileHash })
-                .eq("id", insertedBlueprint.id);
+              if (parserResponse.duplicate && parserResponse.parsed) {
+                // Parser immediately returned parsed data
+                const validatedParsed = validateParsedData(parserResponse.parsed);
+                console.log("Blueprint parsed, updating database...");
+                
+                await supabase
+                  .from("blueprints")
+                  .update({
+                    parsed: validatedParsed,
+                    filehash: parserResponse.fileHash
+                  })
+                  .eq("id", insertedBlueprint.id);
+                
+                console.log("Blueprint updated with parsed data");
+              } else if (parserResponse.queued) {
+                // Parser queued the request - will send data via webhook
+                console.log("Parser queued the request. Data will be parsed in background via webhook, fileHash:", parserResponse.fileHash);
+                parserWasRateLimited = true;
+                
+                // Store the fileHash for webhook callback
+                await supabase
+                  .from("blueprints")
+                  .update({ filehash: parserResponse.fileHash })
+                  .eq("id", insertedBlueprint.id);
+              }
             }
           }
         } catch (parserError) {
@@ -1331,7 +1233,7 @@ export default function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
         {!isMultiPart && (
         <div>
           <label style={{ color: theme.colors.textPrimary }} className="block text-s font-medium mb-2">
-            Blueprint File (.af or .png) *
+            Blueprint File (.png) *
             </label>
           <label style={{ color: theme.colors.textPrimary }} className="block text-xs font-medium mb-2">
             If uploading a PNG blueprint with a custom screenshot, the image will be used as the first preview image.
@@ -1345,7 +1247,7 @@ export default function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
           >
             <input
               type="file"
-              accept=".af,.png"
+              accept=".png"
               onChange={handleBlueprintSelect}
               className="hidden"
               id="blueprint-input"
@@ -1366,8 +1268,8 @@ export default function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
                   : blueprintFile
                   ? blueprintFile.name
                   : blueprintDragActive
-                    ? "Drop your .af or .png file here"
-                    : "Click to select or drag & drop .af/.png file"}
+                    ? "Drop your .png file here"
+                    : "Click to select or drag & drop .png file"}
               </span>
             </label>
             {compressionInfo && (
@@ -1383,7 +1285,7 @@ export default function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
         {isMultiPart && (
         <div>
           <label style={{ color: theme.colors.textPrimary }} className="block text-sm font-medium mb-2">
-            Blueprint Parts (2-4) - Select .af or .png files *
+            Blueprint Parts (2-4) - Select .png files *
           </label>
           <p style={{ color: theme.colors.textSecondary }} className="text-xs mb-3">
             Upload each part of your multi-part blueprint. Each part will be parsed separately.
@@ -1438,7 +1340,7 @@ export default function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
                   >
                     <input
                       type="file"
-                      accept=".af,.png"
+                      accept=".png"
                       onChange={(e) => handleMultiPartFileSelect(e, index)}
                       className="hidden"
                       id={`multipart-input-${index}`}
@@ -1601,3 +1503,14 @@ export default function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
     </div>
   );
 }
+
+// Wrap with error boundary
+function BlueprintUpload({ user, onUploadSuccess, isEditMode }) {
+  return (
+    <ErrorBoundary name="BlueprintUpload">
+      <BlueprintUploadContent user={user} onUploadSuccess={onUploadSuccess} isEditMode={isEditMode} />
+    </ErrorBoundary>
+  );
+}
+
+export default BlueprintUpload;

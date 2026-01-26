@@ -1,21 +1,60 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { supabase } from "./lib/supabase";
 import { isValidUUID } from "./lib/sanitization";
 import { isUUID } from "./lib/slugUtils";
 import { Upload, X, BookOpen, Info, ChevronDown } from "lucide-react";
 import { useTheme } from "./lib/ThemeContext";
+import ErrorBoundary from "./components/ErrorBoundary";
 import DiscordLogin from "./components/DiscordLogin";
-import UploadModal from "./components/UploadModal";
 import BlueprintGallery from "./components/BlueprintGallery";
-import BlueprintFolderSync from "./components/BlueprintFolderSync";
-import SavegameSync from "./components/SavegameSync";
 import ThemeToggle from "./components/ThemeToggle";
+
+// Lazy load heavy components
+const UploadModal = lazy(() => import("./components/UploadModal"));
+const BlueprintFolderSync = lazy(() => import("./components/BlueprintFolderSync"));
+const SavegameSync = lazy(() => import("./components/SavegameSync"));
+
+// Simple loading fallback for lazy components
+function LazyComponentFallback() {
+  const { theme } = useTheme();
+  return (
+    <div style={{ color: theme.colors.textSecondary }}>
+      <span className="text-sm">Loading...</span>
+    </div>
+  );
+}
 
 // Changelog component
 function ChangelogAccordion({ theme }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const changelog = [
+    {
+      version: "v0.9.5",
+      date: "Jan 26, 2026",
+      month: "January 2026",
+      changes: [
+        {
+          text: "Added Blueprint 'Watermark/Branding' Feature",
+          sub: [
+            "Blueprints will now include a <1kb thumbnail image embedded (Added upon upload)",
+            "This makes it a lot easier to identify blueprints in your downloads folder and such",
+            "The image contains in clear text: Alchemy Factory Blueprint File",
+          ]
+        },
+        {
+          text: "Refactor and performance improvements",
+          sub: [
+            "Removed old dependencies and code",
+            "Removed support for uploading .af blueprints (can better support pngs)",
+            "Removed zip compression for large blueprints (not needed anymore with pngs)",
+            "Improved caching and load times across the site (Redis caching)",
+            "Improved error handling and reporting",
+          ]
+        },
+        "Minor site design tweaks and refactor",
+      ]
+    },
     {
       version: "v0.9.1",
       date: "Jan 17, 2026",
@@ -357,8 +396,12 @@ export default function App() {
             </div>
             <div className="hidden sm:flex flex-col sm:flex-row gap-2 sm:gap-3 items-end sm:items-center sm:justify-end flex-shrink-0 ml-4">
               <ThemeToggle />
-              <SavegameSync />
-              <BlueprintFolderSync />
+              <Suspense fallback={null}>
+                <SavegameSync />
+              </Suspense>
+              <Suspense fallback={null}>
+                <BlueprintFolderSync />
+              </Suspense>
               <button
                 onClick={() => setIsInfoModalOpen(true)}
                 style={{
@@ -437,18 +480,24 @@ export default function App() {
                 Alchemy Factory Blueprints
                 <span className="ml-3 transform scale-x-[-1]">⚗️</span>
               </h2>
-              <BlueprintGallery user={user} refreshTrigger={refreshGallery} initialBlueprintId={initialBlueprintId} />
+              <ErrorBoundary name="BlueprintGalleryWrapper">
+                <BlueprintGallery user={user} refreshTrigger={refreshGallery} initialBlueprintId={initialBlueprintId} />
+              </ErrorBoundary>
             </section>
           </div>
         </main>
 
         {/* Upload Modal */}
-        <UploadModal
-          isOpen={isUploadModalOpen}
-          onClose={() => setIsUploadModalOpen(false)}
-          user={user}
-          onUploadSuccess={handleUploadSuccess}
-        />
+        <ErrorBoundary name="UploadModalWrapper">
+          <Suspense fallback={<LazyComponentFallback />}>
+            <UploadModal
+              isOpen={isUploadModalOpen}
+              onClose={() => setIsUploadModalOpen(false)}
+              user={user}
+              onUploadSuccess={handleUploadSuccess}
+            />
+          </Suspense>
+        </ErrorBoundary>
 
         {/* How to Use Modal */}
         {isHowToOpen && (
