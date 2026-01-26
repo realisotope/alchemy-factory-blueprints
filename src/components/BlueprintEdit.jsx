@@ -2,19 +2,22 @@ import { useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "../lib/supabase";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
-import { validateAndSanitizeTitle, validateAndSanitizeDescription, validateAndSanitizeChangelog, sanitizeTitleForFilename } from "../lib/sanitization";
-import { validateDescriptionUrls } from "../lib/urlProcessor";
+import { validateBlueprintTitle, validateBlueprintDescription, validateDescriptionURLs, sanitizeFilename } from "../lib/validation";
+import { sanitizeTitleForFilename } from "../lib/sanitization";
 import { useTheme } from "../lib/ThemeContext";
 import { Upload, Loader, X } from "lucide-react";
 import { uploadToCloudinary } from "../lib/cloudinary";
 import { deleteCloudinaryImage } from "../lib/cloudinaryDelete";
 import imageCompression from "browser-image-compression";
-import JSZip from "jszip";
 import { ClientRateLimiter, checkServerRateLimit } from "../lib/rateLimiter";
 import { sendBlueprintToParser } from "../lib/blueprintParser";
 import { validateParsedData } from "../lib/parsedDataValidator";
 import { extractBlueprintFromPng, isPngBlueprint, formatBytes } from "../lib/pngBlueprintExtractor";
 import { AVAILABLE_TAGS } from "../lib/tags";
+import { createIndependentBlueprintFile, populateExtractedImageForPart } from "../lib/pngBlueprintProcessor";
+import { handleError } from "../lib/errorHandler";
+import { ErrorAlert, SuccessAlert } from "./Alerts";
+import ErrorBoundary from "./ErrorBoundary";
 
 // Constants for validation
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -124,7 +127,7 @@ const validateImageFile = async (file) => {
   });
 };
 
-export default function BlueprintEdit({ blueprint, isOpen, onClose, user, onUpdate }) {
+function BlueprintEditContent({ blueprint, isOpen, onClose, user, onUpdate }) {
   const { theme } = useTheme();
   const [title, setTitle] = useState(blueprint?.title || "");
   const [description, setDescription] = useState(blueprint?.description || "");
@@ -143,16 +146,17 @@ export default function BlueprintEdit({ blueprint, isOpen, onClose, user, onUpda
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [imageDragActive, setImageDragActive] = useState([false, false, false, false]);
   const [rateLimitInfo, setRateLimitInfo] = useState(null);
   const [processingPng, setProcessingPng] = useState(false);
   const [compressionInfo, setCompressionInfo] = useState(null);
   const [blueprintFileExtension, setBlueprintFileExtension] = useState(".af");
-  const [processingState, setProcessingState] = useState(""); // Track current processing stage
-  const [imageCompressionInfo, setImageCompressionInfo] = useState([null, null, null, null]); // Track compression info for each image
-  const [multiPartFiles, setMultiPartFiles] = useState([null, null, null, null]); // For multi-part editing
-  const [multiPartCompressionInfo, setMultiPartCompressionInfo] = useState([null, null, null, null]); // Compression info for multi-part files
-  const [multiPartDragActive, setMultiPartDragActive] = useState([false, false, false, false]); // Drag state for multi-part uploads
+  const [processingState, setProcessingState] = useState("");
+  const [imageCompressionInfo, setImageCompressionInfo] = useState([null, null, null, null]);
+  const [multiPartFiles, setMultiPartFiles] = useState([null, null, null, null]);
+  const [multiPartCompressionInfo, setMultiPartCompressionInfo] = useState([null, null, null, null]);
+  const [multiPartDragActive, setMultiPartDragActive] = useState([false, false, false, false]);
   const fileInputRef = useRef(null);
   const imageInputRef = useRef(null);
   const scrollableRef = useRef(null);
@@ -243,31 +247,8 @@ export default function BlueprintEdit({ blueprint, isOpen, onClose, user, onUpda
         newFiles[partIndex] = null;
         setMultiPartFiles(newFiles);
       } else {
-        let fileToUse = file;
-        
-        if (validation.isPng) {
-          // For PNG blueprints, use stripped file
-          fileToUse = new File([validation.strippedFile], file.name, { type: 'image/png' });
-          
-          // Auto-populate preview image for this part if needed
-          if (validation.imageBlob) {
-            try {
-              const imageFile = new File([validation.imageBlob], `part${partIndex + 1}-preview.png`, { type: 'image/png' });
-              const options = {
-                maxSizeMB: 0.3,
-                maxWidthOrHeight: 1500,
-                useWebWorker: true,
-                initialQuality: 0.55,
-              };
-              const compressedImage = await imageCompression(imageFile, options);
-              
-              // Don't auto-populate extracted image in edit mode to preserve user's existing screenshots
-              // @!@ Needs to be improved as this is a lazy method. @!@
-            } catch (compressionError) {
-              console.error('Image compression failed:', compressionError);
-            }
-          }
-        }
+        // Create independent file from stripped data if PNG
+        const fileToUse = await createIndependentBlueprintFile(validation, file);
         
         const newFiles = [...multiPartFiles];
         newFiles[partIndex] = fileToUse;
@@ -449,19 +430,15 @@ export default function BlueprintEdit({ blueprint, isOpen, onClose, user, onUpda
     setError("");
 
     try {
-      const descriptionValidation = validateAndSanitizeDescription(description);
+      const descriptionValidation = validateBlueprintDescription(description);
       if (!descriptionValidation.valid) {
         throw new Error(descriptionValidation.error);
       }
 
       // Validate URLs in description
-      const urlValidation = validateDescriptionUrls(description);
+      const urlValidation = validateDescriptionURLs(description);
       if (!urlValidation.valid) {
         throw new Error(urlValidation.error);
-      }
-      const changelogValidation = validateAndSanitizeChangelog(changelog);
-      if (!changelogValidation.valid) {
-        throw new Error(changelogValidation.error);
       }
 
       // Production rate feature temporarily disabled
@@ -495,34 +472,8 @@ export default function BlueprintEdit({ blueprint, isOpen, onClose, user, onUpda
           }
         }
 
-        // Determine if file should be zipped
-        const shouldZip = blueprintFile.size > 100 * 1024;
         const blueprintFileName = `${sanitizeTitleForFilename(title)}${blueprintFileExtension}`;
 
-        if (shouldZip) {
-          // Create and upload zip file for large files
-          const zip = new JSZip();
-          zip.file(blueprintFileName, blueprintFile, { compression: "DEFLATE" });
-          const zipBlob = await zip.generateAsync({
-            type: "blob",
-            compression: "DEFLATE",
-            compressionOptions: { level: 9 },
-          });
-
-          const zipFileName = `${sanitizeTitleForFilename(title)}_${Date.now()}.zip`;
-          const blueprintPath = `${user.id}/${zipFileName}`;
-          const { error: blueprintError } = await supabase.storage
-            .from("blueprints")
-            .upload(blueprintPath, zipBlob);
-
-          if (blueprintError) throw blueprintError;
-
-          const { data: blueprintData } = supabase.storage
-            .from("blueprints")
-            .getPublicUrl(blueprintPath);
-          fileUrl = blueprintData?.publicUrl;
-        } else {
-          // For smaller files, upload directly without zipping
           const blueprintFileNameWithTimestamp = `${sanitizeTitleForFilename(title)}_${Date.now()}${blueprintFileExtension}`;
           const blueprintPath = `${user.id}/${blueprintFileNameWithTimestamp}`;
           const { error: blueprintError } = await supabase.storage
@@ -535,7 +486,6 @@ export default function BlueprintEdit({ blueprint, isOpen, onClose, user, onUpda
             .from("blueprints")
             .getPublicUrl(blueprintPath);
           fileUrl = blueprintData?.publicUrl;
-        }
       }
 
       let imageUrl = blueprint.image_url;
@@ -764,11 +714,8 @@ export default function BlueprintEdit({ blueprint, isOpen, onClose, user, onUpda
         {/* Form - Scrollable Content */}
         <div ref={scrollableRef} className="flex-1 overflow-y-auto min-h-0">
           <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4 md:space-y-5" style={{ color: theme.colors.textPrimary }}>
-          {error && (
-            <div className="border rounded-lg text-sm px-4 py-3" style={{ backgroundColor: `${theme.colors.cardBg}33`, borderColor: theme.colors.cardBorder, color: '#fca5a5' }}>
-              {error}
-            </div>
-          )}
+          <ErrorAlert error={error ? { message: error } : null} onDismiss={() => setError("")} />
+          <SuccessAlert message={success} onDismiss={() => setSuccess("")} />
 
           {/* Title - Read Only */}
           <div>
@@ -936,7 +883,7 @@ export default function BlueprintEdit({ blueprint, isOpen, onClose, user, onUpda
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".af,.png"
+                accept=".png"
                 onChange={handleBlueprintSelect}
                 className="hidden"
                 disabled={isLoading}
@@ -1031,7 +978,7 @@ export default function BlueprintEdit({ blueprint, isOpen, onClose, user, onUpda
                       >
                         <input
                           type="file"
-                          accept=".af,.png"
+                          accept=".png"
                           onChange={(e) => handleMultiPartFileSelect(e, idx)}
                           className="hidden"
                           id={`multipart-edit-input-${idx}`}
@@ -1196,3 +1143,14 @@ export default function BlueprintEdit({ blueprint, isOpen, onClose, user, onUpda
     document.body
   );
 }
+
+// Wrap with error boundary
+function BlueprintEdit({ blueprint, isOpen, onClose, user, onUpdate }) {
+  return (
+    <ErrorBoundary name="BlueprintEdit">
+      <BlueprintEditContent blueprint={blueprint} isOpen={isOpen} onClose={onClose} user={user} onUpdate={onUpdate} />
+    </ErrorBoundary>
+  );
+}
+
+export default BlueprintEdit;

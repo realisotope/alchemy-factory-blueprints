@@ -13,10 +13,13 @@ import { transformParsedMaterials, transformParsedBuildings } from "../lib/bluep
 import { validateParsedData } from "../lib/parsedDataValidator";
 import { getParsedData, getPartByNumber, getPartDownloadInfo } from "../lib/blueprintUtils";
 import { checkBlueprintCompatibility, checkRecipesAndSupplyUnlocks, hasSaveData } from "../lib/saveManager";
+import { handleError } from "../lib/errorHandler";
+import { ErrorAlert, SuccessAlert } from "./Alerts";
+import ErrorBoundary from "./ErrorBoundary";
 import BlueprintEdit from "./BlueprintEdit";
 import BlueprintStats from "./BlueprintStats";
 
-export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange, onSearchByCreator, onBlueprintUpdate, onDownload, userLikes = new Set(), blueprints = [], currentBlueprintIndex = -1, onNavigate }) {
+function BlueprintDetailContent({ blueprint, isOpen, onClose, user, onLikeChange, onSearchByCreator, onBlueprintUpdate, onDownload, userLikes = new Set(), blueprints = [], currentBlueprintIndex = -1, onNavigate }) {
   const { theme } = useTheme();
   const { cacheDownloadedBlueprint, getInstallStatus } = useBlueprintFolder();
   const [isLiked, setIsLiked] = useState(userLikes.has(blueprint?.id));
@@ -37,6 +40,8 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
   const [navigationDirection, setNavigationDirection] = useState(0);
   const [selectedPart, setSelectedPart] = useState(0);
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
   // Get available images
   const availableImages = [
@@ -255,6 +260,9 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
 
         {/* Content - Scrollable */}
         <div ref={setScrollableRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-3">
+          <ErrorAlert error={error} onDismiss={() => setError(null)} />
+          <SuccessAlert message={success} onDismiss={() => setSuccess(null)} />
+
           {/* Image Carousel */}
           {availableImages.length > 0 && !imageError && (
             <div 
@@ -965,3 +973,27 @@ export default function BlueprintDetail({ blueprint, isOpen, onClose, user, onLi
     document.body
   );
 }
+
+// Wrap with error boundary
+function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange, onSearchByCreator, onBlueprintUpdate, onDownload, userLikes = new Set(), blueprints = [], currentBlueprintIndex = -1, onNavigate }) {
+  return (
+    <ErrorBoundary name="BlueprintDetail">
+      <BlueprintDetailContent 
+        blueprint={blueprint}
+        isOpen={isOpen}
+        onClose={onClose}
+        user={user}
+        onLikeChange={onLikeChange}
+        onSearchByCreator={onSearchByCreator}
+        onBlueprintUpdate={onBlueprintUpdate}
+        onDownload={onDownload}
+        userLikes={userLikes}
+        blueprints={blueprints}
+        currentBlueprintIndex={currentBlueprintIndex}
+        onNavigate={onNavigate}
+      />
+    </ErrorBoundary>
+  );
+}
+
+export default BlueprintDetail;

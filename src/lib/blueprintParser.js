@@ -2,9 +2,9 @@ const PARSER_API_URL = "https://alchemy-save-parser.faulty.ws/queueBlueprint";
 const SITE_ID = "alchemy-factory-blueprints.vercel.app";
 
 const getParserSecret = () => {
-  const secret = import.meta.env.VITE_PARSER_SECRET_KEY;
+  const secret = import.meta.env.PARSER_API_KEY;
   if (!secret) {
-    console.error("VITE_PARSER_SECRET_KEY environment variable is not set");
+    console.error("Parser API key/environment variable is not set");
     throw new Error("Parser configuration error");
   }
   return secret;

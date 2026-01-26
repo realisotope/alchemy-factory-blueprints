@@ -1,10 +1,11 @@
 import { User, FileText, Download, Heart } from "lucide-react";
 import { motion } from "framer-motion";
+import { memo } from "react";
 import { useTheme } from "../lib/ThemeContext";
 import { sanitizeCreatorName } from "../lib/sanitization";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 
-export default function CreatorCard({ creatorName, blueprintCount, totalDownloads, totalLikes }) {
+function CreatorCardComponent({ creatorName, blueprintCount, totalDownloads, totalLikes }) {
   const { theme } = useTheme();
 
   return (
@@ -126,3 +127,14 @@ export default function CreatorCard({ creatorName, blueprintCount, totalDownload
     </motion.div>
   );
 }
+
+const CreatorCard = memo(CreatorCardComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.creatorName === nextProps.creatorName &&
+    prevProps.blueprintCount === nextProps.blueprintCount &&
+    prevProps.totalDownloads === nextProps.totalDownloads &&
+    prevProps.totalLikes === nextProps.totalLikes
+  );
+});
+
+export default CreatorCard;
