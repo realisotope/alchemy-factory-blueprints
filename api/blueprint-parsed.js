@@ -1,15 +1,15 @@
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
-  process.env.VITE_SUPABASE_URL,
+  process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const PARSER_SECRET = process.env.PARSER_API_KEY;
+const PARSER_API_KEY = process.env.PARSER_API_KEY;
 
 export default async function handler(req, res) {
-  if (!PARSER_SECRET) {
-    console.error("Parser API key/environment variable is not set");
+  if (!PARSER_API_KEY) {
+    console.error("PARSER_API_KEY environment variable is not set");
     return res.status(500).json({ error: "Server configuration error" });
   }
 
@@ -18,7 +18,7 @@ export default async function handler(req, res) {
   }
 
   const providedSecret = req.headers["x-alchemy-secret"];
-  if (providedSecret !== PARSER_SECRET) {
+  if (providedSecret !== PARSER_API_KEY) {
     console.error("Invalid parser secret");
     return res.status(401).json({ error: "Unauthorized" });
   }
