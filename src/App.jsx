@@ -257,6 +257,7 @@ export default function App() {
   const [isHowToOpen, setIsHowToOpen] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [initialBlueprintId, setInitialBlueprintId] = useState(null);
+  const [galleryMessage, setGalleryMessage] = useState(null);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -298,8 +299,11 @@ export default function App() {
     }
   }, []);
 
-  const handleUploadSuccess = () => {
+  const handleUploadSuccess = (message) => {
     setRefreshGallery((prev) => prev + 1);
+    if (message) {
+      setGalleryMessage(message);
+    }
   };
 
   const handleLogout = () => {
@@ -481,7 +485,7 @@ export default function App() {
                 <span className="ml-3 transform scale-x-[-1]">⚗️</span>
               </h2>
               <ErrorBoundary name="BlueprintGalleryWrapper">
-                <BlueprintGallery user={user} refreshTrigger={refreshGallery} initialBlueprintId={initialBlueprintId} />
+                <BlueprintGallery user={user} refreshTrigger={refreshGallery} initialBlueprintId={initialBlueprintId} initialMessage={galleryMessage} onMessageShown={() => setGalleryMessage(null)} />
               </ErrorBoundary>
             </section>
           </div>

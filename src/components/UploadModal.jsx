@@ -48,8 +48,8 @@ function UploadModalContent({ isOpen, onClose, user, onUploadSuccess }) {
         <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 min-h-0">
           <BlueprintUpload
             user={user}
-            onUploadSuccess={() => {
-              onUploadSuccess?.();
+            onUploadSuccess={(message) => {
+              onUploadSuccess?.(message);
               onClose();
             }}
             isEditMode={false}

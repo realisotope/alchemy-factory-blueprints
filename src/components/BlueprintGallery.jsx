@@ -21,7 +21,7 @@ import BlueprintDetail from "./BlueprintDetail";
 import BlueprintCard from "./BlueprintCard";
 import CreatorCard from "./CreatorCard";
 
-function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId }) {
+function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, initialMessage, onMessageShown }) {
   const { theme } = useTheme();
   const [blueprints, setBlueprints] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -42,6 +42,29 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId }) {
   const [compatibilityFilter, setCompatibilityFilter] = useState("all");
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+
+  // Auto-dismiss alerts after 10 seconds
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(null), 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => setSuccess(null), 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [success]);
+
+  // Handle initial message from parent (upload success)
+  useEffect(() => {
+    if (initialMessage) {
+      setSuccess(initialMessage);
+      onMessageShown?.();
+    }
+  }, [initialMessage, onMessageShown]);
   
   // Responsive items per page: 8 for desktop (4 cols, 2 rows), 12 for 4K (6 cols, 2 rows)
   const getItemsPerPage = () => {
@@ -1020,9 +1043,13 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId }) {
         }}
         onDownload={handleDownload}
         onSearchByCreator={handleSearchByCreator}
-        onBlueprintUpdate={() => {
+        onBlueprintUpdate={(message) => {
           // Refresh the gallery to get updated blueprint data
           fetchBlueprints();
+          // Show success message if provided
+          if (message) {
+            setSuccess(message);
+          }
         }}
       />
     </>
@@ -1030,10 +1057,10 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId }) {
 }
 
 // Error boundary wrapperr
-function BlueprintGallery({ user, refreshTrigger, initialBlueprintId }) {
+function BlueprintGallery({ user, refreshTrigger, initialBlueprintId, initialMessage, onMessageShown }) {
   return (
     <ErrorBoundary name="BlueprintGallery">
-      <BlueprintGalleryContent user={user} refreshTrigger={refreshTrigger} initialBlueprintId={initialBlueprintId} />
+      <BlueprintGalleryContent user={user} refreshTrigger={refreshTrigger} initialBlueprintId={initialBlueprintId} initialMessage={initialMessage} onMessageShown={onMessageShown} />
     </ErrorBoundary>
   );
 }

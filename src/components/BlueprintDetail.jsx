@@ -893,9 +893,9 @@ function BlueprintDetailContent({ blueprint, isOpen, onClose, user, onLikeChange
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
         user={user}
-        onUpdate={() => {
+        onUpdate={(message) => {
           setIsEditOpen(false);
-          onBlueprintUpdate?.();
+          onBlueprintUpdate?.(message);
         }}
       />
 

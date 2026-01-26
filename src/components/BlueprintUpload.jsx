@@ -1028,7 +1028,7 @@ function BlueprintUploadContent({ user, onUploadSuccess, isEditMode }) {
       clientLimiter.recordAttempt();
 
       if (onUploadSuccess) {
-        onUploadSuccess();
+        onUploadSuccess("Your blueprint has been uploaded! It may take a couple minutes to appear in the gallery.");
       }
     } catch (err) {
       setError(err.message || "Failed to upload blueprint");

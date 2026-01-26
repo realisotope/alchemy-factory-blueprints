@@ -1,7 +1,7 @@
 {
   "name": "Alchemy Factory Blueprints",
   "short_name": "AF Blueprints",
-  "description": "Share and download optimized Alchemy Factory .af blueprint designs",
+  "description": "Share and download optimized Alchemy Factory .png blueprints",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",

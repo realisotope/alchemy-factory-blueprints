@@ -686,7 +686,12 @@ function BlueprintEditContent({ blueprint, isOpen, onClose, user, onUpdate }) {
       const clientLimiter = new ClientRateLimiter(user.id, 'edits');
       clientLimiter.recordAttempt();
 
-      onUpdate?.();
+      // Pass update message to parent if blueprint data was updated
+      if (blueprintFile && onUpdate) {
+        onUpdate("Your blueprint has been updated! It may take a couple minutes for the changes to appear in the gallery and search results.");
+      } else {
+        onUpdate?.();
+      }
       onClose();
     } catch (err) {
       console.error("Update error:", err);
