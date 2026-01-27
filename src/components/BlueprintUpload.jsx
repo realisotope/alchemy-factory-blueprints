@@ -5,7 +5,7 @@ import { validateBlueprintTitle, validateBlueprintDescription, validateDescripti
 import { sanitizeTitleForFilename } from "../lib/sanitization";
 import { generateSlug } from "../lib/slugUtils";
 import { useTheme } from "../lib/ThemeContext";
-import { Upload, Loader, X } from "lucide-react";
+import { Upload, Loader, X, FileJson, Image as ImageIcon, Package } from "lucide-react";
 import { put } from "@vercel/blob";
 import { uploadToCloudinary } from "../lib/cloudinary";
 import imageCompression from "browser-image-compression";
@@ -32,15 +32,12 @@ const PNG_BLUEPRINT_MAX_SIZE = 20 * 1024 * 1024; // 20MB
 const validateBlueprintFile = async (file) => {
   const fileName = file.name.toLowerCase();
 
-  // Check extension - must be .png
   if (!fileName.endsWith(".png")) {
     const fileExt = fileName.substring(fileName.lastIndexOf('.'));
     return { valid: false, error: `Only PNG files are supported. ${fileExt === '.af' ? 'AF files are no longer supported.' : 'Invalid file type: ' + fileExt}` };
   }
 
-  // If PNG blueprint, validate and extract
   if (fileName.endsWith(".png")) {
-    // Check file size for PNG
     if (file.size > PNG_BLUEPRINT_MAX_SIZE) {
       return { valid: false, error: `PNG blueprint must be smaller than ${formatBytes(PNG_BLUEPRINT_MAX_SIZE)}` };
     }
@@ -65,7 +62,6 @@ const validateBlueprintFile = async (file) => {
     }
   }
 
-  // Should not reach here - only PNG files are supported
   return { valid: false, error: "Invalid file format" };
 };
 
@@ -85,6 +81,20 @@ const validateImageFile = async (file) => {
       valid: false,
       error: `Image must be smaller than 5MB. Current: ${(file.size / 1024 / 1024).toFixed(2)}MB`
     };
+  }
+
+  // Check if PNG contains embedded blueprint data (prevent accidental upload of blueprint as image)
+  if (file.type === 'image/png') {
+    try {
+      const result = await extractBlueprintFromPng(file);
+      if (result && result.strippedFile) {
+        return {
+          valid: false,
+          error: "This PNG file contains a blueprint! Please upload it to the Blueprint slot, not the Image slot."
+        };
+      }
+    } catch (error) {
+    }
   }
 
   // Check image dimensions
@@ -1233,7 +1243,10 @@ function BlueprintUploadContent({ user, onUploadSuccess, isEditMode }) {
         {!isMultiPart && (
         <div>
           <label style={{ color: theme.colors.textPrimary }} className="block text-s font-medium mb-2">
-            Blueprint File (.png) *
+            <div className="flex items-center gap-2 mb-1">
+              <FileJson className="w-5 h-5" style={{ color: theme.colors.accentYellow }} />
+              Blueprint File (.png) *
+            </div>
             </label>
           <label style={{ color: theme.colors.textPrimary }} className="block text-xs font-medium mb-2">
             If uploading a PNG blueprint with a custom screenshot, the image will be used as the first preview image.
@@ -1259,10 +1272,10 @@ function BlueprintUploadContent({ user, onUploadSuccess, isEditMode }) {
                 backgroundColor: blueprintDragActive ? `${theme.colors.cardBorder}20` : `${theme.colors.cardBorder}20`,
                 color: theme.colors.textPrimary
               }}
-              className="flex items-center justify-center w-full px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition hover:opacity-60"
+              className="flex flex-col items-center justify-center w-full px-4 py-8 border-2 border-dashed rounded-lg cursor-pointer transition hover:opacity-60"
             >
-              <Upload className="w-5 h-5 mr-2" style={{ color: theme.colors.accentYellow }} />
-              <span>
+              <FileJson className="w-10 h-10 mb-2" style={{ color: theme.colors.accentYellow }} />
+              <span className="font-medium">
                 {processingPng
                   ? "Processing PNG blueprint..."
                   : blueprintFile
@@ -1285,7 +1298,10 @@ function BlueprintUploadContent({ user, onUploadSuccess, isEditMode }) {
         {isMultiPart && (
         <div>
           <label style={{ color: theme.colors.textPrimary }} className="block text-sm font-medium mb-2">
-            Blueprint Parts (2-4) - Select .png files *
+            <div className="flex items-center gap-2 mb-1">
+              <Package className="w-5 h-5" style={{ color: theme.colors.accentYellow }} />
+              Blueprint Parts (2-4) - Select .png files *
+            </div>
           </label>
           <p style={{ color: theme.colors.textSecondary }} className="text-xs mb-3">
             Upload each part of your multi-part blueprint. Each part will be parsed separately.
@@ -1354,7 +1370,7 @@ function BlueprintUploadContent({ user, onUploadSuccess, isEditMode }) {
                       }}
                       className="flex flex-col items-center justify-center w-full px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition hover:opacity-60 text-center"
                     >
-                      <Upload className="w-5 h-5 mb-2" style={{ color: theme.colors.accentYellow }} />
+                      <FileJson className="w-8 h-8 mb-2" style={{ color: theme.colors.accentYellow }} />
                       <span className="text-sm">
                         {multiPartProcessing[index]
                           ? "Processing..."
@@ -1374,7 +1390,10 @@ function BlueprintUploadContent({ user, onUploadSuccess, isEditMode }) {
         {/* Image Upload - 3 or 4 slots depending on multi-part mode */}
         <div>
           <label style={{ color: theme.colors.textPrimary }} className="block text-sm font-medium mb-2">
-            Preview Images (PNG/JPG) - Up to {isMultiPart ? 4 : 3}
+            <div className="flex items-center gap-2 mb-1">
+              <ImageIcon className="w-5 h-5" style={{ color: theme.colors.accentYellow }} />
+              Preview Images (PNG/JPG) - Up to {isMultiPart ? 4 : 3}
+            </div>
           </label>
           <div className={isMultiPart ? "grid grid-cols-4 gap-3" : "grid grid-cols-3 gap-3"}>
             {(isMultiPart ? [0, 1, 2, 3] : [0, 1, 2]).map((index) => (
@@ -1447,7 +1466,7 @@ function BlueprintUploadContent({ user, onUploadSuccess, isEditMode }) {
                       }}
                       className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition hover:opacity-60 text-xs text-center"
                     >
-                      <Upload className="w-6 h-6 mb-2" style={{ color: theme.colors.accentYellow }} />
+                      <ImageIcon className="w-10 h-10 mb-2" style={{ color: theme.colors.accentYellow }} />
                       <span>
                         {imageFiles[index]
                           ? imageFiles[index].name.substring(0, 15) + '...'

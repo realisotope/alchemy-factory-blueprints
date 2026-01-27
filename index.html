@@ -8,10 +8,10 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <title>Alchemy Factory Blueprints | Share & Download .af Layouts</title>
-    <meta name="title" content="Alchemy Factory Blueprints | Share & Download .af Layouts" />
-    <meta name="description" content="Browse the largest collection of Alchemy Factory blueprints. Upload your .af files, find high-efficiency layouts, and master your factory automation." />
-    <meta name="keywords" content="Alchemy Factory, Alchemy Factory Blueprints, .af files, factory automation layouts, alchemy factory guide, game blueprints" />
+    <title>Alchemy Factory Blueprints | Share & Download .png Layouts</title>
+    <meta name="title" content="Alchemy Factory Blueprints | Share & Download .png Layouts" />
+    <meta name="description" content="Browse the largest collection of Alchemy Factory blueprints. Upload your .png files, find high-efficiency layouts, and master your factory automation." />
+    <meta name="keywords" content="Alchemy Factory, Alchemy Factory Blueprints, .png files, factory automation layouts, alchemy factory guide, game blueprints" />
     <meta name="author" content="Alchemy Factory Blueprints/realisotope" />
     <meta name="robots" content="index, follow" />
     <meta name="language" content="English" />
@@ -19,24 +19,52 @@
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://alchemy-factory-blueprints.vercel.app/" />
     <meta property="og:title" content="Alchemy Factory Blueprint Hub" />
-    <meta property="og:description" content="Share and download optimized .af factory designs. The community hub for Alchemy Factory players." />
-    <meta property="og:image" content="https://alchemy-factory-blueprints.vercel.app/logo.jpg" />
+    <meta property="og:description" content="Share and download optimized .png factory designs. The community hub for Alchemy Factory players." />
+    <meta property="og:image" content="https://alchemy-factory-blueprints.vercel.app/logo.webp" />
     <meta property="og:site_name" content="Alchemy Factory Blueprints" />
     
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://alchemy-factory-blueprints.vercel.app/" />
     <meta property="twitter:title" content="Alchemy Factory Blueprint Hub" />
-    <meta property="twitter:description" content="Looking for the best Alchemy Factory layouts? Find and share .af blueprints here." />
-    <meta property="twitter:image" content="https://alchemy-factory-blueprints.vercel.app/logo.jpg" />
+    <meta property="twitter:description" content="Looking for the best Alchemy Factory layouts? Find and share .png blueprints here." />
+    <meta property="twitter:image" content="https://alchemy-factory-blueprints.vercel.app/logo.webp" />
     
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="shortcut icon" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/favicon.png" />
     <link rel="canonical" href="https://alchemy-factory-blueprints.vercel.app/" />
-    <link rel="manifest" href="/manifest.json" />
+    <script>
+      const manifest = {
+        "name": "Alchemy Factory Blueprints",
+        "short_name": "AF Blueprints",
+        "description": "Share and download optimized Alchemy Factory .png blueprints",
+        "start_url": window.location.origin + "/",
+        "display": "standalone",
+        "background_color": "#0f172a",
+        "theme_color": "#0f172a",
+        "scope": window.location.origin + "/",
+        "icons": [
+          {
+            "src": window.location.origin + "/favicon.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+          }
+        ]
+      };
+      
+      const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+      const manifestUrl = URL.createObjectURL(manifestBlob);
+      
+      // Create and add manifest link
+      const link = document.createElement('link');
+      link.rel = 'manifest';
+      link.href = manifestUrl;
+      document.head.appendChild(link);
+    </script>
   </head>
   <body>
-    <h1 style="display:none;">Alchemy Factory Blueprints, .af Blueprint Sharing</h1>
+    <h1 style="display:none;">Alchemy Factory Blueprints, .png Blueprint Sharing</h1>
 
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>

@@ -52,7 +52,7 @@ function ChangelogAccordion({ theme }) {
             "Improved error handling and reporting",
           ]
         },
-        "Minor site design tweaks and refactor",
+        "Added check to prevent users from uploading blueprints to the preview image slots.",
       ]
     },
     {

@@ -5,7 +5,7 @@ import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { validateBlueprintTitle, validateBlueprintDescription, validateDescriptionURLs, sanitizeFilename } from "../lib/validation";
 import { sanitizeTitleForFilename } from "../lib/sanitization";
 import { useTheme } from "../lib/ThemeContext";
-import { Upload, Loader, X } from "lucide-react";
+import { Upload, Loader, X, FileJson, Image as ImageIcon, Package } from "lucide-react";
 import { uploadToCloudinary } from "../lib/cloudinary";
 import { deleteCloudinaryImage } from "../lib/cloudinaryDelete";
 import imageCompression from "browser-image-compression";
@@ -24,72 +24,38 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 const MAX_IMAGE_WIDTH = 4000;
 const MAX_IMAGE_HEIGHT = 4000;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const AF_FILE_MAX_SIZE = 20 * 1024 * 1024; // 20MB
 const PNG_BLUEPRINT_MAX_SIZE = 20 * 1024 * 1024; // 20MB
 
-// Validate blueprint file (.af or .png) by checking extension and file structure
+// Validate blueprint file (.png) by checking extension and file structure
 const validateBlueprintFile = async (file) => {
   const fileName = file.name.toLowerCase();
 
-  // Check extension - must end with .af or .png
-  if (!fileName.endsWith(".af") && !fileName.endsWith(".png")) {
-    return { valid: false, error: "File must have .af or .png extension" };
+  if (!fileName.endsWith(".png")) {
+    return { valid: false, error: "Blueprint file must be a .png file" };
   }
 
-  // If PNG blueprint, validate and extract
-  if (fileName.endsWith(".png")) {
-    // Check file size for PNG
-    if (file.size > PNG_BLUEPRINT_MAX_SIZE) {
-      return { valid: false, error: `PNG blueprint must be smaller than ${formatBytes(PNG_BLUEPRINT_MAX_SIZE)}` };
-    }
-
-    try {
-      // Extract blueprint data from PNG (strips image data)
-      const result = await extractBlueprintFromPng(file);
-      
-      return { 
-        valid: true, 
-        isPng: true,
-        strippedFile: result.strippedFile,
-        imageBlob: result.imageBlob, // Include extracted PNG image
-        compressionInfo: {
-          originalSize: result.originalSize,
-          strippedSize: result.strippedSize,
-          savedSpace: result.compressionRatio
-        }
-      };
-    } catch (error) {
-      return { valid: false, error: `PNG validation failed: ${error.message}` };
-    }
-  }
-
-  // For .af files, continue with existing validation
-  if (file.size > AF_FILE_MAX_SIZE) {
-    return { valid: false, error: "Blueprint file must be smaller than 50MB" };
+  if (file.size > PNG_BLUEPRINT_MAX_SIZE) {
+    return { valid: false, error: `PNG blueprint must be smaller than ${formatBytes(PNG_BLUEPRINT_MAX_SIZE)}` };
   }
 
   try {
-    const buffer = await file.slice(0, 4).arrayBuffer();
-    const view = new Uint8Array(buffer);
+    // Extract blueprint data from PNG (strips image data)
+    const result = await extractBlueprintFromPng(file);
     
-    if (view.length >= 2) {
-      if (view[0] === 0x4d && view[1] === 0x5a) {
-        return { valid: false, error: "Executable files are not allowed" };
+    return { 
+      valid: true, 
+      isPng: true,
+      strippedFile: result.strippedFile,
+      imageBlob: result.imageBlob, // Include extracted PNG image
+      compressionInfo: {
+        originalSize: result.originalSize,
+        strippedSize: result.strippedSize,
+        savedSpace: result.compressionRatio
       }
-      if (view[0] === 0x23 && view[1] === 0x21) {
-        return { valid: false, error: "Script files are not allowed" };
-      }
-    }
-    if (view.length >= 4) {
-      if (view[0] === 0x50 && view[1] === 0x4b && view[2] === 0x03 && view[3] === 0x04) {
-        return { valid: false, error: "Archive files must be saved as .af files" };
-      }
-    }
-  } catch (e) {
-    console.warn("Could not validate file content:", e);
+    };
+  } catch (error) {
+    return { valid: false, error: `PNG validation failed: ${error.message}` };
   }
-
-  return { valid: true, isPng: false };
 };
 
 // Validate image file
@@ -106,6 +72,20 @@ const validateImageFile = async (file) => {
       valid: false, 
       error: `Image must be smaller than 5MB. Current: ${(file.size / 1024 / 1024).toFixed(2)}MB` 
     };
+  }
+
+  // Check if PNG contains embedded blueprint data (prevent accidental upload of blueprint as image)
+  if (file.type === 'image/png') {
+    try {
+      const result = await extractBlueprintFromPng(file);
+      if (result && result.strippedFile) {
+        return {
+          valid: false,
+          error: "This PNG file contains a blueprint! Please upload it as a Blueprint file, not as an Image."
+        };
+      }
+    } catch (error) {
+    }
   }
 
   return new Promise((resolve) => {
@@ -151,7 +131,7 @@ function BlueprintEditContent({ blueprint, isOpen, onClose, user, onUpdate }) {
   const [rateLimitInfo, setRateLimitInfo] = useState(null);
   const [processingPng, setProcessingPng] = useState(false);
   const [compressionInfo, setCompressionInfo] = useState(null);
-  const [blueprintFileExtension, setBlueprintFileExtension] = useState(".af");
+  const [blueprintFileExtension, setBlueprintFileExtension] = useState(".png");
   const [processingState, setProcessingState] = useState("");
   const [imageCompressionInfo, setImageCompressionInfo] = useState([null, null, null, null]);
   const [multiPartFiles, setMultiPartFiles] = useState([null, null, null, null]);
@@ -196,7 +176,7 @@ function BlueprintEditContent({ blueprint, isOpen, onClose, user, onUpdate }) {
         setError(validation.error);
         setBlueprintFile(null);
         setCompressionInfo(null);
-        setBlueprintFileExtension(".af");
+        setBlueprintFileExtension(".png");
       } else {
         // If PNG, convert stripped Blob to File with proper filename; otherwise use original
         let fileToUse;
@@ -228,7 +208,7 @@ function BlueprintEditContent({ blueprint, isOpen, onClose, user, onUpdate }) {
         }
         setBlueprintFile(fileToUse);
         setCompressionInfo(validation.compressionInfo || null);
-        setBlueprintFileExtension(isPng ? ".png" : ".af");
+        setBlueprintFileExtension(".png");
         setError(null);
         setProcessingPng(false);
         setProcessingState("");
@@ -565,7 +545,7 @@ function BlueprintEditContent({ blueprint, isOpen, onClose, user, onUpdate }) {
         // Update each selected part
         for (const idx of partsToUpdate) {
           const partNumber = idx + 1;
-          const partFileName = `${sanitizeTitleForFilename(title)}_part${partNumber}_${Date.now()}${multiPartFiles[idx]?.name.endsWith('.png') ? '.png' : '.af'}`;
+          const partFileName = `${sanitizeTitleForFilename(title)}_part${partNumber}_${Date.now()}.png`;
           const partPath = `${user.id}/${partFileName}`;
           
           try {
@@ -861,9 +841,12 @@ function BlueprintEditContent({ blueprint, isOpen, onClose, user, onUpdate }) {
           {/* Blueprint File - Only for single-part */}
           {!blueprint?.is_multi_part && (
             <div>
-              <label className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
-                Blueprint File (.af or .png)
-              </label>
+              <div className="flex items-center gap-2 mb-2">
+                <FileJson className="w-5 h-5" style={{ color: theme.colors.accentYellow }} />
+                <label className="block text-l font-medium" style={{ color: theme.colors.textPrimary }}>
+                  Blueprint File (.png)
+                </label>
+              </div>
               <p className="text-xs mb-2" style={{ color: theme.colors.textSecondary }}>
                 {blueprintFile ? "New file selected" : "Keep existing file or upload a new one"}
               </p>
@@ -872,13 +855,14 @@ function BlueprintEditContent({ blueprint, isOpen, onClose, user, onUpdate }) {
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isLoading || processingPng}
                 style={{ borderColor: theme.colors.accentYellow, color: theme.colors.accentYellow }}
-                className="w-full px-4 py-3 border-2 border-dashed rounded-lg transition font-medium disabled:opacity-50 hover:opacity-60"
+                className="w-full px-4 py-4 border-2 border-dashed rounded-lg transition font-medium disabled:opacity-50 hover:opacity-60 flex flex-col items-center justify-center"
               >
+                <FileJson className="w-10 h-10 mb-2" style={{ color: theme.colors.accentYellow }} />
                 {processingPng
                   ? "Processing PNG blueprint..."
                   : blueprintFile
                   ? `✓ ${blueprintFile.name}`
-                  : "Click to select or upload .af/.png file"}
+                  : "Click to select or upload .png file"}
               </button>
               {compressionInfo && (
                 <p style={{ color: theme.colors.textSecondary }} className="text-xs mt-1">
@@ -899,9 +883,12 @@ function BlueprintEditContent({ blueprint, isOpen, onClose, user, onUpdate }) {
           {/* Multi-Part Blueprint Files */}
           {blueprint?.is_multi_part && blueprint?.parts && (
             <div>
-              <label className="block text-l font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
-                Update Blueprint Parts (optional)
-              </label>
+              <div className="flex items-center gap-2 mb-2">
+                <Package className="w-5 h-5" style={{ color: theme.colors.accentYellow }} />
+                <label className="block text-l font-medium" style={{ color: theme.colors.textPrimary }}>
+                  Update Blueprint Parts (optional)
+                </label>
+              </div>
               <p className="text-xs mb-3" style={{ color: theme.colors.textSecondary }}>
                 Update any part files here. Only updated parts will be reprocessed.
               </p>
@@ -998,7 +985,7 @@ function BlueprintEditContent({ blueprint, isOpen, onClose, user, onUpdate }) {
                           }}
                           className="flex flex-col items-center justify-center w-full px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition hover:opacity-60 text-center"
                         >
-                          <Upload className="w-5 h-5 mb-2" style={{ color: theme.colors.accentYellow }} />
+                          <FileJson className="w-8 h-8 mb-2" style={{ color: theme.colors.accentYellow }} />
                           <span className="text-sm">
                             Part {part.part_number}
                           </span>
@@ -1013,9 +1000,12 @@ function BlueprintEditContent({ blueprint, isOpen, onClose, user, onUpdate }) {
 
           {/* Images - 3 slots for single-part, 4 for multi-part */}
           <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: theme.colors.textPrimary }}>
-              Preview Images (PNG/JPG) - Up to {blueprint?.is_multi_part ? "4" : "3"}
-            </label>
+            <div className="flex items-center gap-2 mb-2">
+              <ImageIcon className="w-5 h-5" style={{ color: theme.colors.accentYellow }} />
+              <label className="block text-sm font-medium" style={{ color: theme.colors.textPrimary }}>
+                Preview Images (PNG/JPG) - Up to {blueprint?.is_multi_part ? "4" : "3"}
+              </label>
+            </div>
             <div className={`grid ${blueprint?.is_multi_part ? "grid-cols-4" : "grid-cols-3"} gap-3`}>
               {(blueprint?.is_multi_part ? [0, 1, 2, 3] : [0, 1, 2]).map((index) => (
                 <div key={index}>
@@ -1088,7 +1078,7 @@ function BlueprintEditContent({ blueprint, isOpen, onClose, user, onUpdate }) {
                         }}
                         className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition hover:opacity-60 text-xs text-center"
                       >
-                        <Upload className="w-6 h-6 mb-2" style={{ color: theme.colors.accentYellow }} />
+                        <ImageIcon className="w-10 h-10 mb-2" style={{ color: theme.colors.accentYellow }} />
                         <span>
                           {imageFiles[index]
                             ? imageFiles[index].name.substring(0, 15) + '...'
