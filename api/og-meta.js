@@ -55,7 +55,9 @@ export default async function handler(req, res) {
 
         if (blueprint && !error) {
           ogTitle = blueprint.title;
-          ogDescription = blueprint.description || `Check out this Alchemy Factory blueprint: ${blueprint.title}`;
+          ogDescription = blueprint.description 
+            ? `Alchemy Factory Blueprint - ${blueprint.description}`
+            : `Check out this Alchemy Factory blueprint: ${blueprint.title}`;
           ogImage = blueprint.image_url || `${baseUrl}/logo.jpg`;
           // Use slug if available (human-readable), fall back to UUID
           const blueprintUrl = blueprint.slug ? `${baseUrl}/blueprint/${blueprint.slug}` : `${baseUrl}/blueprint/${blueprint.id}`;
