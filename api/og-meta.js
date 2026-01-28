@@ -1,37 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
-import { readFileSync } from 'fs';
-import { join } from 'path';
 
 // Initialize Supabase client with public anon key
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL,
   process.env.VITE_SUPABASE_ANON_KEY
 );
-
-let indexHtmlTemplate = null;
-
-function getIndexHtml() {
-  if (!indexHtmlTemplate) {
-    try {
-      indexHtmlTemplate = readFileSync(join(process.cwd(), 'index.html'), 'utf-8');
-    } catch (err) {
-      console.error('Error reading index.html:', err);
-      indexHtmlTemplate = `<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Alchemy Factory Blueprints</title>
-    <script type="module" src="/src/main.jsx"></script>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
-</html>`;
-    }
-  }
-  return indexHtmlTemplate;
-}
 
 function escapeHtml(text) {
   if (!text) return '';
@@ -95,13 +68,22 @@ export default async function handler(req, res) {
       }
     }
 
-    let html = getIndexHtml();
-
-    const metaTags = `
+    // Generate HTML with meta tags and a redirect for browsers
+    const html = `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0f172a" />
+    
     <title>${escapeHtml(pageTitle)}</title>
     <meta name="title" content="${escapeHtml(pageTitle)}" />
     <meta name="description" content="${escapeHtml(ogDescription)}" />
-    
+    <meta name="keywords" content="Alchemy Factory, Alchemy Factory Blueprints, .png files, factory automation layouts, alchemy factory guide, game blueprints" />
+    <meta name="author" content="Alchemy Factory Blueprints/realisotope" />
+    <meta name="robots" content="index, follow" />
+    <meta name="language" content="English" />
+
     <meta property="og:type" content="${escapeHtml(ogType)}" />
     <meta property="og:url" content="${escapeHtml(ogUrl)}" />
     <meta property="og:title" content="${escapeHtml(ogTitle)}" />
@@ -113,14 +95,36 @@ export default async function handler(req, res) {
     <meta property="twitter:url" content="${escapeHtml(ogUrl)}" />
     <meta property="twitter:title" content="${escapeHtml(ogTitle)}" />
     <meta property="twitter:description" content="${escapeHtml(ogDescription)}" />
-    <meta property="twitter:image" content="${escapeHtml(ogImage)}" />`;
-
-    html = html.replace(/<meta property="og:[^>]+>/gi, '');
-    html = html.replace(/<meta property="twitter:[^>]+>/gi, '');
-    html = html.replace(/<meta name="(title|description)"[^>]+>/gi, '');
-    html = html.replace(/<title>[^<]*<\/title>/i, '');
+    <meta property="twitter:image" content="${escapeHtml(ogImage)}" />
     
-    html = html.replace('</head>', `${metaTags}\n  </head>`);
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="shortcut icon" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+    <link rel="canonical" href="${escapeHtml(ogUrl)}" />
+    
+    <!-- Redirect browsers to the main app, but not crawlers -->
+    <script>
+      // Only redirect if this is not a bot/crawler
+      if (!/bot|crawler|spider|crawling/i.test(navigator.userAgent)) {
+        window.location.replace('/?blueprintId=${escapeHtml(blueprintId || '')}');
+      }
+    </script>
+    <noscript>
+      <meta http-equiv="refresh" content="0;url=/?blueprintId=${escapeHtml(blueprintId || '')}" />
+    </noscript>
+  </head>
+  <body>
+    <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:system-ui,sans-serif;">
+      <div style="text-align:center;">
+        <h1 style="font-size:3rem;margin-bottom:1rem;">⚗️</h1>
+        <p style="font-size:1.25rem;color:#666;">Loading blueprint...</p>
+        <p style="margin-top:1rem;font-size:0.875rem;color:#999;">
+          <a href="/?blueprintId=${escapeHtml(blueprintId || '')}" style="color:#3b82f6;">Click here if you are not redirected automatically</a>
+        </p>
+      </div>
+    </div>
+  </body>
+</html>`;
 
     // Set aggressive cache headers - cache for 24 hours on CDN, 7 days stale-while-revalidate
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
