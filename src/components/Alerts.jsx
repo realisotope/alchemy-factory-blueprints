@@ -1,7 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 // Displays user-friendly error messages from service operations
 export function ErrorAlert({ error, onDismiss, title = 'Error' }) {
+  useEffect(() => {
+    if (error && onDismiss) {
+      const timer = setTimeout(onDismiss, 8000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, onDismiss]);
+
   if (!error) return null;
 
   const message = error.message || error.error?.message || 'An unexpected error occurred';
@@ -58,6 +65,13 @@ export function ErrorAlert({ error, onDismiss, title = 'Error' }) {
 
 // Displays user-friendly success messages
 export function SuccessAlert({ message, onDismiss }) {
+  useEffect(() => {
+    if (message && onDismiss) {
+      const timer = setTimeout(onDismiss, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [message, onDismiss]);
+
   if (!message) return null;
   return (
     <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
@@ -102,6 +116,13 @@ export function SuccessAlert({ message, onDismiss }) {
 
 // Displays warning/informational messages
 export function WarningAlert({ message, onDismiss, title = 'Warning' }) {
+  useEffect(() => {
+    if (message && onDismiss) {
+      const timer = setTimeout(onDismiss, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [message, onDismiss]);
+
   if (!message) return null;
   return (
     <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
@@ -149,6 +170,13 @@ export function WarningAlert({ message, onDismiss, title = 'Warning' }) {
 
 // Displays informational messages (blue)
 export function InfoAlert({ message, onDismiss, title = 'Note' }) {
+  useEffect(() => {
+    if (message && onDismiss) {
+      const timer = setTimeout(onDismiss, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [message, onDismiss]);
+
   if (!message) return null;
   return (
     <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">

@@ -74,17 +74,19 @@ const validateImageFile = async (file) => {
     };
   }
 
-  // Check if PNG contains embedded blueprint data (prevent accidental upload of blueprint as image)
+  // Check if PNG contains embedded blueprint data (detect and auto-move to blueprint slot)
   if (file.type === 'image/png') {
     try {
       const result = await extractBlueprintFromPng(file);
       if (result && result.strippedFile) {
         return {
           valid: false,
-          error: "This PNG file contains a blueprint! Please upload it as a Blueprint file, not as an Image."
+          isBlueprintFile: true,
+          blueprintData: result
         };
       }
     } catch (error) {
+      // Not a blueprint PNG, continue with regular validation
     }
   }
 
@@ -255,6 +257,32 @@ function BlueprintEditContent({ blueprint, isOpen, onClose, user, onUpdate }) {
     const file = e.target.files?.[0];
     if (file) {
       const validation = await validateImageFile(file);
+      
+      // Check if this is actually a blueprint file that was uploaded to image slot and auto move itt
+      if (validation.isBlueprintFile && validation.blueprintData) {
+        if (isMultiPart) {
+          // In multi-part mode, move to the corresponding part
+          const blueprintFile = new File([validation.blueprintData.strippedFile], file.name, { type: 'image/png' });
+          const newMultiPartFiles = [...multiPartFiles];
+          newMultiPartFiles[index] = blueprintFile;
+          setMultiPartFiles(newMultiPartFiles);
+          
+          const newCompressionInfo = [...multiPartCompressionInfo];
+          newCompressionInfo[index] = validation.blueprintData.compressionInfo || null;
+          setMultiPartCompressionInfo(newCompressionInfo);
+          
+          const partName = getPartDisplayName(index + 1);
+          setSuccess(`Detected a blueprint file! Automatically moved it to ${partName} Part slot.`);
+        } else {
+          // In single-part mode, move to blueprint file slot
+          const blueprintFile = new File([validation.blueprintData.strippedFile], file.name, { type: 'image/png' });
+          setBlueprintFile(blueprintFile);
+          setCompressionInfo(validation.blueprintData.compressionInfo || null);
+          setSuccess("Detected a blueprint file! Automatically moved it to the Blueprint File slot.");
+        }
+        return;
+      }
+      
       if (!validation.valid) {
         setError(validation.error);
         const newFiles = [...imageFiles];
@@ -326,6 +354,32 @@ function BlueprintEditContent({ blueprint, isOpen, onClose, user, onUpdate }) {
     const file = e.dataTransfer.files?.[0];
     if (file) {
       const validation = await validateImageFile(file);
+      
+      // Check if this is actually a blueprint file that was uploaded to image slot and auto move itt
+      if (validation.isBlueprintFile && validation.blueprintData) {
+        if (isMultiPart) {
+          // In multi-part mode, move to the corresponding part
+          const blueprintFile = new File([validation.blueprintData.strippedFile], file.name, { type: 'image/png' });
+          const newMultiPartFiles = [...multiPartFiles];
+          newMultiPartFiles[index] = blueprintFile;
+          setMultiPartFiles(newMultiPartFiles);
+          
+          const newCompressionInfo = [...multiPartCompressionInfo];
+          newCompressionInfo[index] = validation.blueprintData.compressionInfo || null;
+          setMultiPartCompressionInfo(newCompressionInfo);
+          
+          const partName = getPartDisplayName(index + 1);
+          setSuccess(`Detected a blueprint file! Automatically moved it to ${partName} Part slot.`);
+        } else {
+          // In single-part mode, move to blueprint file slot
+          const blueprintFile = new File([validation.blueprintData.strippedFile], file.name, { type: 'image/png' });
+          setBlueprintFile(blueprintFile);
+          setCompressionInfo(validation.blueprintData.compressionInfo || null);
+          setSuccess("Detected a blueprint file! Automatically moved it to the Blueprint File slot.");
+        }
+        return;
+      }
+      
       if (!validation.valid) {
         setError(validation.error);
         const newFiles = [...imageFiles];
@@ -699,8 +753,6 @@ function BlueprintEditContent({ blueprint, isOpen, onClose, user, onUpdate }) {
         {/* Form - Scrollable Content */}
         <div ref={scrollableRef} className="flex-1 overflow-y-auto min-h-0">
           <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4 md:space-y-5" style={{ color: theme.colors.textPrimary }}>
-          <ErrorAlert error={error ? { message: error } : null} onDismiss={() => setError("")} />
-          <SuccessAlert message={success} onDismiss={() => setSuccess("")} />
 
           {/* Title - Read Only */}
           <div>
@@ -855,20 +907,29 @@ function BlueprintEditContent({ blueprint, isOpen, onClose, user, onUpdate }) {
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isLoading || processingPng}
                 style={{ borderColor: theme.colors.accentYellow, color: theme.colors.accentYellow }}
-                className="w-full px-4 py-4 border-2 border-dashed rounded-lg transition font-medium disabled:opacity-50 hover:opacity-60 flex flex-col items-center justify-center"
+                className="w-full px-4 py-4 border-2 border-dashed rounded-lg transition font-medium disabled:opacity-50 hover:opacity-60 flex flex-col items-center justify-center min-h-[120px]"
               >
-                <FileJson className="w-10 h-10 mb-2" style={{ color: theme.colors.accentYellow }} />
-                {processingPng
-                  ? "Processing PNG blueprint..."
-                  : blueprintFile
-                  ? `✓ ${blueprintFile.name}`
-                  : "Click to select or upload .png file"}
+                <div className="flex flex-col gap-2 w-full items-center text-center">
+                  <FileJson className="w-10 h-10" style={{ color: theme.colors.accentYellow }} />
+                  <div>
+                    {processingPng
+                      ? "Processing PNG blueprint..."
+                      : blueprintFile
+                      ? `✓ ${blueprintFile.name}`
+                      : "Click to select or upload .png file"}
+                  </div>
+                  {blueprint?.file_url && !blueprintFile && (
+                    <p style={{ color: theme.colors.textSecondary }} className="text-xs break-all">
+                      Current: {blueprint.file_url.split('/').pop()}
+                    </p>
+                  )}
+                  {compressionInfo && (
+                    <p style={{ color: theme.colors.textSecondary }} className="text-xs">
+                      PNG optimized: {formatBytes(compressionInfo.originalSize)} → {formatBytes(compressionInfo.strippedSize)} ({compressionInfo.savedSpace}%)
+                    </p>
+                  )}
+                </div>
               </button>
-              {compressionInfo && (
-                <p style={{ color: theme.colors.textSecondary }} className="text-xs mt-1">
-                  PNG optimized: {formatBytes(compressionInfo.originalSize)} → {formatBytes(compressionInfo.strippedSize)} ({compressionInfo.savedSpace})
-                </p>
-              )}
               <input
                 ref={fileInputRef}
                 type="file"
@@ -895,28 +956,68 @@ function BlueprintEditContent({ blueprint, isOpen, onClose, user, onUpdate }) {
               <div className="grid grid-cols-2 gap-3">
                 {blueprint.parts.map((part, idx) => (
                   <div key={idx}>
-                    {multiPartFiles[idx] ? (
-                      <div className="relative">
-                        <div
+                    <div
+                      className="relative"
+                      onDragEnter={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const newDragActive = [...multiPartDragActive];
+                        newDragActive[idx] = true;
+                        setMultiPartDragActive(newDragActive);
+                      }}
+                      onDragLeave={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const newDragActive = [...multiPartDragActive];
+                        newDragActive[idx] = false;
+                        setMultiPartDragActive(newDragActive);
+                      }}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const newDragActive = [...multiPartDragActive];
+                        newDragActive[idx] = false;
+                        setMultiPartDragActive(newDragActive);
+                        handleMultiPartFileSelect({ target: { files: e.dataTransfer.files } }, idx);
+                      }}
+                    >
+                      <input
+                        type="file"
+                        accept=".png"
+                        onChange={(e) => handleMultiPartFileSelect(e, idx)}
+                        className="hidden"
+                        id={`multipart-edit-input-${idx}`}
+                        disabled={isLoading}
+                      />
+                      {multiPartFiles[idx] ? (
+                        <label
+                          htmlFor={`multipart-edit-input-${idx}`}
                           style={{
-                            backgroundColor: `${theme.colors.cardBg}33`,
-                            borderColor: theme.colors.cardBorder,
-                            color: theme.colors.textPrimary
+                            borderColor: `${theme.colors.accentYellow}`,
+                            backgroundColor: `${theme.colors.cardBorder}20`,
+                            color: theme.colors.textPrimary,
+                            minHeight: '120px'
                           }}
-                          className="w-full px-4 py-3 border rounded-lg"
+                          className="flex flex-col items-start justify-start w-full px-4 py-4 border-2 border-dashed rounded-lg cursor-pointer transition hover:opacity-60 text-left"
                         >
-                          <div className="flex items-start justify-between">
+                          <div className="flex items-start justify-between w-full">
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium text-sm truncate">
+                              <p className="font-medium text-sm break-words">
                                 Part {part.part_number}
                               </p>
-                              <p className="text-xs" style={{ color: theme.colors.textSecondary }}>
-                                {multiPartFiles[idx].name.substring(0, 20)}...
+                              <p className="text-xs break-all" style={{ color: theme.colors.textSecondary }}>
+                                {multiPartFiles[idx].name}
                               </p>
                             </div>
                             <button
                               type="button"
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
                                 const newFiles = [...multiPartFiles];
                                 const newCompressionInfo = [...multiPartCompressionInfo];
                                 newFiles[idx] = null;
@@ -924,74 +1025,44 @@ function BlueprintEditContent({ blueprint, isOpen, onClose, user, onUpdate }) {
                                 setMultiPartFiles(newFiles);
                                 setMultiPartCompressionInfo(newCompressionInfo);
                               }}
-                              className="ml-2 text-red-500 hover:text-red-600"
+                              className="ml-2 text-red-500 hover:text-red-600 flex-shrink-0"
                             >
                               <X className="w-4 h-4" />
                             </button>
                           </div>
                           {multiPartCompressionInfo[idx] && (
-                            <p style={{ color: theme.colors.textSecondary }} className="text-xs mt-1">
+                            <p style={{ color: theme.colors.textSecondary }} className="text-xs mt-2 line-clamp-2">
                               {multiPartCompressionInfo[idx].fromPng
-                                ? `PNG optimized: ${formatBytes(multiPartCompressionInfo[idx].originalSize)} → ${formatBytes(multiPartCompressionInfo[idx].strippedSize)}`
+                                ? `PNG optimized: ${formatBytes(multiPartCompressionInfo[idx].originalSize)} → ${formatBytes(multiPartCompressionInfo[idx].strippedSize)} (${multiPartCompressionInfo[idx].savedSpace}%)`
                                 : `File size: ${formatBytes(multiPartCompressionInfo[idx].originalSize)}`}
                             </p>
                           )}
-                        </div>
-                      </div>
-                    ) : (
-                      <div
-                        className="relative"
-                        onDragEnter={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          const newDragActive = [...multiPartDragActive];
-                          newDragActive[idx] = true;
-                          setMultiPartDragActive(newDragActive);
-                        }}
-                        onDragLeave={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          const newDragActive = [...multiPartDragActive];
-                          newDragActive[idx] = false;
-                          setMultiPartDragActive(newDragActive);
-                        }}
-                        onDragOver={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                        }}
-                        onDrop={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          const newDragActive = [...multiPartDragActive];
-                          newDragActive[idx] = false;
-                          setMultiPartDragActive(newDragActive);
-                          handleMultiPartFileSelect({ target: { files: e.dataTransfer.files } }, idx);
-                        }}
-                      >
-                        <input
-                          type="file"
-                          accept=".png"
-                          onChange={(e) => handleMultiPartFileSelect(e, idx)}
-                          className="hidden"
-                          id={`multipart-edit-input-${idx}`}
-                          disabled={isLoading}
-                        />
+                        </label>
+                      ) : (
                         <label
                           htmlFor={`multipart-edit-input-${idx}`}
                           style={{
                             borderColor: multiPartDragActive[idx] ? theme.colors.cardBorder : `${theme.colors.accentYellow}`,
                             backgroundColor: multiPartDragActive[idx] ? `${theme.colors.cardBorder}20` : `${theme.colors.cardBorder}20`,
-                            color: theme.colors.textPrimary
+                            color: theme.colors.textPrimary,
+                            minHeight: '120px'
                           }}
-                          className="flex flex-col items-center justify-center w-full px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition hover:opacity-60 text-center"
+                          className="flex flex-col items-start justify-start w-full px-4 py-4 border-2 border-dashed rounded-lg cursor-pointer transition hover:opacity-60 text-left"
                         >
-                          <FileJson className="w-8 h-8 mb-2" style={{ color: theme.colors.accentYellow }} />
-                          <span className="text-sm">
-                            Part {part.part_number}
-                          </span>
+                          <div className="flex flex-col gap-1 w-full">
+                            <FileJson className="w-8 h-8" style={{ color: theme.colors.accentYellow }} />
+                            <span className="text-sm font-medium">
+                              Part {part.part_number}
+                            </span>
+                            {part.filename && (
+                              <p className="text-xs break-all" style={{ color: theme.colors.textSecondary }}>
+                                Current: {part.filename}
+                              </p>
+                            )}
+                          </div>
                         </label>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1100,6 +1171,9 @@ function BlueprintEditContent({ blueprint, isOpen, onClose, user, onUpdate }) {
               <p>📊 Edits remaining this hour: <span style={{ color: theme.colors.accentGold }} className="font-semibold">{rateLimitInfo.remaining}/{rateLimitInfo.maxAttempts}</span></p>
             </div>
           )}
+
+          <SuccessAlert message={success} onDismiss={() => setSuccess("")} />
+          <ErrorAlert error={error ? { message: error } : null} onDismiss={() => setError("")} />
 
           {/* Submit */}
           <div className="flex gap-3 pt-4">
