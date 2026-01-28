@@ -52,7 +52,8 @@ function ChangelogAccordion({ theme }) {
             "Improved error handling and reporting",
           ]
         },
-        "Added check to prevent users from uploading blueprints to the preview image slots.",
+        "Added check to prevent users from uploading blueprints to the preview image slots. (Blueprints uploaded to preview image slots will now be auto moved)",
+        "Updated OpenGraph meta generation to work with blueprint slug urls. (Now looks good when sharing blueprint links on social media)"
       ]
     },
     {
