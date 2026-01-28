@@ -13,7 +13,7 @@
     },
     {
       "source": "/blueprint/:slug",
-      "destination": "/index.html"
+      "destination": "/api/og-meta?blueprintId=:slug"
     }
   ],
   "headers": [
