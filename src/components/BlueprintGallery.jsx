@@ -14,7 +14,7 @@ import { AVAILABLE_TAGS, getTagDisplay } from "../lib/tags";
 import { ClientRateLimiter } from "../lib/rateLimiter";
 import { hasSaveData, checkBlueprintCompatibility } from "../lib/saveManager";
 import { useBlueprintFolder } from "../lib/BlueprintFolderContext";
-import { fetchAllBlueprints, fetchUserLikes as fetchUserLikesService, fetchUserRatings, rateBlueprint, unlikeBlueprint, deleteBlueprint as deleteBlueprintService } from "../lib/blueprintService";
+import { fetchAllBlueprints, fetchUserLikes as fetchUserLikesService, fetchUserRatings, rateBlueprint, likeBlueprint, unlikeBlueprint, deleteBlueprint as deleteBlueprintService } from "../lib/blueprintService";
 import { handleError } from "../lib/errorHandler";
 import { ErrorAlert, SuccessAlert } from "./Alerts";
 import ErrorBoundary from "./ErrorBoundary";
@@ -294,15 +294,39 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
       return;
     }
 
+    // Check if user clicked the same rating to remove it
+    const isRemovingRating = rating === oldRating && rating > 0;
+
+    const ratingLimiter = new ClientRateLimiter(user.id, 'ratings');
+    const limitStatus = ratingLimiter.checkLimit();
+
+    if (!limitStatus.allowed) {
+      const errorMsg = limitStatus.reason === 'cooldown' 
+        ? `Please wait ${limitStatus.resetTime} second${limitStatus.resetTime !== 1 ? 's' : ''} before rating again`
+        : `You've exceeded your rating limit (${limitStatus.maxAttempts} per hour). Try again in ${Math.ceil(limitStatus.resetTime / 60)} minutes`;
+      setError({ message: errorMsg });
+      setTimeout(() => setError(null), 5000);
+      return;
+    }
+
     try {
-      if (rating === 0) {
+      ratingLimiter.recordAttempt();
+
+      if (isRemovingRating) {
         await unlikeBlueprint(blueprintId, user.id);
         setUserRatings((prev) => {
           const newMap = new Map(prev);
           newMap.delete(blueprintId);
           return newMap;
         });
-        setSuccess('Rating removed');
+        rating = 0;
+      } else if (rating === 0) {
+        await unlikeBlueprint(blueprintId, user.id);
+        setUserRatings((prev) => {
+          const newMap = new Map(prev);
+          newMap.delete(blueprintId);
+          return newMap;
+        });
       } else {
         const result = await rateBlueprint(blueprintId, user.id, rating);
         
@@ -311,7 +335,6 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
         }
         
         setUserRatings((prev) => new Map(prev).set(blueprintId, rating));
-        setSuccess(`Rated ${rating} heart${rating !== 1 ? 's' : ''}`);
       }
       
       // Opt update the blueprint's rating

@@ -12,14 +12,19 @@ const RATE_LIMIT_CONFIG = {
     cooldownMs: 60 * 1000,
   },
   downloads: {
-    maxAttempts: 30,
+    maxAttempts: 50,
     windowMs: 60 * 60 * 1000,
-    cooldownMs: 6 * 1000,
+    cooldownMs: 5 * 1000,
   },
   auth: {
     maxAttempts: 5,
     windowMs: 30 * 60 * 1000,
     cooldownMs: 30 * 1000,
+  },
+  ratings: {
+    maxAttempts: 50,
+    windowMs: 60 * 60 * 1000,
+    cooldownMs: 3 * 1000,
   },
 };
 
