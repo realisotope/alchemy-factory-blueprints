@@ -15,7 +15,7 @@ import { transformParsedMaterials, transformParsedBuildings } from "../lib/bluep
 import { validateParsedData } from "../lib/parsedDataValidator";
 import { ClientRateLimiter, checkServerRateLimit } from "../lib/rateLimiter";
 import { extractBlueprintFromPng, isPngBlueprint, formatBytes, replaceBlueprintPreviewImage } from "../lib/pngBlueprintExtractor";
-import { AVAILABLE_TAGS } from "../lib/tags";
+import { AVAILABLE_TAGS, getTagDisplay } from "../lib/tags";
 import { validateParts, getPartDisplayName } from "../lib/blueprintUtils";
 import { createIndependentBlueprintFile, populateExtractedImageForPart, processSinglePartExtractedImage } from "../lib/pngBlueprintProcessor";
 import { secureValidateFileUpload } from "../lib/fileSecurityValidation";
@@ -1238,7 +1238,7 @@ function BlueprintUploadContent({ user, onUploadSuccess, isEditMode }) {
                         onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
                         onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                       >
-                        {tag}
+                        {getTagDisplay(tag)}
                       </button>
                     ))}
                     {AVAILABLE_TAGS.filter(tag => !tags.includes(tag)).length === 0 && (

@@ -70,8 +70,38 @@ export async function fetchBlueprintByIdentifier(identifier) {
 }
 
 /**
- * BLUEPRINT QUERIES
- * Fetch users liked blueprint IDs
+ * BLUEPRINT RATINGS
+ * Fetch users ratings for blueprints (returns map of blueprintId -> rating)
+ */
+export async function fetchUserRatings(userId) {
+  try {
+    const { data, error } = await supabase
+      .from("blueprint_likes")
+      .select("blueprint_id, rating")
+      .eq("user_id", userId);
+
+    if (error && error.message?.includes('column "rating" does not exist')) {
+      console.warn('Rating column not found - database migration not run yet');
+      return handleSuccess(new Map());
+    }
+    
+    if (error) throw error;
+    
+    // Convert array to Map for O(1) lookup
+    const ratingsMap = new Map();
+    data?.forEach((item) => {
+      ratingsMap.set(item.blueprint_id, item.rating || 5);
+    });
+    
+    return handleSuccess(ratingsMap);
+  } catch (error) {
+    return handleError(error, 'FETCH_USER_RATINGS', { userId });
+  }
+}
+
+/**
+ * BLUEPRINT RATINGS (Legacy compatibility)
+ * Fetch users liked blueprint IDs (for backwards compatibility)
  */
 export async function fetchUserLikes(userId) {
   try {
@@ -146,28 +176,62 @@ export async function deleteBlueprint(blueprintId) {
 }
 
 /**
- * BLUEPRINT LIKES
- * Add a like from a user to a blueprint
+ * BLUEPRINT RATINGS
+ * Add or update a rating from a user to a blueprint (1-5 hearts)
  */
-export async function likeBlueprint(blueprintId, userId) {
+export async function rateBlueprint(blueprintId, userId, rating) {
   try {
-    const { error } = await supabase.from("blueprint_likes").insert([
+    // Validate rating
+    if (rating < 1 || rating > 5) {
+      throw new Error('Rating must be between 1 and 5');
+    }
+
+    // Use upsert to insert or update
+    const { error } = await supabase.from("blueprint_likes").upsert(
       {
         blueprint_id: blueprintId,
-        user_id: userId
+        user_id: userId,
+        rating: rating
+      },
+      {
+        onConflict: 'blueprint_id,user_id'
       }
-    ]);
+    );
+
+    // If rating column doesn't exist yet, fall back to simple insert (legacy)
+    if (error && error.message?.includes('column "rating" does not exist')) {
+      console.warn('Rating column not found - falling back to legacy like system');
+      const { error: legacyError } = await supabase.from("blueprint_likes").upsert(
+        {
+          blueprint_id: blueprintId,
+          user_id: userId
+        },
+        {
+          onConflict: 'blueprint_id,user_id'
+        }
+      );
+      if (legacyError) throw legacyError;
+      return handleSuccess(null, 'Blueprint liked');
+    }
 
     if (error) throw error;
-    return handleSuccess(null, 'Blueprint liked');
+    return handleSuccess(null, `Rated ${rating} hearts`);
   } catch (error) {
-    return handleError(error, 'LIKE_BLUEPRINT', { blueprintId, userId });
+    return handleError(error, 'RATE_BLUEPRINT', { blueprintId, userId, rating });
   }
 }
 
 /**
- * BLUEPRINT LIKES
- * Remove a like from a user to a blueprint
+ * BLUEPRINT RATINGS (Legacy compatibility)
+ * Add a like from a user to a blueprint (defaults to 5 hearts)
+ */
+export async function likeBlueprint(blueprintId, userId) {
+  return rateBlueprint(blueprintId, userId, 5);
+}
+
+/**
+ * BLUEPRINT RATINGS
+ * Remove a rating from a user to a blueprint
  */
 export async function unlikeBlueprint(blueprintId, userId) {
   try {
@@ -178,7 +242,7 @@ export async function unlikeBlueprint(blueprintId, userId) {
       .eq("user_id", userId);
 
     if (error) throw error;
-    return handleSuccess(null, 'Blueprint unliked');
+    return handleSuccess(null, 'Rating removed');
   } catch (error) {
     return handleError(error, 'UNLIKE_BLUEPRINT', { blueprintId, userId });
   }

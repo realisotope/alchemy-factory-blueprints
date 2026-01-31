@@ -1,12 +1,14 @@
-import { useState, memo, useMemo } from "react";
+import { useState, memo, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Trash2, Loader, Heart, X, ChevronLeft, ChevronRight, Check, AlertCircle, Save } from "lucide-react";
+import { Download, Trash2, Loader, Heart, X, ChevronLeft, ChevronRight, Check, AlertCircle, Save, Bookmark } from "lucide-react";
 import { useTheme } from "../lib/ThemeContext";
 import { getThumbnailUrl, getDetailViewUrl, prefetchImage } from "../lib/imageOptimization";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { sanitizeCreatorName } from "../lib/sanitization";
 import { useBlueprintFolder } from "../lib/BlueprintFolderContext";
 import { checkBlueprintCompatibility, hasSaveData } from "../lib/saveManager";
+import { getTagDisplay, TAG_EMOJIS } from "../lib/tags";
+import RatingHearts from "./BlueprintRating";
 
 function BlueprintCardComponent({
   blueprint,
@@ -15,9 +17,11 @@ function BlueprintCardComponent({
   deleting,
   user,
   userLikes,
+  isBookmarked,
   onSelect,
   onDownload,
   onLike,
+  onBookmark,
   onDelete,
   onSearchByCreator,
   isFirstPage = false,
@@ -26,6 +30,8 @@ function BlueprintCardComponent({
   const [isHovered, setIsHovered] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showEmojiOnly, setShowEmojiOnly] = useState(false);
+  const tagsContainerRef = useRef(null);
   const { getInstallStatus, cacheDownloadedBlueprint } = useBlueprintFolder();
 
   const blueprintCompatibility = useMemo(
@@ -60,6 +66,20 @@ function BlueprintCardComponent({
       prefetchImage(getDetailViewUrl(availableImages[0]));
     }
   };
+
+  // Check if tags wrap to multiple lines
+  useEffect(() => {
+    if (tagsContainerRef.current && blueprint.tags && blueprint.tags.length > 0) {
+      const container = tagsContainerRef.current;
+      const children = Array.from(container.children);
+      
+      if (children.length > 1) {
+        const firstTagTop = children[0].offsetTop;
+        const hasWrapped = children.some(child => child.offsetTop > firstTagTop);
+        setShowEmojiOnly(hasWrapped);
+      }
+    }
+  }, [blueprint.tags, theme]);
 
   return (
     <motion.div
@@ -214,8 +234,8 @@ function BlueprintCardComponent({
 
         {/* Tags */}
         {blueprint.tags && blueprint.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-2">
-            {blueprint.tags.slice(0, 3).map((tag) => (
+          <div ref={tagsContainerRef} className="flex flex-wrap gap-1.5 mt-2">
+            {blueprint.tags.map((tag) => (
               <span
                 key={tag}
                 style={{
@@ -223,9 +243,16 @@ function BlueprintCardComponent({
                   color: theme.colors.textPrimary,
                   borderColor: `${theme.colors.cardBorder}66`
                 }}
-                className="text-xs px-2.5 py-1 rounded-xl border font-medium hover:opacity-80 transition"
+                className="text-xs px-2.5 py-1 rounded-xl border font-medium transition-all duration-200 group/tag"
               >
-                {tag}
+                <span className={showEmojiOnly ? "group-hover/tag:hidden" : ""}>
+                  {showEmojiOnly ? (TAG_EMOJIS[tag] || tag) : getTagDisplay(tag)}
+                </span>
+                {showEmojiOnly && (
+                  <span className="hidden group-hover/tag:inline">
+                    {getTagDisplay(tag)}
+                  </span>
+                )}
               </span>
             ))}
           </div>
@@ -240,10 +267,13 @@ function BlueprintCardComponent({
             <Download className="w-4 h-4" />
             <span>{blueprint.downloads || 0}</span>
           </div>
-          <div className="flex items-center gap-1 hover:text-rose-400 transition">
-            <Heart className="w-4 h-4" />
-            <span>{blueprint.likes || 0}</span>
-          </div>
+          <RatingHearts 
+            rating={blueprint.rating_average || 0}
+            count={blueprint.rating_count || 0}
+            size="sm"
+            interactive={false}
+            showCount={false}
+          />
           <div style={{ color: theme.colors.textSecondary }} className="text-xs ml-auto">
             <p style={{ color: theme.colors.textSecondary }} className="font-semibold hover:opacity-80 transition">
               by{" "}
@@ -327,15 +357,19 @@ function BlueprintCardComponent({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onLike(blueprint.id, isLiked);
+              if (onBookmark) {
+                onBookmark(blueprint.id, isBookmarked);
+              }
             }}
             style={{
-              backgroundColor: isLiked ? `${theme.colors.buttonBg2}90` : `${theme.colors.buttonBg2}80`,
-              color: isLiked ? theme.colors.buttonBg : theme.colors.textPrimary
+              backgroundColor: `${theme.colors.buttonBg2}80`
             }}
-            className="px-3 py-2 rounded-lg transition font-semibold flex items-center justify-center hover:opacity-50 hover:scale-105"
+            className="font-semibold py-2 px-3 rounded-lg transition flex items-center justify-center hover:opacity-50 hover:scale-105"
           >
-            <Heart className={`w-4 h-4 ${isLiked ? "fill-current" : ""}`} />
+            <Bookmark 
+              className={`w-5 h-5 ${isBookmarked ? "fill-current" : ""}`}
+              style={{ color: isBookmarked ? theme.colors.accentYellow : theme.colors.textSecondary }}
+            />
           </button>
 
           {user && blueprint.user_id === user.id && (

@@ -13,7 +13,7 @@ import { ClientRateLimiter, checkServerRateLimit } from "../lib/rateLimiter";
 import { sendBlueprintToParser } from "../lib/blueprintParser";
 import { validateParsedData } from "../lib/parsedDataValidator";
 import { extractBlueprintFromPng, isPngBlueprint, formatBytes } from "../lib/pngBlueprintExtractor";
-import { AVAILABLE_TAGS } from "../lib/tags";
+import { AVAILABLE_TAGS, getTagDisplay } from "../lib/tags";
 import { createIndependentBlueprintFile, populateExtractedImageForPart } from "../lib/pngBlueprintProcessor";
 import { handleError } from "../lib/errorHandler";
 import { ErrorAlert, SuccessAlert } from "./Alerts";
@@ -839,7 +839,7 @@ function BlueprintEditContent({ blueprint, isOpen, onClose, user, onUpdate }) {
                           onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
                           onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                         >
-                          {tag}
+                          {getTagDisplay(tag)}
                         </button>
                       ))}
                       {AVAILABLE_TAGS.filter(tag => !tags.includes(tag)).length === 0 && (

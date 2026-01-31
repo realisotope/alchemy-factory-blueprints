@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client with public anon key
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL,
   process.env.VITE_SUPABASE_ANON_KEY
@@ -40,7 +39,6 @@ export default async function handler(req, res) {
     // Only fetch blueprint data if a valid ID or slug is provided
     if (blueprintId) {
       try {
-        // Query by UUID or slug
         let query = supabase
           .from('blueprints')
           .select('id, title, description, image_url, slug');
@@ -56,8 +54,8 @@ export default async function handler(req, res) {
         if (blueprint && !error) {
           ogTitle = blueprint.title;
           ogDescription = blueprint.description 
-            ? `Alchemy Factory Blueprint - ${blueprint.description}`
-            : `Check out this Alchemy Factory blueprint: ${blueprint.title}`;
+            ? `${blueprint.description}`
+            : `⚗️ ${blueprint.title} ⚗️`;
           ogImage = blueprint.image_url || `${baseUrl}/logo.jpg`;
           // Use slug if available (human-readable), fall back to UUID
           const blueprintUrl = blueprint.slug ? `${baseUrl}/blueprint/${blueprint.slug}` : `${baseUrl}/blueprint/${blueprint.id}`;
@@ -81,7 +79,7 @@ export default async function handler(req, res) {
     <title>${escapeHtml(pageTitle)}</title>
     <meta name="title" content="${escapeHtml(pageTitle)}" />
     <meta name="description" content="${escapeHtml(ogDescription)}" />
-    <meta name="keywords" content="Alchemy Factory, Alchemy Factory Blueprints, .png files, factory automation layouts, alchemy factory guide, game blueprints" />
+    <meta name="keywords" content="Alchemy Factory, Alchemy Factory Blueprints, .png files, factory automation layouts, alchemy factory guide, game blueprints, alchemyfactory, png blueprints, af blueprints, alchemy-factory-blueprints" />
     <meta name="author" content="Alchemy Factory Blueprints/realisotope" />
     <meta name="robots" content="index, follow" />
     <meta name="language" content="English" />
@@ -91,7 +89,7 @@ export default async function handler(req, res) {
     <meta property="og:title" content="${escapeHtml(ogTitle)}" />
     <meta property="og:description" content="${escapeHtml(ogDescription)}" />
     <meta property="og:image" content="${escapeHtml(ogImage)}" />
-    <meta property="og:site_name" content="Alchemy Factory Blueprints" />
+    <meta property="og:site_name" content="📜 Alchemy Factory Blueprints" />
     
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="${escapeHtml(ogUrl)}" />

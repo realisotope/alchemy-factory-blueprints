@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "../lib/supabase";
-import { Search, Download, Trash2, Loader, Heart, X, User, Filter } from "lucide-react";
+import { Search, Download, Trash2, Loader, Heart, X, User, Tag, ListFilter, Clock, History, SortAsc, RefreshCw, TrendingUp, ArrowUp, ArrowDown, Bookmark, Check, AlertCircle, Save } from "lucide-react";
 import { stripDiscordDiscriminator } from "../lib/discordUtils";
 import { sanitizeCreatorName } from "../lib/sanitization";
 import { getThumbnailUrl, prefetchImage } from "../lib/imageOptimization";
@@ -10,10 +10,11 @@ import { validateParsedData } from "../lib/parsedDataValidator";
 import { getParsedData } from "../lib/blueprintUtils";
 import { useTheme } from "../lib/ThemeContext";
 import { deleteCloudinaryImage } from "../lib/cloudinaryDelete";
-import { AVAILABLE_TAGS } from "../lib/tags";
+import { AVAILABLE_TAGS, getTagDisplay } from "../lib/tags";
 import { ClientRateLimiter } from "../lib/rateLimiter";
 import { hasSaveData, checkBlueprintCompatibility } from "../lib/saveManager";
-import { fetchAllBlueprints, fetchUserLikes as fetchUserLikesService, likeBlueprint, unlikeBlueprint, deleteBlueprint as deleteBlueprintService } from "../lib/blueprintService";
+import { useBlueprintFolder } from "../lib/BlueprintFolderContext";
+import { fetchAllBlueprints, fetchUserLikes as fetchUserLikesService, fetchUserRatings, rateBlueprint, unlikeBlueprint, deleteBlueprint as deleteBlueprintService } from "../lib/blueprintService";
 import { handleError } from "../lib/errorHandler";
 import { ErrorAlert, SuccessAlert } from "./Alerts";
 import ErrorBoundary from "./ErrorBoundary";
@@ -23,6 +24,7 @@ import CreatorCard from "./CreatorCard";
 
 function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, initialMessage, onMessageShown }) {
   const { theme } = useTheme();
+  const { getInstallStatus } = useBlueprintFolder();
   const [blueprints, setBlueprints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -33,15 +35,22 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
   const [deleting, setDeleting] = useState(null);
   const [selectedBlueprint, setSelectedBlueprint] = useState(null);
   const [userLikes, setUserLikes] = useState(new Set());
+  const [userRatings, setUserRatings] = useState(new Map()); // Map of blueprintId -> rating (1-5)
+  const [userBookmarks, setUserBookmarks] = useState(new Set());
   const [downloadingId, setDownloadingId] = useState(null);
   const [downloadError, setDownloadError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const initialBlueprintAppliedRef = useRef(false);
   const [selectedCreator, setSelectedCreator] = useState(null);
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [showBookmarksOnly, setShowBookmarksOnly] = useState(false);
   const [compatibilityFilter, setCompatibilityFilter] = useState("all");
+  const [installFilter, setInstallFilter] = useState("all"); // "all", "installed", "update-available"
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  
+  // Refs for click-outside detection
+  const sortDropdownRef = useRef(null);
+  const tagsDropdownRef = useRef(null);
 
   // Auto-dismiss alerts after 10 seconds
   useEffect(() => {
@@ -66,6 +75,21 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
     }
   }, [initialMessage, onMessageShown]);
   
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target)) {
+        setSortDropdownOpen(false);
+      }
+      if (tagsDropdownRef.current && !tagsDropdownRef.current.contains(event.target)) {
+        setTagsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+  
   // Responsive items per page: 8 for desktop (4 cols, 2 rows), 12 for 4K (6 cols, 2 rows)
   const getItemsPerPage = () => {
     if (typeof window !== 'undefined') {
@@ -89,6 +113,8 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
     fetchBlueprints();
     if (user) {
       fetchUserLikes();
+      fetchUserRatingsData();
+      fetchUserBookmarksData();
     }
   }, [refreshTrigger, user]);
 
@@ -128,6 +154,35 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
     } catch (err) {
       const errorResponse = handleError(err, 'FETCH_USER_LIKES', { userId: user?.id });
       console.error("Error fetching likes:", errorResponse);
+    }
+  }, [user]);
+
+  const fetchUserRatingsData = useCallback(async () => {
+    if (!user) return;
+    try {
+      const result = await fetchUserRatings(user.id);
+      
+      if (!result.success) {
+        throw new Error(result.error?.message || 'Failed to fetch ratings');
+      }
+
+      setUserRatings(result.data || new Map());
+    } catch (err) {
+      const errorResponse = handleError(err, 'FETCH_USER_RATINGS', { userId: user?.id });
+      console.error("Error fetching ratings:", errorResponse);
+    }
+  }, [user]);
+
+  const fetchUserBookmarksData = useCallback(() => {
+    if (!user) return;
+    try {
+      const stored = localStorage.getItem(`bookmarks_${user.id}`);
+      if (stored) {
+        const bookmarkIds = JSON.parse(stored);
+        setUserBookmarks(new Set(bookmarkIds));
+      }
+    } catch (err) {
+      console.error("Error loading bookmarks from localStorage:", err);
     }
   }, [user]);
 
@@ -232,6 +287,116 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
       setError(errorResponse.error);
     }
   }, [user, selectedBlueprint?.id]);
+
+  const handleRating = useCallback(async (blueprintId, rating, oldRating = 0) => {
+    if (!user) {
+      setError({ message: "Please login to rate blueprints" });
+      return;
+    }
+
+    try {
+      if (rating === 0) {
+        await unlikeBlueprint(blueprintId, user.id);
+        setUserRatings((prev) => {
+          const newMap = new Map(prev);
+          newMap.delete(blueprintId);
+          return newMap;
+        });
+        setSuccess('Rating removed');
+      } else {
+        const result = await rateBlueprint(blueprintId, user.id, rating);
+        
+        if (!result.success) {
+          throw new Error(result.error?.message || 'Failed to rate blueprint');
+        }
+        
+        setUserRatings((prev) => new Map(prev).set(blueprintId, rating));
+        setSuccess(`Rated ${rating} heart${rating !== 1 ? 's' : ''}`);
+      }
+      
+      // Opt update the blueprint's rating
+      setBlueprints((prev) =>
+        prev.map((bp) => {
+          if (bp.id === blueprintId) {
+            const oldCount = bp.rating_count || 0;
+            const oldAvg = bp.rating_average || 0;
+            
+            let newCount, newAvg;
+            if (oldRating === 0 && rating > 0) {
+              newCount = oldCount + 1;
+              newAvg = ((oldAvg * oldCount) + rating) / newCount;
+            } else if (oldRating > 0 && rating === 0) {
+              newCount = Math.max(0, oldCount - 1);
+              newAvg = newCount > 0 ? ((oldAvg * oldCount) - oldRating) / newCount : 0;
+            } else {
+              newCount = oldCount;
+              newAvg = oldCount > 0 ? ((oldAvg * oldCount) - oldRating + rating) / oldCount : rating;
+            }
+            
+            return { ...bp, rating_average: newAvg, rating_count: newCount };
+          }
+          return bp;
+        })
+      );
+
+      if (selectedBlueprint?.id === blueprintId) {
+        setSelectedBlueprint((prev) => {
+          if (!prev) return null;
+          const oldCount = prev.rating_count || 0;
+          const oldAvg = prev.rating_average || 0;
+          
+          let newCount, newAvg;
+          if (oldRating === 0 && rating > 0) {
+            newCount = oldCount + 1;
+            newAvg = ((oldAvg * oldCount) + rating) / newCount;
+          } else if (oldRating > 0 && rating === 0) {
+            newCount = Math.max(0, oldCount - 1);
+            newAvg = newCount > 0 ? ((oldAvg * oldCount) - oldRating) / newCount : 0;
+          } else {
+            newCount = oldCount;
+            newAvg = oldCount > 0 ? ((oldAvg * oldCount) - oldRating + rating) / oldCount : rating;
+          }
+          
+          return { ...prev, rating_average: newAvg, rating_count: newCount };
+        });
+      }
+    } catch (err) {
+      const errorResponse = handleError(err, 'RATE_BLUEPRINT', { blueprintId, rating });
+      setError(errorResponse.error);
+    }
+  }, [user, selectedBlueprint?.id]);
+
+  const handleBookmark = useCallback((blueprintId, currentlyBookmarked) => {
+    if (!user) {
+      setError({ message: "Please login to bookmark blueprints" });
+      return;
+    }
+
+    try {
+      let newBookmarks;
+      if (currentlyBookmarked) {
+        setUserBookmarks((prev) => {
+          newBookmarks = new Set(prev);
+          newBookmarks.delete(blueprintId);
+          return newBookmarks;
+        });
+      } else {
+        setUserBookmarks((prev) => {
+          newBookmarks = new Set(prev).add(blueprintId);
+          return newBookmarks;
+        });
+      }
+      
+      // Save to localStorage
+      setTimeout(() => {
+        const bookmarkArray = Array.from(newBookmarks || userBookmarks);
+        localStorage.setItem(`bookmarks_${user.id}`, JSON.stringify(bookmarkArray));
+      }, 0);
+    } catch (err) {
+      console.error('Error toggling bookmark:', err);
+      setError({ message: 'Failed to update bookmark' });
+    }
+  }, [user, userBookmarks]);
 
   const handleDownload = useCallback(async (blueprint, selectedPartNumber = null) => {
     // Rate limiting check for downloads
@@ -476,12 +641,15 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
   
   // Memoize userLikes size and its entries to avoid Set reference changes
   const userLikesKey = useMemo(() => Array.from(userLikes).sort().join(','), [userLikes]);
+  
+  // Memoize userBookmarks to avoid Set reference changes
+  const userBookmarksKey = useMemo(() => Array.from(userBookmarks).sort().join(','), [userBookmarks]);
 
   const filteredBlueprints = useMemo(() => {
     return blueprints
       .filter((bp) => {
-        // Filter by favorites if active
-        if (showFavoritesOnly && !userLikes.has(bp.id)) {
+        // Filter by bookmarks if active
+        if (showBookmarksOnly && !userBookmarks.has(bp.id)) {
           return false;
         }
         // Filter by selected tags (all selected tags must be present)
@@ -505,6 +673,15 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
             return false;
           }
         }
+        // Filter by install status
+        if (installFilter !== "all") {
+          const installStatus = getInstallStatus(bp);
+          if (installFilter === "installed" && installStatus !== "installed") {
+            return false;
+          } else if (installFilter === "update-available" && installStatus !== "update-available") {
+            return false;
+          }
+        }
         // Filter by search term
         return bp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
           (bp.description && bp.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -517,7 +694,30 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
         } else if (sortBy === "alphabetical") {
           return a.title.localeCompare(b.title);
         } else if (sortBy === "popular") {
-          return (b.likes || 0) - (a.likes || 0);
+          // Sort by average rating, then by number of ratings
+          const aRating = a.rating_average || 0;
+          const bRating = b.rating_average || 0;
+          if (Math.abs(aRating - bRating) > 0.01) {
+            return bRating - aRating;
+          }
+          // If ratings are similar, prefer more ratings
+          return (b.rating_count || 0) - (a.rating_count || 0);
+        } else if (sortBy === "trending") {
+          // Trending = engagement score (likes * 2 + downloads) for blueprints from last 7 days
+          const sevenDaysAgo = new Date();
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+          
+          const aIsRecent = new Date(a.created_at) > sevenDaysAgo;
+          const bIsRecent = new Date(b.created_at) > sevenDaysAgo;
+          
+          // Prioritize recent blueprints
+          if (aIsRecent && !bIsRecent) return -1;
+          if (!aIsRecent && bIsRecent) return 1;
+          
+          // Calculate engagement score (likes * 2 + downloads)
+          const aScore = ((a.likes || 0) * 2) + (a.downloads || 0);
+          const bScore = ((b.likes || 0) * 2) + (b.downloads || 0);
+          return bScore - aScore;
         } else if (sortBy === "updated") {
           return new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at);
         } else if (sortBy === "downloaded") {
@@ -529,7 +729,7 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
         }
         return new Date(b.created_at) - new Date(a.created_at);
       });
-  }, [blueprints, showFavoritesOnly, userLikesKey, selectedTagsKey, searchTerm, sortBy, compatibilityFilter]);
+  }, [blueprints, showBookmarksOnly, userBookmarksKey, selectedTagsKey, searchTerm, sortBy, compatibilityFilter, installFilter, getInstallStatus]);
 
   // Pagination
   const totalPages = Math.ceil(filteredBlueprints.length / itemsPerPage);
@@ -584,8 +784,8 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
     setSelectedCreator(creatorName);
   };
 
-  const toggleFavorites = () => {
-    setShowFavoritesOnly(!showFavoritesOnly);
+  const toggleBookmarks = () => {
+    setShowBookmarksOnly(!showBookmarksOnly);
     setCurrentPage(1);
   };
 
@@ -613,25 +813,59 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
       <SuccessAlert message={success} onDismiss={() => setSuccess(null)} />
 
       {/* Stats Dashboard */}
-      <div style={{
-        backgroundImage: `linear-gradient(to right, ${theme.colors.cardBg}99, ${theme.colors.elementBg}99)`,
-        borderColor: theme.colors.cardBorder
-      }} className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4 p-3 rounded-lg border">
-        <div className="text-center">
-          <p style={{ color: theme.colors.accentYellow }} className="font-bold text-xl sm:text-2xl">{blueprints.length}</p>
-          <p style={{ color: theme.colors.textPrimary }} className="text-xs sm:text-sm">Total Blueprints</p>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+        <div 
+          style={{
+            background: `linear-gradient(135deg, ${theme.colors.cardBg}CC, ${theme.colors.elementBg}CC)`,
+            borderColor: theme.colors.cardBorder,
+            boxShadow: `0 4px 12px ${theme.colors.cardShadow}40`
+          }} 
+          className="text-center p-3 rounded-xl border-2 hover:scale-105 transition-all duration-200"
+        >
+          <p style={{ color: theme.colors.accentYellow }} className="font-bold text-2xl sm:text-2xl mb-0.5">{blueprints.length}</p>
+          <p style={{ color: theme.colors.textSecondary }} className="text-xs font-medium">Total Blueprints</p>
         </div>
-        <div className="text-center">
-          <p style={{ color: theme.colors.accentYellow }} className="font-bold text-xl sm:text-2xl">{filteredBlueprints.length}</p>
-          <p style={{ color: theme.colors.textPrimary }} className="text-xs sm:text-sm">Matching Results</p>
+        <div 
+          style={{
+            background: `linear-gradient(135deg, ${theme.colors.cardBg}CC, ${theme.colors.elementBg}CC)`,
+            borderColor: theme.colors.cardBorder,
+            boxShadow: `0 4px 12px ${theme.colors.cardShadow}40`
+          }} 
+          className="text-center p-3 rounded-xl border-2 hover:scale-105 transition-all duration-200"
+        >
+          <p style={{ color: theme.colors.accentYellow }} className="font-bold text-2xl sm:text-2xl mb-0.5">
+            {new Set(blueprints.map(bp => bp.creator_name).filter(Boolean)).size}
+          </p>
+          <p style={{ color: theme.colors.textSecondary }} className="text-xs font-medium">Total Creators</p>
         </div>
-        <div className="text-center">
-          <p style={{ color: theme.colors.accentYellow }} className="font-bold text-xl sm:text-2xl">{blueprints.reduce((sum, bp) => sum + (bp.downloads || 0), 0).toLocaleString()}</p>
-          <p style={{ color: theme.colors.textPrimary }} className="text-xs sm:text-sm">Total Downloads</p>
+        <div 
+          style={{
+            background: `linear-gradient(135deg, ${theme.colors.cardBg}CC, ${theme.colors.elementBg}CC)`,
+            borderColor: theme.colors.cardBorder,
+            boxShadow: `0 4px 12px ${theme.colors.cardShadow}40`
+          }} 
+          className="text-center p-3 rounded-xl border-2 hover:scale-105 transition-all duration-200"
+        >
+          <p style={{ color: theme.colors.accentYellow }} className="font-bold text-2xl sm:text-2xl mb-0.5">{blueprints.reduce((sum, bp) => sum + (bp.downloads || 0), 0).toLocaleString()}</p>
+          <p style={{ color: theme.colors.textSecondary }} className="text-xs font-medium">Total Downloads</p>
         </div>
-        <div className="text-center">
-          <p style={{ color: theme.colors.accentYellow }} className="font-bold text-xl sm:text-2xl">{blueprints.reduce((sum, bp) => sum + (bp.likes || 0), 0).toLocaleString()}</p>
-          <p style={{ color: theme.colors.textPrimary }} className="text-xs sm:text-sm">Total Likes</p>
+        <div 
+          style={{
+            background: `linear-gradient(135deg, ${theme.colors.cardBg}CC, ${theme.colors.elementBg}CC)`,
+            borderColor: theme.colors.cardBorder,
+            boxShadow: `0 4px 12px ${theme.colors.cardShadow}40`
+          }} 
+          className="text-center p-3 rounded-xl border-2 hover:scale-105 transition-all duration-200"
+        >
+          <p style={{ color: theme.colors.accentYellow }} className="font-bold text-2xl sm:text-2xl mb-0.5">
+            {(() => {
+              const totalRatings = blueprints.reduce((sum, bp) => sum + (bp.rating_count || 0), 0);
+              const totalRatingSum = blueprints.reduce((sum, bp) => sum + ((bp.rating_average || 0) * (bp.rating_count || 0)), 0);
+              const avgRating = totalRatings > 0 ? (totalRatingSum / totalRatings).toFixed(1) : '0.0';
+              return `${avgRating}`;
+            })()}
+          </p>
+          <p style={{ color: theme.colors.textSecondary }} className="text-xs font-medium">Average Rating</p>
         </div>
       </div>
 
@@ -665,7 +899,7 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
             </button>
           )}
         </div>
-        <div className="relative">
+        <div className="relative" ref={sortDropdownRef}>
           <button
             type="button"
             onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
@@ -676,8 +910,9 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
             }}
             className="w-full sm:w-auto px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 font-medium transition-all shadow-sm hover:opacity-80 flex items-center justify-between gap-2"
           >
-            <span>
-              {sortBy === "newest" ? "Newest First" : sortBy === "oldest" ? "Oldest First" : sortBy === "alphabetical" ? "Alphabetical" : sortBy === "updated" ? "Recently Updated" : sortBy === "downloaded" ? "Most Downloaded" : sortBy === "popular" ? "Most Liked" : sortBy === "ipm-high" ? "Highest IPM" : "Lowest IPM"}
+            <span className="flex items-center gap-2">
+              <ListFilter className="w-6 h-6" />
+              {sortBy === "newest" ? "Newest First" : sortBy === "oldest" ? "Oldest First" : sortBy === "alphabetical" ? "Alphabetical" : sortBy === "updated" ? "Recently Updated" : sortBy === "downloaded" ? "Most Downloaded" : sortBy === "popular" ? "Highest Rated" : sortBy === "trending" ? "Trending" : sortBy === "ipm-high" ? "Highest IPM" : installFilter === "installed" ? "Installed" : installFilter === "update-available" ? "Update Available" : "Lowest IPM"}
             </span>
             <span className={`transition transform ${sortDropdownOpen ? "rotate-180" : ""}`}>▼</span>
           </button>
@@ -688,61 +923,78 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
                 type="button"
                 onClick={() => { handleSort("newest"); setSortDropdownOpen(false); }}
                 style={{ color: theme.colors.textPrimary, borderColor: `${theme.colors.cardBorder}33` }}
-                className="w-full text-left px-4 py-2.5 transition first:rounded-t-lg border-b"
+                className="w-full text-left px-4 py-2.5 transition first:rounded-t-lg border-b flex items-center gap-2"
                 onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
                 onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
               >
+                <Clock className="w-4 h-4" />
                 Newest First
               </button>
               <button
                 type="button"
                 onClick={() => { handleSort("oldest"); setSortDropdownOpen(false); }}
                 style={{ color: theme.colors.textPrimary, borderColor: `${theme.colors.cardBorder}33` }}
-                className="w-full text-left px-4 py-2.5 transition border-b"
+                className="w-full text-left px-4 py-2.5 transition border-b flex items-center gap-2"
                 onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
                 onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
               >
+                <History className="w-4 h-4" />
                 Oldest First
               </button>
               <button
                 type="button"
                 onClick={() => { handleSort("alphabetical"); setSortDropdownOpen(false); }}
                 style={{ color: theme.colors.textPrimary, borderColor: `${theme.colors.cardBorder}33` }}
-                className="w-full text-left px-4 py-2.5 transition border-b"
+                className="w-full text-left px-4 py-2.5 transition border-b flex items-center gap-2"
                 onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
                 onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
               >
+                <SortAsc className="w-4 h-4" />
                 Alphabetical
               </button>
               <button
                 type="button"
                 onClick={() => { handleSort("updated"); setSortDropdownOpen(false); }}
                 style={{ color: theme.colors.textPrimary, borderColor: `${theme.colors.cardBorder}33` }}
-                className="w-full text-left px-4 py-2.5 transition border-b"
+                className="w-full text-left px-4 py-2.5 transition border-b flex items-center gap-2"
                 onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
                 onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
               >
+                <RefreshCw className="w-4 h-4" />
                 Recently Updated
               </button>
               <button
                 type="button"
                 onClick={() => { handleSort("downloaded"); setSortDropdownOpen(false); }}
                 style={{ color: theme.colors.textPrimary, borderColor: `${theme.colors.cardBorder}33` }}
-                className="w-full text-left px-4 py-2.5 transition border-b"
+                className="w-full text-left px-4 py-2.5 transition border-b flex items-center gap-2"
                 onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
                 onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
               >
+                <Download className="w-4 h-4" />
                 Most Downloaded
               </button>
               <button
                 type="button"
                 onClick={() => { handleSort("popular"); setSortDropdownOpen(false); }}
                 style={{ color: theme.colors.textPrimary, borderColor: `${theme.colors.cardBorder}33` }}
-                className="w-full text-left px-4 py-2.5 transition border-b"
+                className="w-full text-left px-4 py-2.5 transition border-b flex items-center gap-2"
                 onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
                 onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
               >
-                Most Liked
+                <Heart className="w-4 h-4" />
+                Highest Rated
+              </button>
+              <button
+                type="button"
+                onClick={() => { handleSort("trending"); setSortDropdownOpen(false); }}
+                style={{ color: theme.colors.textPrimary, borderColor: `${theme.colors.cardBorder}33` }}
+                className="w-full text-left px-4 py-2.5 transition border-b flex items-center gap-2"
+                onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+              >
+                <TrendingUp className="w-4 h-4" />
+                Trending
               </button>
 
               {/* Compatibility Filter - Only show if save is loaded */}
@@ -759,7 +1011,7 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
                     onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
                     onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                   >
-                    All Blueprints
+                    --- All Blueprints --- 
                   </button>
                   <button
                     type="button"
@@ -768,11 +1020,12 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
                       color: compatibilityFilter === "compatible" ? theme.colors.accentYellow : theme.colors.textPrimary,
                       borderColor: `${theme.colors.cardBorder}33`
                     }}
-                    className="w-full text-left px-4 py-2.5 transition border-b"
+                    className="w-full text-left px-4 py-2.5 transition border-b flex items-center gap-2"
                     onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
                     onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                   >
-                    ✓ Compatible
+                    <Save className="w-4 h-4" />
+                    Compatible
                   </button>
                   <button
                     type="button"
@@ -781,11 +1034,48 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
                       color: compatibilityFilter === "incompatible" ? theme.colors.accentYellow : theme.colors.textPrimary,
                       borderColor: `${theme.colors.cardBorder}33`
                     }}
-                    className="w-full text-left px-4 py-2.5 transition last:rounded-b-lg"
+                    className="w-full text-left px-4 py-2.5 transition border-b flex items-center gap-2"
                     onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
                     onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                   >
-                    ⚠ Not Compatible
+                    <Save className="w-4 h-4" />
+                    Not Compatible
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { 
+                      setInstallFilter(installFilter === "installed" ? "all" : "installed"); 
+                      setSortDropdownOpen(false); 
+                      setCurrentPage(1); 
+                    }}
+                    style={{ 
+                      color: installFilter === "installed" ? theme.colors.accentYellow : theme.colors.textPrimary,
+                      borderColor: `${theme.colors.cardBorder}33`
+                    }}
+                    className="w-full text-left px-4 py-2.5 transition border-b flex items-center gap-2"
+                    onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                  >
+                    <Check className="w-4 h-4" />
+                    Installed
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { 
+                      setInstallFilter(installFilter === "update-available" ? "all" : "update-available"); 
+                      setSortDropdownOpen(false); 
+                      setCurrentPage(1); 
+                    }}
+                    style={{ 
+                      color: installFilter === "update-available" ? theme.colors.accentYellow : theme.colors.textPrimary,
+                      borderColor: `${theme.colors.cardBorder}33`
+                    }}
+                    className="w-full text-left px-4 py-2.5 transition last:rounded-b-lg flex items-center gap-2"
+                    onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.colors.cardBorder}33`}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                  >
+                    <AlertCircle className="w-4 h-4" />
+                    Update Available
                   </button>
                 </>
               )}
@@ -794,7 +1084,7 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
         </div>
 
         {/* Tags Filter */}
-        <div className="relative">
+        <div className="relative" ref={tagsDropdownRef}>
           <button
             type="button"
             onClick={() => setTagsDropdownOpen(!tagsDropdownOpen)}
@@ -806,7 +1096,7 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
             className="w-full sm:w-auto px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 font-medium transition-all shadow-sm hover:opacity-80 flex items-center justify-between gap-2"
           >
             <span className="flex items-center gap-2">
-              <Filter className="w-4 h-4" />
+              <Tag className="w-5 h-5" />
               Tags {selectedTags.length > 0 && <span style={{ color: theme.colors.accentYellow }} className="font-bold">({selectedTags.length})</span>}
             </span>
             <span className={`transition transform ${tagsDropdownOpen ? "rotate-180" : ""}`}>▼</span>
@@ -834,7 +1124,7 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
                     e.target.style.backgroundColor = selectedTags.includes(tag) ? `${theme.colors.accentYellow}33` : 'transparent';
                   }}
                 >
-                  {tag}
+                  {getTagDisplay(tag)}
                 </button>
               ))}
               {selectedTags.length > 0 && (
@@ -862,17 +1152,17 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
           <>
             <button
               type="button"
-              onClick={toggleFavorites}
+              onClick={toggleBookmarks}
               style={{
                 borderColor: theme.colors.cardBorder,
-                backgroundColor: showFavoritesOnly ? theme.colors.accentYellow : `${theme.colors.cardBg}33`,
-                color: showFavoritesOnly ? theme.colors.bgPrimary : theme.colors.textPrimary
+                backgroundColor: showBookmarksOnly ? theme.colors.accentYellow : `${theme.colors.cardBg}33`,
+                color: showBookmarksOnly ? theme.colors.bgPrimary : theme.colors.textPrimary
               }}
               className="px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 font-medium transition-all shadow-sm hover:opacity-80 flex items-center gap-2"
-              data-tooltip={showFavoritesOnly ? "Show all blueprints" : "Show liked blueprints only"}
+              data-tooltip={showBookmarksOnly ? "Show all blueprints" : "Show bookmarked blueprints only"}
             >
-              <Heart className={`w-5 h-5 ${showFavoritesOnly ? 'fill-current' : ''}`} />
-              <span className="hidden sm:inline">Liked</span>
+              <Bookmark className={`w-5 h-5 ${showBookmarksOnly ? 'fill-current' : ''}`} />
+              <span className="hidden sm:inline">Bookmarks</span>
             </button>
             <button
               type="button"
@@ -927,11 +1217,13 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
         
         {paginatedBlueprints.map((blueprint, index) => {
           const isLiked = userLikes.has(blueprint.id);
+          const isBookmarked = userBookmarks.has(blueprint.id);
           return (
             <BlueprintCard
               key={blueprint.id}
               blueprint={blueprint}
               isLiked={isLiked}
+              isBookmarked={isBookmarked}
               downloadingId={downloadingId}
               deleting={deleting}
               user={user}
@@ -939,6 +1231,7 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
               onSelect={setSelectedBlueprint}
               onDownload={handleDownload}
               onLike={handleLike}
+              onBookmark={handleBookmark}
               onDelete={handleDelete}
               onSearchByCreator={handleSearchByCreator}
               isFirstPage={currentPage === 1}
@@ -1029,6 +1322,7 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
         onClose={() => setSelectedBlueprint(null)}
         user={user}
         userLikes={userLikes}
+        userRating={selectedBlueprint ? (userRatings.get(selectedBlueprint.id) || 0) : 0}
         blueprints={blueprints}
         currentBlueprintIndex={blueprints.findIndex(b => b.id === selectedBlueprint?.id)}
         onNavigate={(newIndex) => {
@@ -1039,6 +1333,11 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
         onLikeChange={(liked) => {
           if (selectedBlueprint) {
             handleLike(selectedBlueprint.id, !liked);
+          }
+        }}
+        onRatingChange={(rating, oldRating) => {
+          if (selectedBlueprint) {
+            handleRating(selectedBlueprint.id, rating, oldRating);
           }
         }}
         onDownload={handleDownload}

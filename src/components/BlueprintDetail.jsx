@@ -14,14 +14,19 @@ import { validateParsedData } from "../lib/parsedDataValidator";
 import { getParsedData, getPartByNumber, getPartDownloadInfo } from "../lib/blueprintUtils";
 import { checkBlueprintCompatibility, checkRecipesAndSupplyUnlocks, hasSaveData } from "../lib/saveManager";
 import { handleError } from "../lib/errorHandler";
+import { getTagDisplay } from "../lib/tags";
 import { ErrorAlert, SuccessAlert } from "./Alerts";
 import ErrorBoundary from "./ErrorBoundary";
 import BlueprintEdit from "./BlueprintEdit";
 import BlueprintStats from "./BlueprintStats";
+import RatingHearts from "./BlueprintRating";
 
-function BlueprintDetailContent({ blueprint, isOpen, onClose, user, onLikeChange, onSearchByCreator, onBlueprintUpdate, onDownload, userLikes = new Set(), blueprints = [], currentBlueprintIndex = -1, onNavigate }) {
+function BlueprintDetailContent({ blueprint, isOpen, onClose, user, onLikeChange, onRatingChange, userRating = 0, onSearchByCreator, onBlueprintUpdate, onDownload, userLikes = new Set(), blueprints = [], currentBlueprintIndex = -1, onNavigate }) {
   const { theme } = useTheme();
   const { cacheDownloadedBlueprint, getInstallStatus } = useBlueprintFolder();
+  const [currentRating, setCurrentRating] = useState(userRating);
+  const [ratingAverage, setRatingAverage] = useState(blueprint?.rating_average ?? 0);
+  const [ratingCount, setRatingCount] = useState(blueprint?.rating_count ?? 0);
   const [isLiked, setIsLiked] = useState(userLikes.has(blueprint?.id));
   const [likeCount, setLikeCount] = useState(blueprint?.likes ?? 0);
   const [downloadCount, setDownloadCount] = useState(blueprint?.downloads ?? 0);
@@ -69,9 +74,12 @@ function BlueprintDetailContent({ blueprint, isOpen, onClose, user, onLikeChange
     setLikeCount(blueprint?.likes ?? 0);
     setDownloadCount(blueprint?.downloads ?? 0);
     setIsLiked(userLikes.has(blueprint?.id));
+    setCurrentRating(userRating);
+    setRatingAverage(blueprint?.rating_average ?? 0);
+    setRatingCount(blueprint?.rating_count ?? 0);
     setCurrentImageIndex(0);
     setImageError(false);
-  }, [blueprint?.id, blueprint?.likes, blueprint?.downloads, userLikes]);
+  }, [blueprint?.id, blueprint?.likes, blueprint?.downloads, blueprint?.rating_average, blueprint?.rating_count, userLikes, userRating]);
 
   // Update meta tags when blueprint is opened/closed
   useEffect(() => {
@@ -146,6 +154,39 @@ function BlueprintDetailContent({ blueprint, isOpen, onClose, user, onLikeChange
   }, [scrollableRef, isOpen]);
 
   if (!isOpen || !blueprint) return null;
+
+  const handleRate = async (rating) => {
+    if (!user) {
+      alert("Please login to rate blueprints");
+      return;
+    }
+    
+    const oldRating = currentRating;
+    setCurrentRating(rating);
+    onRatingChange?.(rating, oldRating);
+    
+    // Optimistically update the average and count
+    if (oldRating === 0) {
+      // New rating
+      const newCount = ratingCount + 1;
+      const newAverage = ((ratingAverage * ratingCount) + rating) / newCount;
+      setRatingCount(newCount);
+      setRatingAverage(newAverage);
+    } else {
+      // Update existing rating
+      const newAverage = ((ratingAverage * ratingCount) - oldRating + rating) / ratingCount;
+      setRatingAverage(newAverage);
+    }
+    
+    // Backward compatibility - notify parent of like status change
+    const currentlyLiked = oldRating > 0;
+    const willBeLiked = rating > 0;
+    if (currentlyLiked !== willBeLiked) {
+      onLikeChange?.(willBeLiked);
+      setIsLiked(willBeLiked);
+      setLikeCount(willBeLiked ? likeCount + 1 : likeCount - 1);
+    }
+  };
 
   const handleLike = async () => {
     if (!user) {
@@ -369,7 +410,7 @@ function BlueprintDetailContent({ blueprint, isOpen, onClose, user, onLikeChange
               <span style={{ color: theme.colors.textSecondary }} className="text-xs hidden sm:inline">Downloads</span>
             </div>
 
-            {/* Likes */}
+            {/* Rating */}
             <div style={{
               backgroundColor: theme.colors.cardBg,
               borderColor: theme.colors.cardBorder,
@@ -377,9 +418,13 @@ function BlueprintDetailContent({ blueprint, isOpen, onClose, user, onLikeChange
             }} className="px-3.5 py-2 rounded-md border-2 flex items-center gap-1.5 transition flex-shrink-0"
             onMouseEnter={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}30, ${theme.colors.gradientTo}30)`}
             onMouseLeave={(e) => e.currentTarget.style.backgroundImage = `linear-gradient(to right, ${theme.colors.gradientFrom}10, ${theme.colors.gradientTo}10)`}>
-              <Heart className="w-4 h-4" style={{ color: '#f87171' }} />
-              <span className="text-sm font-semibold text-rose-400">{likeCount}</span>
-              <span style={{ color: theme.colors.textSecondary }} className="text-xs hidden sm:inline">Likes</span>
+              <Heart className="w-4 h-4" style={{ color: theme.colors.accentYellow }} />
+              <span className="text-sm font-semibold" style={{ color: theme.colors.accentYellow }}>
+                {ratingAverage > 0 ? ratingAverage.toFixed(1) : '0.0'}
+              </span>
+              <span style={{ color: theme.colors.textSecondary }} className="text-xs hidden sm:inline">
+                ({ratingCount} rating{ratingCount !== 1 ? 's' : ''})
+              </span>
             </div>
 
             {/* Uploaded */}
@@ -688,7 +733,7 @@ function BlueprintDetailContent({ blueprint, isOpen, onClose, user, onLikeChange
                       }}
                       className="px-3 py-1 rounded-lg text-sm font-medium border shadow"
                     >
-                      {tag}
+                      {getTagDisplay(tag)}
                     </span>
                   ))}
                 </div>
@@ -798,21 +843,25 @@ function BlueprintDetailContent({ blueprint, isOpen, onClose, user, onLikeChange
               </>
             )}
           </button>
-          <button
-            onClick={handleLike}
-            onMouseEnter={() => setIsLikeHovered(true)}
-            onMouseLeave={() => setIsLikeHovered(false)}
+          <div
             style={{
               backgroundColor: `${theme.colors.tertiary}80`,
               borderColor: theme.colors.headerBorder,
-              color: isLikeHovered ? "#ef4444" : (isLiked ? "#ef4444" : theme.colors.textPrimary),
             }}
-            className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-2 py-2 sm:py-2 rounded-lg font-semibold transition text-sm sm:text-base border-2 hover:scale-105`}
+            className="flex-1 min-w-0 flex flex-col items-center justify-center gap-1 py-2 rounded-lg border-2 px-2"
           >
-            <Heart className={`w-4 h-4 sm:w-5 sm:h-5 hidden sm:inline ${isLiked ? "fill-current" : ""}`} />
-            <span className="hidden sm:inline">{isLiked ? "Liked" : "Like"}</span>
-            <span className="sm:hidden">{isLiked ? "❤️" : "🤍"}</span>
-          </button>
+            <div className="text-xs sm:text-sm font-semibold" style={{ color: theme.colors.textSecondary }}>
+              {user ? '' : 'Rating'}
+            </div>
+            <RatingHearts 
+              rating={user ? currentRating : ratingAverage}
+              count={ratingCount}
+              size="s"
+              interactive={!!user}
+              onRate={handleRate}
+              showCount={!user}
+            />
+          </div>
           <button
             onClick={handleShareBlueprint}
             onMouseEnter={() => setIsShareHovered(true)}
@@ -975,7 +1024,7 @@ function BlueprintDetailContent({ blueprint, isOpen, onClose, user, onLikeChange
 }
 
 // Wrap with error boundary
-function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange, onSearchByCreator, onBlueprintUpdate, onDownload, userLikes = new Set(), blueprints = [], currentBlueprintIndex = -1, onNavigate }) {
+function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange, onRatingChange, userRating = 0, onSearchByCreator, onBlueprintUpdate, onDownload, userLikes = new Set(), blueprints = [], currentBlueprintIndex = -1, onNavigate }) {
   return (
     <ErrorBoundary name="BlueprintDetail">
       <BlueprintDetailContent 
@@ -984,6 +1033,8 @@ function BlueprintDetail({ blueprint, isOpen, onClose, user, onLikeChange, onSea
         onClose={onClose}
         user={user}
         onLikeChange={onLikeChange}
+        onRatingChange={onRatingChange}
+        userRating={userRating}
         onSearchByCreator={onSearchByCreator}
         onBlueprintUpdate={onBlueprintUpdate}
         onDownload={onDownload}

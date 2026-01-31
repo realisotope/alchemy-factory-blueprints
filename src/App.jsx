@@ -30,6 +30,19 @@ function ChangelogAccordion({ theme }) {
 
   const changelog = [
     {
+      version: "v0.9.6",
+      date: "Jan 31, 2026",
+      month: "January 2026",
+      changes: [
+        "Added new bookmark feature (Replaced the Like/Liked buttons in the gallery)",
+        "Reworked like system to now use ratings (1-5 Hearts)",
+        "Added trending/popular filter (Currently based on ratings/downloads over last 7 days)",
+        "Added Installed/Update Available filter (based on blueprint folder sync data)",
+        "Added check to prevent users from uploading blueprints to the preview image slots. (Blueprints will now be auto moved)",
+        "Updated OpenGraph meta generation to work with blueprint slug urls. (Now looks good when sharing blueprint links on social media)",
+      ]
+    },
+    {
       version: "v0.9.5",
       date: "Jan 26, 2026",
       month: "January 2026",
@@ -51,9 +64,7 @@ function ChangelogAccordion({ theme }) {
             "Improved caching and load times across the site (Redis caching)",
             "Improved error handling and reporting",
           ]
-        },
-        "Added check to prevent users from uploading blueprints to the preview image slots. (Blueprints uploaded to preview image slots will now be auto moved)",
-        "Updated OpenGraph meta generation to work with blueprint slug urls. (Now looks good when sharing blueprint links on social media)"
+        }
       ]
     },
     {
@@ -396,7 +407,7 @@ export default function App() {
       <div className="relative z-10 flex flex-col flex-grow">
         {/* Header */}
         <header className="text-white shadow-2x1 top-0 z-50" >
-          <div className="max-w-7xl mx-auto px-4 py-6 flex items-center justify-between">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3 min-w-0">
             </div>
             <div className="hidden sm:flex flex-col sm:flex-row gap-2 sm:gap-3 items-end sm:items-center sm:justify-end flex-shrink-0 ml-4">
@@ -475,15 +486,20 @@ export default function App() {
             {/* Gallery Section */}
             <section>
               <h2
-                style={{
-                  backgroundColor: theme.colors.elementBg,
-                  color: theme.colors.accentYellow,
-                }}
-                className="flex items-center justify-center text-5xl font-bold bg-clip-text text-transparent mb-3"
+                style={{}}
+                className="flex items-center justify-center text-5xl font-bold mb-4"
               >
-                <span className="mr-3">⚗️</span>
-                Alchemy Factory Blueprints
-                <span className="ml-3 transform scale-x-[-1]">⚗️</span>
+                <span className="mr-4 text-5xl">⚗️</span>
+                <span 
+                  style={{
+                    color: theme.colors.accentYellow,
+                    textShadow: `0 2px 10px ${theme.colors.accentYellow}60, 0 0 20px ${theme.colors.accentYellow}30`,
+                    letterSpacing: '0.05em'
+                  }}
+                >
+                  Alchemy Factory Blueprints
+                </span>
+                <span className="ml-4 text-5xl transform scale-x-[-1]">⚗️</span>
               </h2>
               <ErrorBoundary name="BlueprintGalleryWrapper">
                 <BlueprintGallery user={user} refreshTrigger={refreshGallery} initialBlueprintId={initialBlueprintId} initialMessage={galleryMessage} onMessageShown={() => setGalleryMessage(null)} />
