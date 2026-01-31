@@ -257,7 +257,7 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
           newSet.delete(blueprintId);
           return newSet;
         });
-        setSuccess('Blueprint unliked');
+        //setSuccess('Blueprint unliked');
       } else {
         result = await likeBlueprint(blueprintId, user.id);
         
@@ -266,7 +266,7 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
         }
         
         setUserLikes((prev) => new Set(prev).add(blueprintId));
-        setSuccess('Blueprint liked');
+        //setSuccess('Blueprint liked');
       }
       
       setBlueprints((prev) =>
