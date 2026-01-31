@@ -251,7 +251,8 @@ export default function SavegameSync() {
               color: theme.colors.textPrimary,
             }}
             className="inline-flex items-center gap-2 px-3 py-2.5 rounded-lg transition disabled:opacity-50 shadow-lg hover:shadow-xl hover:scale-105 hover:opacity-70 relative z-10"
-            title="Upload save file to check blueprint compatibility"
+            data-tooltip="Upload save file to check blueprint compatibility"
+            data-tooltip-position="bottom"
           >
             <span className="text-sm font-medium">
               {isLoading && progress > 0 ? (

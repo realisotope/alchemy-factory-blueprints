@@ -426,9 +426,10 @@ export default function App() {
                   color: theme.colors.textPrimary,
                 }}
                 className="flex items-center gap-2 text-sm sm:text-base border-2 font-semibold py-2 px-3 sm:px-4 rounded-lg transition shadow-lg hover:shadow-xl hover:scale-105 hover:opacity-70 whitespace-nowrap"
+                data-tooltip="More Information & Changelog" data-tooltip-position="bottom"
               >
                 <Info className="w-4 h-4 flex-shrink-0" />
-                <span className="hidden sm:inline" data-tooltip="More Information & Changelog" data-tooltip-position="bottom">Info</span>
+                <span className="hidden sm:inline">Info</span>
                 <span className="sm:hidden">More Information</span>
               </button>
               <button
@@ -439,9 +440,10 @@ export default function App() {
                   color: theme.colors.textPrimary,
                 }}
                 className="flex items-center gap-2 text-sm sm:text-base border-2 font-semibold py-2 px-3 sm:px-4 rounded-lg transition shadow-lg hover:shadow-xl hover:scale-105 hover:opacity-70 whitespace-nowrap"
+                data-tooltip="How to Use Blueprints" data-tooltip-position="bottom"
               >
                 <BookOpen className="w-4 h-4 flex-shrink-0" />
-                <span className="hidden sm:inline" data-tooltip="How to Use Blueprints" data-tooltip-position="bottom">How to Use Blueprints</span>
+                <span className="hidden sm:inline">How to Use Blueprints</span>
                 <span className="sm:hidden">How to Use</span>
               </button>
               {user ? (
@@ -453,9 +455,10 @@ export default function App() {
                     color: theme.colors.textPrimary,
                   }}
                   className="inline-flex items-center gap-2 border-2 text-sm sm:text-base font-semibold py-2 px-4 sm:px-4 rounded-lg transition shadow-lg hover:shadow-xl hover:scale-105 hover:opacity-70 whitespace-nowrap"
+                  data-tooltip="Upload a Blueprint" data-tooltip-position="bottom"
                 >
                   <Upload className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                  <span className="hidden sm:inline" data-tooltip="Upload a Blueprint" data-tooltip-position="bottom">Upload</span>
+                  <span className="hidden sm:inline">Upload</span>
                   <span className="sm:hidden">Upload</span>
                 </button>
               ) : (
@@ -552,9 +555,9 @@ export default function App() {
                 <section>
                   <h3 style={{ color: theme.colors.accentYellow }} className="text-xl font-bold mb-3">📥 Importing Blueprints</h3>
                   <ol className="list-decimal list-inside space-y-2 ml-2">
-                    <li>Download the blueprint file (.af) from this site.</li>
+                    <li>Download the blueprint file (.png/.af) from this site.</li>
                     <i>(Some larger blueprints may be compressed into a zip file.)</i>
-                    <li>Drag and drop the .af from the zip into the games blueprints directory.</li>
+                    <li>Drag and drop the .png/.af file into the games blueprints directory.</li>
                     <li>Your newly downloaded blueprint will appear in-game without any restarts.</li>
                   </ol>
                 </section>

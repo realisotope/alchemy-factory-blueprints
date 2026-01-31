@@ -114,8 +114,8 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
     if (user) {
       fetchUserLikes();
       fetchUserRatingsData();
-      fetchUserBookmarksData();
     }
+    fetchUserBookmarksData();
   }, [refreshTrigger, user]);
 
   // Handle initial blueprint ID from URL - only apply once
@@ -174,9 +174,10 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
   }, [user]);
 
   const fetchUserBookmarksData = useCallback(() => {
-    if (!user) return;
     try {
-      const stored = localStorage.getItem(`bookmarks_${user.id}`);
+      // Use user-specific key if logged in, otherwise use anonymous key
+      const storageKey = user ? `bookmarks_${user.id}` : 'bookmarks_anonymous';
+      const stored = localStorage.getItem(storageKey);
       if (stored) {
         const bookmarkIds = JSON.parse(stored);
         setUserBookmarks(new Set(bookmarkIds));
@@ -390,11 +391,6 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
   }, [user, selectedBlueprint?.id]);
 
   const handleBookmark = useCallback((blueprintId, currentlyBookmarked) => {
-    if (!user) {
-      setError({ message: "Please login to bookmark blueprints" });
-      return;
-    }
-
     try {
       let newBookmarks;
       if (currentlyBookmarked) {
@@ -410,10 +406,11 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
         });
       }
       
-      // Save to localStorage
+      // Save to localStorage (use user-specific key if logged in, otherwise anonymous key)
       setTimeout(() => {
         const bookmarkArray = Array.from(newBookmarks || userBookmarks);
-        localStorage.setItem(`bookmarks_${user.id}`, JSON.stringify(bookmarkArray));
+        const storageKey = user ? `bookmarks_${user.id}` : 'bookmarks_anonymous';
+        localStorage.setItem(storageKey, JSON.stringify(bookmarkArray));
       }, 0);
     } catch (err) {
       console.error('Error toggling bookmark:', err);
@@ -829,6 +826,27 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
   const totalCreatorDownloads = creatorBlueprints.reduce((sum, bp) => sum + (bp.downloads || 0), 0);
   const totalCreatorLikes = creatorBlueprints.reduce((sum, bp) => sum + (bp.likes || 0), 0);
 
+  // Calculate time-based stats
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const blueprintsToday = blueprints.filter(bp => new Date(bp.created_at) >= todayStart).length;
+  const blueprintsThisWeek = blueprints.filter(bp => new Date(bp.created_at) >= weekStart).length;
+  const blueprintsThisMonth = blueprints.filter(bp => new Date(bp.created_at) >= monthStart).length;
+
+  // Calculate downloads for time periods (from blueprints uploaded in those periods)
+  const downloadsToday = blueprints.filter(bp => new Date(bp.created_at) >= todayStart).reduce((sum, bp) => sum + (bp.downloads || 0), 0);
+  const downloadsThisWeek = blueprints.filter(bp => new Date(bp.created_at) >= weekStart).reduce((sum, bp) => sum + (bp.downloads || 0), 0);
+  const downloadsThisMonth = blueprints.filter(bp => new Date(bp.created_at) >= monthStart).reduce((sum, bp) => sum + (bp.downloads || 0), 0);
+
+  // Calculate detailed stats
+  const totalDownloads = blueprints.reduce((sum, bp) => sum + (bp.downloads || 0), 0);
+  const totalRatings = blueprints.reduce((sum, bp) => sum + (bp.rating_count || 0), 0);
+  const totalRatingSum = blueprints.reduce((sum, bp) => sum + ((bp.rating_average || 0) * (bp.rating_count || 0)), 0);
+  const avgRating = totalRatings > 0 ? (totalRatingSum / totalRatings).toFixed(1) : '0.0';
+
   return (
     <>
       {/* Error and Success Alerts */}
@@ -836,59 +854,83 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
       <SuccessAlert message={success} onDismiss={() => setSuccess(null)} />
 
       {/* Stats Dashboard */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
-        <div 
-          style={{
-            background: `linear-gradient(135deg, ${theme.colors.cardBg}CC, ${theme.colors.elementBg}CC)`,
-            borderColor: theme.colors.cardBorder,
-            boxShadow: `0 4px 12px ${theme.colors.cardShadow}40`
-          }} 
-          className="text-center p-3 rounded-xl border-2 hover:scale-105 transition-all duration-200"
-        >
-          <p style={{ color: theme.colors.accentYellow }} className="font-bold text-2xl sm:text-2xl mb-0.5">{blueprints.length}</p>
-          <p style={{ color: theme.colors.textSecondary }} className="text-xs font-medium">Total Blueprints</p>
-        </div>
-        <div 
-          style={{
-            background: `linear-gradient(135deg, ${theme.colors.cardBg}CC, ${theme.colors.elementBg}CC)`,
-            borderColor: theme.colors.cardBorder,
-            boxShadow: `0 4px 12px ${theme.colors.cardShadow}40`
-          }} 
-          className="text-center p-3 rounded-xl border-2 hover:scale-105 transition-all duration-200"
-        >
-          <p style={{ color: theme.colors.accentYellow }} className="font-bold text-2xl sm:text-2xl mb-0.5">
-            {new Set(blueprints.map(bp => bp.creator_name).filter(Boolean)).size}
-          </p>
-          <p style={{ color: theme.colors.textSecondary }} className="text-xs font-medium">Total Creators</p>
-        </div>
-        <div 
-          style={{
-            background: `linear-gradient(135deg, ${theme.colors.cardBg}CC, ${theme.colors.elementBg}CC)`,
-            borderColor: theme.colors.cardBorder,
-            boxShadow: `0 4px 12px ${theme.colors.cardShadow}40`
-          }} 
-          className="text-center p-3 rounded-xl border-2 hover:scale-105 transition-all duration-200"
-        >
-          <p style={{ color: theme.colors.accentYellow }} className="font-bold text-2xl sm:text-2xl mb-0.5">{blueprints.reduce((sum, bp) => sum + (bp.downloads || 0), 0).toLocaleString()}</p>
-          <p style={{ color: theme.colors.textSecondary }} className="text-xs font-medium">Total Downloads</p>
-        </div>
-        <div 
-          style={{
-            background: `linear-gradient(135deg, ${theme.colors.cardBg}CC, ${theme.colors.elementBg}CC)`,
-            borderColor: theme.colors.cardBorder,
-            boxShadow: `0 4px 12px ${theme.colors.cardShadow}40`
-          }} 
-          className="text-center p-3 rounded-xl border-2 hover:scale-105 transition-all duration-200"
-        >
-          <p style={{ color: theme.colors.accentYellow }} className="font-bold text-2xl sm:text-2xl mb-0.5">
-            {(() => {
-              const totalRatings = blueprints.reduce((sum, bp) => sum + (bp.rating_count || 0), 0);
-              const totalRatingSum = blueprints.reduce((sum, bp) => sum + ((bp.rating_average || 0) * (bp.rating_count || 0)), 0);
-              const avgRating = totalRatings > 0 ? (totalRatingSum / totalRatings).toFixed(1) : '0.0';
-              return `${avgRating}`;
-            })()}
-          </p>
-          <p style={{ color: theme.colors.textSecondary }} className="text-xs font-medium">Average Rating</p>
+      <div className="space-y-3 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {/* Total Blueprints */}
+          <div 
+            style={{
+              background: `linear-gradient(135deg, ${theme.colors.cardBg}CC, ${theme.colors.elementBg}CC)`,
+              borderColor: theme.colors.cardBorder,
+              boxShadow: `0 4px 12px ${theme.colors.cardShadow}40`
+            }} 
+            className="text-center p-2 rounded-xl border-2 hover:scale-105 transition-all duration-200"
+          >
+            <p style={{ color: theme.colors.accentYellow }} className="font-bold text-2xl sm:text-2xl mb-0.5">{blueprints.length}</p>
+            <p style={{ color: theme.colors.textSecondary }} className="text-xs font-medium mb-1">Total Blueprints</p>
+            <div className="flex justify-center gap-1.5 text-xs" style={{ color: theme.colors.textSecondary }}>
+              <span className="opacity-80">D: {blueprintsToday}</span>
+              <span className="opacity-60">|</span>
+              <span className="opacity-80">W: {blueprintsThisWeek}</span>
+              <span className="opacity-60">|</span>
+              <span className="opacity-80">M: {blueprintsThisMonth}</span>
+            </div>
+          </div>
+
+          {/* Total Creators */}
+          <div 
+            style={{
+              background: `linear-gradient(135deg, ${theme.colors.cardBg}CC, ${theme.colors.elementBg}CC)`,
+              borderColor: theme.colors.cardBorder,
+              boxShadow: `0 4px 12px ${theme.colors.cardShadow}40`
+            }} 
+            className="text-center p-2 rounded-xl border-2 hover:scale-105 transition-all duration-200"
+          >
+            <p style={{ color: theme.colors.accentYellow }} className="font-bold text-2xl sm:text-2xl mb-0.5">
+              {new Set(blueprints.map(bp => bp.creator_name).filter(Boolean)).size}
+            </p>
+            <p style={{ color: theme.colors.textSecondary }} className="text-xs font-medium mb-1">Total Creators</p>
+            <div className="text-xs" style={{ color: theme.colors.textSecondary, opacity: 0.8 }}>
+              {(blueprints.length / new Set(blueprints.map(bp => bp.creator_name).filter(Boolean)).size || 0).toFixed(1)} avg bps per creator
+            </div>
+          </div>
+
+          {/* Total Downloads */}
+          <div 
+            style={{
+              background: `linear-gradient(135deg, ${theme.colors.cardBg}CC, ${theme.colors.elementBg}CC)`,
+              borderColor: theme.colors.cardBorder,
+              boxShadow: `0 4px 12px ${theme.colors.cardShadow}40`
+            }} 
+            className="text-center p-2 rounded-xl border-2 hover:scale-105 transition-all duration-200"
+          >
+            <p style={{ color: theme.colors.accentYellow }} className="font-bold text-2xl sm:text-2xl mb-0.5">{totalDownloads.toLocaleString()}</p>
+            <p style={{ color: theme.colors.textSecondary }} className="text-xs font-medium mb-1">Total Downloads</p>
+            <div className="flex justify-center gap-1.5 text-xs" style={{ color: theme.colors.textSecondary }}>
+              <span className="opacity-80">D: {downloadsToday}</span>
+              <span className="opacity-60">|</span>
+              <span className="opacity-80">W: {downloadsThisWeek}</span>
+              <span className="opacity-60">|</span>
+              <span className="opacity-80">M: {downloadsThisMonth}</span>
+            </div>
+          </div>
+
+          {/* Average Rating */}
+          <div 
+            style={{
+              background: `linear-gradient(135deg, ${theme.colors.cardBg}CC, ${theme.colors.elementBg}CC)`,
+              borderColor: theme.colors.cardBorder,
+              boxShadow: `0 4px 12px ${theme.colors.cardShadow}40`
+            }} 
+            className="text-center p-2 rounded-xl border-2 hover:scale-105 transition-all duration-200"
+          >
+            <p style={{ color: theme.colors.accentYellow }} className="font-bold text-2xl sm:text-2xl mb-0.5 flex items-center justify-center gap-1">
+              {avgRating} <Heart className="w-5 h-5 fill-current" />
+            </p>
+            <p style={{ color: theme.colors.textSecondary }} className="text-xs font-medium mb-1">Average Rating</p>
+            <div className="text-xs" style={{ color: theme.colors.textSecondary, opacity: 0.8 }}>
+              {totalRatings.toLocaleString()} total ratings
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1171,37 +1213,36 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
           )}
         </div>
         
+        <button
+          type="button"
+          onClick={toggleBookmarks}
+          style={{
+            borderColor: theme.colors.cardBorder,
+            backgroundColor: showBookmarksOnly ? theme.colors.accentYellow : `${theme.colors.cardBg}33`,
+            color: showBookmarksOnly ? theme.colors.bgPrimary : theme.colors.textPrimary
+          }}
+          className="px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 font-medium transition-all shadow-sm hover:opacity-80 flex items-center gap-2"
+          data-tooltip={showBookmarksOnly ? "Show all blueprints" : "Show bookmarked blueprints only"}
+        >
+          <Bookmark className={`w-5 h-5 ${showBookmarksOnly ? 'fill-current' : ''}`} />
+          <span className="hidden sm:inline">Bookmarks</span>
+        </button>
+        
         {user && (
-          <>
-            <button
-              type="button"
-              onClick={toggleBookmarks}
-              style={{
-                borderColor: theme.colors.cardBorder,
-                backgroundColor: showBookmarksOnly ? theme.colors.accentYellow : `${theme.colors.cardBg}33`,
-                color: showBookmarksOnly ? theme.colors.bgPrimary : theme.colors.textPrimary
-              }}
-              className="px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 font-medium transition-all shadow-sm hover:opacity-80 flex items-center gap-2"
-              data-tooltip={showBookmarksOnly ? "Show all blueprints" : "Show bookmarked blueprints only"}
-            >
-              <Bookmark className={`w-5 h-5 ${showBookmarksOnly ? 'fill-current' : ''}`} />
-              <span className="hidden sm:inline">Bookmarks</span>
-            </button>
-            <button
-              type="button"
-              onClick={showMyUploads}
-              style={{
-                borderColor: theme.colors.cardBorder,
-                backgroundColor: `${theme.colors.cardBg}33`,
-                color: theme.colors.textPrimary
-              }}
-              className="px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 font-medium transition-all shadow-sm hover:opacity-80 flex items-center gap-2"
-              data-tooltip="Show my uploaded blueprints"
-            >
-              <User className="w-5 h-5" />
-              <span className="hidden sm:inline">My Uploads</span>
-            </button>
-          </>
+          <button
+            type="button"
+            onClick={showMyUploads}
+            style={{
+              borderColor: theme.colors.cardBorder,
+              backgroundColor: `${theme.colors.cardBg}33`,
+              color: theme.colors.textPrimary
+            }}
+            className="px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 font-medium transition-all shadow-sm hover:opacity-80 flex items-center gap-2"
+            data-tooltip="Show my uploaded blueprints"
+          >
+            <User className="w-5 h-5" />
+            <span className="hidden sm:inline">My Uploads</span>
+          </button>
         )}
       </div>
 
@@ -1265,7 +1306,7 @@ function BlueprintGalleryContent({ user, refreshTrigger, initialBlueprintId, ini
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-12 flex-wrap">
+        <div className="flex items-center justify-center gap-2 mt-10 flex-wrap">
           <button
             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
